@@ -19,13 +19,13 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-10">
         <h1 className="text-3xl font-bold text-[var(--text-primary)]">{greeting.title}</h1>
         <p className="text-[var(--text-secondary)]">{greeting.subtitle}</p>
       </div>
 
       {/* Global Health Status */}
-      <Card className="mb-8 p-8 border-[var(--success)]/30 bg-[var(--success-subtle)]">
+      <Card className="mb-10 p-10 border-[var(--success)]/30 bg-[var(--success-subtle)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)] text-white">
@@ -44,15 +44,15 @@ export function DashboardPage() {
       </Card>
 
       {/* Resource Summary Cards */}
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-3">
         <ResourceCard icon={Server} title="Compute" status="Healthy" detail="1 Active Server" />
         <ResourceCard icon={Database} title="Database" status="Healthy" detail="Postgres" />
         <ResourceCard icon={Shield} title="Cache" status="Healthy" detail="Redis" />
       </div>
 
       {/* Recent Activity Feed */}
-      <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)]">
-        <h3 className="mb-5 text-lg font-semibold text-[var(--text-primary)]">Recent Activity</h3>
+      <Card className="p-10 bg-[var(--card-bg)] border border-[var(--border-color)]">
+        <h3 className="mb-6 text-lg font-semibold text-[var(--text-primary)]">Recent Activity</h3>
         <ul className="space-y-4">
           <ActivityItem time="Today, 09:00 AM" text="Automated daily backup completed successfully." />
           <ActivityItem time="Yesterday, 02:00 AM" text="OS security patches applied." />
@@ -66,7 +66,7 @@ export function DashboardPage() {
 
 function ResourceCard({ icon: Icon, title, status, detail }: { icon: LucideIcon; title: string; status: string; detail: string }) {
   return (
-    <Card className="p-6 bg-[var(--card-bg)] border border-[var(--border-color)]">
+    <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success-subtle)] text-[var(--success)]">

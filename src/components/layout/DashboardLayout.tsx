@@ -9,7 +9,7 @@ export function DashboardLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-auto bg-[var(--bg-primary)]">
-          <div className="min-h-full p-8">
+          <div className="min-h-full p-12">
             <Outlet />
           </div>
         </main>

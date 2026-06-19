@@ -27,7 +27,7 @@ export function SupportPage() {
             </div>
           </div>
           <div className="space-y-3">
-            <Button className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white" variant="outline"><MessageSquare className="h-4 w-4 mr-2" /> Open Support Ticket</Button>
+            <Button className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-on-accent)]" variant="outline"><MessageSquare className="h-4 w-4 mr-2" /> Open Support Ticket</Button>
             <Button className="w-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]" variant="ghost"><Clock className="h-4 w-4 mr-2" /> View SLA Status</Button>
           </div>
         </Card>
