@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
 import { useAuth } from "../auth/useAuth"
-import { Navbar } from "../components/layout/Navbar"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Label } from "../components/ui/Label"
@@ -54,72 +53,69 @@ export function ChangePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <div className="mx-auto max-w-md px-4 py-8">
-        {isOnboarding && (
-          <div className="mb-4 rounded-lg bg-[#2563eb]/10 p-4 text-[#2563eb]">
-            Please set a new password to continue.
+    <div className="max-w-md">
+      {isOnboarding && (
+        <div className="mb-4 rounded-lg bg-[var(--accent-subtle)] p-4 text-[var(--accent)] border border-[var(--accent)]/20">
+          Please set a new password to continue.
+        </div>
+      )}
+
+      <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)]">
+        <h1 className="mb-6 text-2xl font-bold text-[var(--text-primary)]">Change Password</h1>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <Label htmlFor="current_password" className="text-[var(--text-secondary)]">Current Password</Label>
+            <Input
+              id="current_password"
+              type="password"
+              error={errors.current_password?.message}
+              {...register("current_password")}
+            />
+            {errors.current_password && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.current_password.message}
+              </p>
+            )}
           </div>
-        )}
 
-        <Card className="p-6">
-          <h1 className="mb-6 text-2xl font-bold text-black">Change Password</h1>
+          <div>
+            <Label htmlFor="new_password" className="text-[var(--text-secondary)]">New Password</Label>
+            <Input
+              id="new_password"
+              type="password"
+              placeholder="Min 8 characters"
+              error={errors.new_password?.message}
+              {...register("new_password")}
+            />
+            {errors.new_password && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.new_password.message}
+              </p>
+            )}
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="current_password">Current Password</Label>
-              <Input
-                id="current_password"
-                type="password"
-                error={errors.current_password?.message}
-                {...register("current_password")}
-              />
-              {errors.current_password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.current_password.message}
-                </p>
-              )}
-            </div>
+          <div>
+            <Label htmlFor="confirm_new_password" className="text-[var(--text-secondary)]">Confirm New Password</Label>
+            <Input
+              id="confirm_new_password"
+              type="password"
+              placeholder="Re-enter new password"
+              error={errors.confirm_new_password?.message}
+              {...register("confirm_new_password")}
+            />
+            {errors.confirm_new_password && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.confirm_new_password.message}
+              </p>
+            )}
+          </div>
 
-            <div>
-              <Label htmlFor="new_password">New Password</Label>
-              <Input
-                id="new_password"
-                type="password"
-                placeholder="Min 8 characters"
-                error={errors.new_password?.message}
-                {...register("new_password")}
-              />
-              {errors.new_password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.new_password.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="confirm_new_password">Confirm New Password</Label>
-              <Input
-                id="confirm_new_password"
-                type="password"
-                placeholder="Re-enter new password"
-                error={errors.confirm_new_password?.message}
-                {...register("confirm_new_password")}
-              />
-              {errors.confirm_new_password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.confirm_new_password.message}
-                </p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" isLoading={isSubmitting}>
-              Change Password
-            </Button>
-          </form>
-        </Card>
-      </div>
+          <Button type="submit" className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white" isLoading={isSubmitting}>
+            Change Password
+          </Button>
+        </form>
+      </Card>
     </div>
   )
 }

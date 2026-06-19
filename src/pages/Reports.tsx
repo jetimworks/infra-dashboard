@@ -1,99 +1,95 @@
-import { Navbar } from "../components/layout/Navbar"
 import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { FileText, CreditCard, Users, Download, Mail } from "lucide-react"
 
 export function ReportsPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Reports & Account</h1>
-          <p className="text-gray-500">Manage your plan, team, and reporting preferences.</p>
-        </div>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Reports & Account</h1>
+        <p className="text-[var(--text-secondary)]">Manage your plan, team, and reporting preferences.</p>
+      </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Reporting Center */}
-          <Card>
-            <div className="mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Reporting Center</h3>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Reporting Center */}
+        <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)]">
+          <div className="mb-6 flex items-center gap-3">
+            <FileText className="h-5 w-5 text-blue-500" />
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Reporting Center</h3>
+          </div>
+          <div className="space-y-4 mb-6">
+            <ReportItem title="Monthly Report - May 2026" date="Generated on June 1" />
+            <ReportItem title="Weekly Report - Week 24" date="Generated on June 15" />
+          </div>
+          <div className="border-t border-[var(--border-color)] pt-5">
+            <p className="text-sm font-medium text-[var(--text-primary)] mb-3">Email Preferences</p>
+            <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+              <Mail className="h-4 w-4" />
+              <span>Weekly reports sent to admin@company.com</span>
             </div>
-            <div className="space-y-3 mb-6">
-              <ReportItem title="Monthly Report - May 2026" date="Generated on June 1" />
-              <ReportItem title="Weekly Report - Week 24" date="Generated on June 15" />
-            </div>
-            <div className="border-t border-gray-100 pt-4">
-              <p className="text-sm font-medium text-gray-900 mb-2">Email Preferences</p>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Mail className="h-4 w-4" />
-                <span>Weekly reports sent to admin@company.com</span>
-              </div>
-            </div>
-          </Card>
+          </div>
+        </Card>
 
-          {/* Plan & Billing */}
-          <Card>
-            <div className="mb-4 flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-purple-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Plan & Billing</h3>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-4 mb-4">
-              <p className="text-sm text-gray-500">Current Plan</p>
-              <p className="text-xl font-bold text-gray-900">StartUp Tier ($70/mo)</p>
-              <p className="text-xs text-gray-500 mt-1">1,000 concurrent connections guaranteed.</p>
-            </div>
-            <div className="flex justify-between text-sm mb-4">
-              <span className="text-gray-600">Next Invoice</span>
-              <span className="font-medium text-gray-900">July 1, 2026 - $70.00</span>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">Upgrade Plan</Button>
-              <Button size="sm" variant="ghost">Downgrade</Button>
-            </div>
-          </Card>
+        {/* Plan & Billing */}
+        <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)]">
+          <div className="mb-6 flex items-center gap-3">
+            <CreditCard className="h-5 w-5 text-purple-500" />
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Plan & Billing</h3>
+          </div>
+          <div className="rounded-lg bg-[var(--bg-tertiary)] p-5 mb-5 border border-[var(--border-color)]">
+            <p className="text-sm text-[var(--text-secondary)]">Current Plan</p>
+            <p className="text-xl font-bold text-[var(--text-primary)]">StartUp Tier ($70/mo)</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-2">1,000 concurrent connections guaranteed.</p>
+          </div>
+          <div className="flex justify-between text-sm mb-5">
+            <span className="text-[var(--text-secondary)]">Next Invoice</span>
+            <span className="font-medium text-[var(--text-primary)]">July 1, 2026 - $70.00</span>
+          </div>
+          <div className="flex gap-3">
+            <Button size="sm" variant="outline" className="border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]">Upgrade Plan</Button>
+            <Button size="sm" variant="ghost" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]">Downgrade</Button>
+          </div>
+        </Card>
 
-          {/* Team Access */}
-          <Card className="lg:col-span-2">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-cyan-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Team Access</h3>
-              </div>
-              <Button size="sm">Invite Developer</Button>
+        {/* Team Access */}
+        <Card className="p-8 bg-[var(--card-bg)] border border-[var(--border-color)] lg:col-span-2">
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-cyan-500" />
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Team Access</h3>
             </div>
-            <div className="space-y-3">
-              <TeamMember name="John Doe" email="john@company.com" role="Owner" />
-              <TeamMember name="Jane Smith" email="jane@company.com" role="Read-Only" />
-            </div>
-          </Card>
-        </div>
-      </main>
+            <Button size="sm" className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white">Invite Developer</Button>
+          </div>
+          <div className="space-y-4">
+            <TeamMember name="John Doe" email="john@company.com" role="Owner" />
+            <TeamMember name="Jane Smith" email="jane@company.com" role="Read-Only" />
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }
 
 function ReportItem({ title, date }: { title: string; date: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
+    <div className="flex items-center justify-between rounded-lg border border-[var(--border-color)] p-4 bg-[var(--bg-tertiary)]">
       <div>
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-        <p className="text-xs text-gray-500">{date}</p>
+        <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{date}</p>
       </div>
-      <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
+      <Button size="sm" variant="ghost" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><Download className="h-4 w-4" /></Button>
     </div>
   )
 }
 
 function TeamMember({ name, email, role }: { name: string; email: string; role: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
+    <div className="flex items-center justify-between rounded-lg border border-[var(--border-color)] p-4 bg-[var(--bg-tertiary)]">
       <div>
-        <p className="text-sm font-medium text-gray-900">{name}</p>
-        <p className="text-xs text-gray-500">{email}</p>
+        <p className="text-sm font-medium text-[var(--text-primary)]">{name}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{email}</p>
       </div>
-      <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">{role}</span>
+      <span className="rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)] border border-[var(--border-color)]">{role}</span>
     </div>
   )
 }
