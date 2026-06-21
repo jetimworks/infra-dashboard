@@ -118,3 +118,45 @@ async function performRefresh(refreshToken: string): Promise<string> {
 }
 
 export default apiClient
+
+// ──────────────────────────────────────────────────────────────────────────
+// Typed helpers used by every API module and by TanStack Query queryFns.
+// The axios interceptor above (auth, refresh, 401 retry) applies transparently.
+// ──────────────────────────────────────────────────────────────────────────
+
+export async function apiGet<T>(
+  url: string,
+  params?: object
+): Promise<T> {
+  const res = await apiClient.get<T>(url, { params })
+  return res.data
+}
+
+export async function apiPost<T, B = unknown>(
+  url: string,
+  body?: B
+): Promise<T> {
+  const res = await apiClient.post<T>(url, body)
+  return res.data
+}
+
+export async function apiPut<T, B = unknown>(
+  url: string,
+  body?: B
+): Promise<T> {
+  const res = await apiClient.put<T>(url, body)
+  return res.data
+}
+
+export async function apiPatch<T, B = unknown>(
+  url: string,
+  body?: B
+): Promise<T> {
+  const res = await apiClient.patch<T>(url, body)
+  return res.data
+}
+
+export async function apiDelete<T>(url: string): Promise<T> {
+  const res = await apiClient.delete<T>(url)
+  return res.data
+}

@@ -1,40 +1,126 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
-import { DashboardLayout } from "./components/layout/DashboardLayout"
+import { AppShell } from "./components/layout/AppShell"
+import { AdminLayout } from "./components/layout/AdminLayout"
+import { RequireAdmin } from "./components/feedback/RequireAdmin"
+
 import { LoginPage } from "./pages/Login"
 import { RegisterPage } from "./pages/Register"
-import { DashboardPage } from "./pages/Dashboard"
-import { InfrastructurePage } from "./pages/Infrastructure"
-import { SecurityPage } from "./pages/Security"
-import { ReportsPage } from "./pages/Reports"
-import { SupportPage } from "./pages/Support"
-import { ProfilePage } from "./pages/Profile"
-import { SettingsPage } from "./pages/Settings"
+import { ForgotPasswordPage } from "./pages/ForgotPassword"
 import { ChangePasswordPage } from "./pages/ChangePassword"
+
+import { DashboardPage } from "./pages/Dashboard"
+import { ProjectsListPage } from "./pages/ProjectsListPage"
+import { ProjectDetailPage } from "./pages/ProjectDetailPage"
+import { InstancesListPage } from "./pages/InstancesListPage"
+import { InstanceDetailPage } from "./pages/InstanceDetailPage"
+import { InstanceMetricsPage } from "./pages/InstanceMetricsPage"
+import { InstanceSecurityPage } from "./pages/InstanceSecurityPage"
+import { InstanceBackupsPage } from "./pages/InstanceBackupsPage"
+import { ActivityPage } from "./pages/ActivityPage"
+import { AccountPage } from "./pages/AccountPage"
+import { SupportPage } from "./pages/SupportPage"
+import { NotFoundPage } from "./pages/NotFoundPage"
+
+import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage"
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage"
+import { AdminProjectsPage } from "./pages/admin/AdminProjectsPage"
+import { AdminInstancesListPage } from "./pages/admin/AdminInstancesListPage"
+import { AdminInstanceCreatePage } from "./pages/admin/AdminInstanceCreatePage"
+import { AdminInstanceEditPage } from "./pages/admin/AdminInstanceEditPage"
+import { AdminInstanceSshKeyPage } from "./pages/admin/AdminInstanceSshKeyPage"
+import { AdminInstanceSystemActionPage } from "./pages/admin/AdminInstanceSystemActionPage"
+import { AdminSecurityAuditsPage } from "./pages/admin/AdminSecurityAuditsPage"
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ThemeProvider>
+          <Toaster
+            richColors
+            position="top-right"
+            closeButton
+            toastOptions={{
+              duration: 5000,
+            }}
+          />
           <Routes>
+            {/* Public */}
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             </Route>
+
+            {/* Protected (any authed user) */}
             <Route element={<ProtectedRoute />}>
-              <Route element={<DashboardLayout />}>
-                <Route path="/" element={<DashboardPage />} />
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/infrastructure" element={<InfrastructurePage />} />
-                <Route path="/security" element={<SecurityPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/projects" element={<ProjectsListPage />} />
+                <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                <Route path="/instances" element={<InstancesListPage />} />
+                <Route path="/instances/:id" element={<InstanceDetailPage />} />
+                <Route
+                  path="/instances/:id/metrics"
+                  element={<InstanceMetricsPage />}
+                />
+                <Route
+                  path="/instances/:id/security"
+                  element={<InstanceSecurityPage />}
+                />
+                <Route
+                  path="/instances/:id/backups"
+                  element={<InstanceBackupsPage />}
+                />
+                <Route path="/activity" element={<ActivityPage />} />
+                <Route path="/account" element={<AccountPage />} />
                 <Route path="/support" element={<SupportPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/change-password" element={<ChangePasswordPage />} />
+
+                {/* Admin (gated) */}
+                <Route
+                  path="/admin"
+                  element={
+                    <RequireAdmin>
+                      <AdminLayout />
+                    </RequireAdmin>
+                  }
+                >
+                  <Route index element={<AdminOverviewPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
+                  <Route path="projects" element={<AdminProjectsPage />} />
+                  <Route
+                    path="instances"
+                    element={<AdminInstancesListPage />}
+                  />
+                  <Route
+                    path="instances/new"
+                    element={<AdminInstanceCreatePage />}
+                  />
+                  <Route
+                    path="instances/:id/edit"
+                    element={<AdminInstanceEditPage />}
+                  />
+                  <Route
+                    path="instances/:id/ssh-key"
+                    element={<AdminInstanceSshKeyPage />}
+                  />
+                  <Route
+                    path="instances/:id/system-action"
+                    element={<AdminInstanceSystemActionPage />}
+                  />
+                  <Route
+                    path="security-audits"
+                    element={<AdminSecurityAuditsPage />}
+                  />
+                </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Route>
           </Routes>

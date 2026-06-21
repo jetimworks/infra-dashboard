@@ -1,13 +1,28 @@
-import { type LabelHTMLAttributes } from "react"
+import { type LabelHTMLAttributes, type ReactNode } from "react"
+import { cn } from "../../lib/utils"
 
-export type LabelProps = LabelHTMLAttributes<HTMLLabelElement>
+export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
+  required?: boolean
+  children: ReactNode
+}
 
-export const Label = ({ className, ...props }: LabelProps) => {
+export const Label = ({
+  className,
+  required,
+  children,
+  ...props
+}: LabelProps) => {
   return (
     <label
-      className={`text-sm font-medium text-[var(--text-primary)] ${className || ""}`}
+      className={cn(
+        "text-[0.8125rem] font-medium text-fg-muted inline-flex items-center gap-1",
+        className
+      )}
       {...props}
-    />
+    >
+      {children}
+      {required ? <span className="text-danger">*</span> : null}
+    </label>
   )
 }
 Label.displayName = "Label"

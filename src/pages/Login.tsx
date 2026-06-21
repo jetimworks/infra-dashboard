@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -6,12 +6,12 @@ import { z } from "zod"
 import { useAuth } from "../auth/useAuth"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
-import { Label } from "../components/ui/Label"
-import { APP_FULL_NAME } from "../config"
-import { Mail, Lock, ArrowRight } from "lucide-react"
+import { Field } from "../components/ui/Input"
+import { Cloud, Mail, Lock, ArrowRight, ShieldCheck, Sparkles, Activity } from "lucide-react"
+import { normalizeError } from "../api/errors"
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 })
 
@@ -19,6 +19,7 @@ type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [loginError, setLoginError] = useState<string | null>(null)
   const {
     register,
@@ -28,149 +29,174 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
   })
 
-  const onSubmit = (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     setLoginError(null)
-
-    login(data).catch((err: unknown) => {
-      const errorMessage =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        "Invalid email or password."
-      setLoginError(errorMessage)
-    })
+    try {
+      await login(data)
+      // AuthProvider.login handles onboarding redirects, but if we land here
+      // (e.g. user manually navigated), send them to the dashboard.
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setLoginError(normalizeError(err).message)
+    }
   }
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side - Form */}
-      <div className="flex w-full lg:w-[45%] items-center justify-center p-8 bg-[#faf8f5]">
-        <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-[#2563eb] flex items-center justify-center shadow-lg shadow-[#2563eb]/20">
-                <span className="text-white font-bold text-lg">I</span>
-              </div>
-              <span className="text-xl font-semibold text-[#1a1a2e]">{APP_FULL_NAME}</span>
+      {/* Left — Form */}
+      <div className="flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-10 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm">
+              <Cloud className="h-5 w-5" aria-hidden />
+            </div>
+            <div>
+              <p className="text-[1.0625rem] font-semibold text-fg">Infra</p>
+              <p className="text-xs text-fg-muted">by Jetimworks</p>
             </div>
           </div>
 
-          {/* Heading */}
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-[#1a1a2e] mb-3 tracking-tight">Welcome back</h1>
-            <p className="text-[#64748b] text-lg">Sign in to access your dashboard.</p>
+          <div className="mb-8">
+            <h1 className="text-[2rem] font-bold leading-tight text-fg tracking-tight">
+              Welcome back
+            </h1>
+            <p className="mt-2 text-[0.9375rem] text-fg-muted">
+              Sign in to see how your servers are doing.
+            </p>
           </div>
 
-          {/* Error Message */}
-          {loginError && (
-            <div className="mb-6 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
+          {loginError ? (
+            <div
+              role="alert"
+              className="mb-6 rounded-md border border-danger-soft bg-danger-soft p-3 text-sm text-danger-fg"
+            >
               {loginError}
             </div>
-          )}
+          ) : null}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#4a5568] font-medium">Email address</Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748b]" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  error={errors.email?.message}
-                  className="pl-12 h-12 rounded-xl shadow-sm"
-                  {...register("email")}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-red-500 mt-1.5">{errors.email.message}</p>
-              )}
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <Field
+              label="Email address"
+              htmlFor="email"
+              required
+              error={errors.email?.message}
+            >
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                autoComplete="email"
+                leftIcon={Mail}
+                aria-invalid={errors.email ? "true" : undefined}
+                {...register("email")}
+              />
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#4a5568] font-medium">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748b]" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  error={errors.password?.message}
-                  className="pl-12 h-12 rounded-xl shadow-sm"
-                  {...register("password")}
-                />
-              </div>
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1.5">{errors.password.message}</p>
-              )}
-            </div>
+            <Field
+              label="Password"
+              htmlFor="password"
+              required
+              hint={
+                <Link
+                  to="/forgot-password"
+                  className="text-primary hover:underline"
+                >
+                  Forgot it?
+                </Link>
+              }
+              error={errors.password?.message}
+            >
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                leftIcon={Lock}
+                aria-invalid={errors.password ? "true" : undefined}
+                {...register("password")}
+              />
+            </Field>
 
             <Button
               type="submit"
-              className="w-full h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium rounded-xl shadow-lg shadow-[#2563eb]/25 transition-all flex items-center justify-center gap-2"
+              variant="primary"
+              size="lg"
+              fullWidth
               isLoading={isSubmitting}
+              rightIcon={ArrowRight}
             >
-              Sign in
-              <ArrowRight className="h-4 w-4" />
+              {isSubmitting ? "Signing you in…" : "Sign in"}
             </Button>
           </form>
 
-          {/* Register Link */}
-          <p className="mt-8 text-center text-[#64748b]">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-[#2563eb] font-medium hover:underline">
+          <p className="mt-8 text-center text-sm text-fg-muted">
+            Don't have an account yet?{" "}
+            <Link to="/register" className="font-medium text-primary hover:underline">
               Create one
             </Link>
           </p>
         </div>
       </div>
 
-      {/* Right Side - Image */}
-      <div className="hidden lg:flex w-[55%] relative overflow-hidden">
-        {/* Image Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=80')`,
-          }}
-        >
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e]/90 via-[#1a1a2e]/70 to-[#2563eb]/40" />
+      {/* Right — Brand panel */}
+      <div className="relative hidden lg:flex lg:w-[52%] lg:flex-col lg:justify-between lg:overflow-hidden bg-gradient-to-br from-primary via-primary to-accent px-16 py-16 text-fg-on-accent">
+        <div className="absolute inset-0 opacity-10" aria-hidden>
+          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white blur-3xl" />
+        </div>
+        <div className="relative">
+          <p className="text-sm font-medium uppercase tracking-wider opacity-80">
+            Your infrastructure, looked after
+          </p>
+          <h2 className="mt-3 text-[2.25rem] font-bold leading-tight">
+            Sleep at night.
+            <br />
+            We've got your back.
+          </h2>
+          <p className="mt-4 max-w-md text-[0.9375rem] opacity-90">
+            We monitor your servers, databases, and storage, alert you when
+            something needs attention, and explain it all in plain English.
+          </p>
         </div>
 
-        {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="max-w-lg">
-            <h2 className="text-4xl font-bold mb-6 leading-tight">
-              Infrastructure monitoring,{' '}
-              <span className="text-[#60a5fa]">simplified.</span>
-            </h2>
-            <p className="text-lg text-white/80 leading-relaxed">
-              Get real-time insights into your servers, databases, and network.
-              Intuitive dashboards that make complex infrastructure feel effortless.
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-12 mt-12">
-            <div>
-              <p className="text-3xl font-bold">99.98%</p>
-              <p className="text-sm text-white/60 mt-1">Uptime SLA</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold">&lt;100ms</p>
-              <p className="text-sm text-white/60 mt-1">Response time</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold">24/7</p>
-              <p className="text-sm text-white/60 mt-1">Monitoring</p>
-            </div>
-          </div>
+        <div className="relative grid grid-cols-3 gap-6">
+          <Feature
+            icon={ShieldCheck}
+            label="Security"
+            value="We watch for threats 24/7"
+          />
+          <Feature
+            icon={Activity}
+            label="Health"
+            value="Live status of every server"
+          />
+          <Feature
+            icon={Sparkles}
+            label="Backups"
+            value="Daily, automatic, restorable"
+          />
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
+    </div>
+  )
+}
+
+function Feature({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof ShieldCheck
+  label: string
+  value: string
+}) {
+  return (
+    <div className="rounded-lg bg-white/10 p-4 backdrop-blur-sm">
+      <Icon className="h-5 w-5 opacity-90" aria-hidden />
+      <p className="mt-2 text-[0.6875rem] font-medium uppercase tracking-wider opacity-80">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium">{value}</p>
     </div>
   )
 }

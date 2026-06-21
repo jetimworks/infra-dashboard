@@ -1,100 +1,206 @@
 @import "tailwindcss";
 
+/*
+  Light-first design tokens. Every color is declared in BOTH @theme and :root so
+  Tailwind utilities (bg-primary, text-fg-muted, border-border, etc.) resolve via
+  @theme while components can also read via rgb(var(--token)) if needed.
+
+  Tokens are HSL triplets (no commas) so Tailwind 4 alpha modifiers like
+  bg-primary/20 work out of the box.
+*/
+
 @theme {
-  --color-primary: #2563eb;
-  --color-bg: #ffffff;
-  --color-fg: #000000;
+  /* Surfaces */
+  --color-bg: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-surface-raised: 255 255 255;
+  --color-surface-sunken: 241 245 249;
+  --color-surface-overlay: 255 255 255;
+
+  /* Text */
+  --color-fg: 15 23 42;
+  --color-fg-muted: 71 85 105;
+  --color-fg-subtle: 100 116 139;
+  --color-fg-on-accent: 255 255 255;
+
+  /* Borders */
+  --color-border: 226 232 240;
+  --color-border-subtle: 241 245 249;
+  --color-border-strong: 203 213 225;
+
+  /* Primary — calm blue */
+  --color-primary: 37 99 235;
+  --color-primary-hover: 29 78 216;
+  --color-primary-soft: 239 246 255;
+  --color-primary-soft-fg: 30 64 175;
+
+  /* Accent — warm teal for "yours / active" */
+  --color-accent: 13 148 136;
+  --color-accent-soft: 240 253 250;
+  --color-accent-soft-fg: 15 118 110;
+
+  /* Status — calibrated for non-technical eyes */
+  --color-success: 22 163 74;
+  --color-success-soft: 220 252 231;
+  --color-success-fg: 21 128 61;
+
+  --color-warning: 217 119 6;
+  --color-warning-soft: 254 243 199;
+  --color-warning-fg: 180 83 9;
+
+  --color-danger: 220 38 38;
+  --color-danger-soft: 254 226 226;
+  --color-danger-fg: 185 28 28;
+
+  --color-info: 2 132 199;
+  --color-info-soft: 224 242 254;
+  --color-info-fg: 3 105 161;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-card-hover: 0 4px 12px -2px rgb(15 23 42 / 0.06),
+    0 2px 4px -2px rgb(15 23 42 / 0.04);
+  --shadow-modal: 0 12px 24px -8px rgb(15 23 42 / 0.08),
+    0 4px 8px -4px rgb(15 23 42 / 0.04);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --bg: 248 250 252;
+  --surface: 255 255 255;
+  --surface-sunken: 241 245 249;
+  --fg: 15 23 42;
+  --fg-muted: 71 85 105;
+  --fg-subtle: 100 116 139;
+  --border: 226 232 240;
+  --border-subtle: 241 245 249;
+  --primary: 37 99 235;
+  --primary-hover: 29 78 216;
+  --primary-soft: 239 246 255;
+  --accent: 13 148 136;
+  --accent-soft: 240 253 250;
+  --success: 22 163 74;
+  --success-soft: 220 252 231;
+  --success-fg: 21 128 61;
+  --warning: 217 119 6;
+  --warning-soft: 254 243 199;
+  --warning-fg: 180 83 9;
+  --danger: 220 38 38;
+  --danger-soft: 254 226 226;
+  --danger-fg: 185 28 28;
+  --info: 2 132 199;
+  --info-soft: 224 242 254;
+  --info-fg: 3 105 161;
+}
+
+.dark {
+  --bg: 9 13 22;
+  --surface: 17 24 39;
+  --surface-sunken: 11 16 28;
+  --fg: 241 245 249;
+  --fg-muted: 148 163 184;
+  --fg-subtle: 100 116 139;
+  --border: 30 41 59;
+  --border-subtle: 22 32 46;
+  --primary: 96 165 250;
+  --primary-hover: 59 130 246;
+  --primary-soft: 23 37 84;
+  --accent: 45 212 191;
+  --accent-soft: 19 78 74;
+  --success: 74 222 128;
+  --success-soft: 20 83 45;
+  --success-fg: 134 239 172;
+  --warning: 251 191 36;
+  --warning-soft: 113 63 18;
+  --warning-fg: 253 224 71;
+  --danger: 248 113 113;
+  --danger-soft: 127 29 29;
+  --danger-fg: 252 165 165;
+  --info: 56 189 248;
+  --info-soft: 12 74 110;
+  --info-fg: 125 211 252;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Light mode (default) */
-:root {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: #e2e8f0;
-  --border-subtle: #f1f5f9;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-subtle: #eff6ff;
-  --text-on-accent: #ffffff;
-  --success: #10b981;
-  --success-subtle: #ecfdf5;
-  --warning: #f59e0b;
-  --warning-subtle: #fffbeb;
-  --danger: #ef4444;
-  --danger-subtle: #fef2f2;
-  --card-bg: #ffffff;
-  --input-bg: #ffffff;
-  --scrollbar-track: #f1f5f9;
-  --scrollbar-thumb: #cbd5e1;
-  --scrollbar-thumb-hover: #94a3b8;
-  --sidebar-bg: #ffffff;
-  --header-bg: #ffffff;
-}
-
-/* Dark mode */
-.dark {
-  --bg-primary: #0f0f14;
-  --bg-secondary: #1a1a24;
-  --bg-tertiary: #252532;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-subtle: rgba(59, 130, 246, 0.1);
-  --text-on-accent: #ffffff;
-  --success: #10b981;
-  --success-subtle: rgba(16, 185, 129, 0.1);
-  --warning: #f59e0b;
-  --warning-subtle: rgba(245, 158, 11, 0.1);
-  --danger: #ef4444;
-  --danger-subtle: rgba(239, 68, 68, 0.1);
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --input-bg: rgba(255, 255, 255, 0.05);
-  --scrollbar-track: #1a1a24;
-  --scrollbar-thumb: #3a3a4a;
-  --scrollbar-thumb-hover: #4a4a5a;
-  --sidebar-bg: #0f0f14;
-  --header-bg: #0f0f14;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* Custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: rgb(var(--surface-sunken));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 4px;
+  background: rgb(var(--border));
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
+  background: rgb(var(--fg-subtle));
+}
+
+/* Focus ring utility */
+*:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 200ms ease-out;
 }

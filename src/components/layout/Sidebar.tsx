@@ -1,125 +1,120 @@
-import { useState } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { useAuth } from "../../auth/useAuth"
-import { APP_NAME } from "../../config"
-import { Button } from "../ui/Button"
+import { NavLink, useLocation } from "react-router-dom"
 import {
-  LogOut,
+  Activity,
+  Cloud,
+  HelpCircle,
   LayoutDashboard,
-  Server,
-  Shield,
-  FileText,
-  Headphones,
-  ChevronLeft,
-  ChevronRight,
-  User,
+  LifeBuoy,
   Settings,
+  ShieldCheck,
+  Users,
+  type LucideIcon,
 } from "lucide-react"
+import { cn } from "../../lib/utils"
+import { useAuth } from "../../auth/useAuth"
+import { ThemeToggle } from "../theme/ThemeToggle"
 
-const navItems = [
-  { path: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { path: "/infrastructure", label: "Infrastructure", icon: Server },
-  { path: "/security", label: "Security", icon: Shield },
-  { path: "/reports", label: "Reports", icon: FileText },
-  { path: "/support", label: "Support", icon: Headphones },
-  { path: "/settings", label: "Settings", icon: Settings },
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+  staffOnly?: boolean
+}
+
+const navItems: NavItem[] = [
+  { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/projects", label: "Projects", icon: Cloud },
+  { to: "/instances", label: "Infrastructure", icon: ShieldCheck },
+  { to: "/activity", label: "Activity", icon: Activity, staffOnly: true },
+  { to: "/support", label: "Support", icon: LifeBuoy },
+  { to: "/account", label: "Account", icon: Settings },
 ]
 
 export function Sidebar() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
-  const [isCollapsed, setIsCollapsed] = useState(false)
-
-  if (!user) return null
+  const isStaff = user?.is_staff ?? false
 
   return (
     <aside
-      className={`relative flex flex-col bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] transition-all duration-300 ${
-        isCollapsed ? "w-16" : "w-60"
-      }`}
+      className={cn(
+        "hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 lg:left-0",
+        "border-r border-border bg-surface"
+      )}
     >
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-[var(--border-color)]">
-        <Link to="/dashboard" className="flex items-center gap-3 overflow-hidden">
-          <div className="h-8 w-8 rounded-lg bg-[var(--accent)] flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm">I</span>
-          </div>
-          {!isCollapsed && (
-            <span className="text-[var(--text-primary)] font-semibold whitespace-nowrap">{APP_NAME}</span>
-          )}
-        </Link>
+      <div className="flex h-16 items-center gap-2.5 border-b border-border px-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-fg-on-accent">
+          <Cloud className="h-4 w-4" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-fg">Infra</p>
+          <p className="text-[0.6875rem] text-fg-subtle">by Jetimworks</p>
+        </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-2">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const Icon = item.icon
-            return (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${
-                    isActive
-                      ? "bg-[var(--accent)] text-white"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-                  }`}
-                >
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {!isCollapsed && (
-                    <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
-                  )}
-                </Link>
-              </li>
-            )
-          })}
+          {navItems
+            .filter((item) => !item.staffOnly || isStaff)
+            .map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname.startsWith(item.to)
+              return (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.end}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                      isActive
+                        ? "bg-primary-soft text-primary-soft-fg"
+                        : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden />
+                    {item.label}
+                  </NavLink>
+                </li>
+              )
+            })}
         </ul>
+
+        {isStaff ? (
+          <div className="mt-6 border-t border-border-subtle pt-4">
+            <NavLink
+              to="/admin"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                location.pathname.startsWith("/admin")
+                  ? "bg-accent-soft text-accent-soft-fg"
+                  : "text-accent hover:bg-accent-soft hover:text-accent-soft-fg"
+              )}
+            >
+              <Users className="h-4 w-4" aria-hidden />
+              Switch to admin
+            </NavLink>
+          </div>
+        ) : null}
       </nav>
 
-      {/* User & Logout */}
-      <div className="border-t border-[var(--border-color)] p-2">
-        {/* Profile Link */}
-        <Link
-          to="/profile"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mb-1 ${
-            location.pathname === "/profile"
-              ? "bg-[var(--bg-tertiary)] text-[var(--text-primary)]"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-          }`}
-        >
-          <User className="h-5 w-5 shrink-0" />
-          {!isCollapsed && (
-            <span className="text-sm font-medium whitespace-nowrap truncate">
-              {user.first_name} {user.last_name}
-            </span>
-          )}
-        </Link>
-
-        {/* Logout Button */}
-        <Button
-          variant="ghost"
-          onClick={logout}
-          className={`w-full justify-start text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] ${
-            isCollapsed ? "px-3" : "px-3"
-          }`}
-        >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span className="ml-3">Logout</span>}
-        </Button>
+      <div className="border-t border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <a
+            href="mailto:support@jetimworks.com"
+            className="flex items-center gap-2 text-xs text-fg-muted hover:text-fg"
+          >
+            <HelpCircle className="h-3.5 w-3.5" aria-hidden />
+            Get help
+          </a>
+          <ThemeToggle />
+        </div>
+        <p className="mt-3 text-[0.6875rem] text-fg-subtle">
+          Infra Dashboard · v0.1.0
+        </p>
       </div>
-
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-1/2 -right-3 h-6 w-6 rounded-full bg-[var(--sidebar-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-      >
-        {isCollapsed ? (
-          <ChevronRight className="h-3.5 w-3.5" />
-        ) : (
-          <ChevronLeft className="h-3.5 w-3.5" />
-        )}
-      </button>
     </aside>
   )
 }
+
+Sidebar.displayName = "Sidebar"

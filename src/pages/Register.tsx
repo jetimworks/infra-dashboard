@@ -1,26 +1,38 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { toast } from "sonner"
 import { useAuth } from "../auth/useAuth"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
-import { Label } from "../components/ui/Label"
-import { APP_FULL_NAME } from "../config"
-import { Mail, Lock, User, Phone, ArrowRight } from "lucide-react"
+import { Field } from "../components/ui/Input"
+import {
+  Cloud,
+  Mail,
+  Lock,
+  ArrowRight,
+  User,
+  Phone,
+  CheckCircle2,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react"
+import { normalizeError } from "../api/errors"
 
 const registerSchema = z
   .object({
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().min(1, "Phone number is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    first_name: z.string().min(1, "Tell us what to call you"),
+    last_name: z.string().min(1, "Tell us what to call you"),
+    email: z.string().email("Enter a valid email address"),
+    phone: z.string().min(1, "We need a number we can reach you on"),
+    password: z
+      .string()
+      .min(8, "Use at least 8 characters — long ones are safer"),
     confirm_password: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: "Passwords don't match",
+    message: "The two passwords don't match",
     path: ["confirm_password"],
   })
 
@@ -28,6 +40,8 @@ type RegisterForm = z.infer<typeof registerSchema>
 
 export function RegisterPage() {
   const { register: registerUser } = useAuth()
+  const navigate = useNavigate()
+  const [registerError, setRegisterError] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -37,6 +51,7 @@ export function RegisterPage() {
   })
 
   const onSubmit = async (data: RegisterForm) => {
+    setRegisterError(null)
     try {
       await registerUser({
         email: data.email,
@@ -45,225 +60,224 @@ export function RegisterPage() {
         first_name: data.first_name,
         last_name: data.last_name,
       })
-    } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { error?: string | string[] } } })?.response?.data?.error ||
-        Array.isArray((err as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors)
-          ? ((err as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors as string[])[0]
-          : "Registration failed. Please try again."
-      toast.error(errorMessage)
+      // AuthProvider.register calls login() which handles onboarding redirects.
+      // If we somehow land here (e.g. user manually navigated), send to dashboard.
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setRegisterError(normalizeError(err).message)
     }
   }
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side - Image */}
-      <div className="hidden lg:flex w-[55%] relative overflow-hidden">
-        {/* Image Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1551434678-e076c223a692?w=1920&q=80')`,
-          }}
-        >
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e]/90 via-[#1a1a2e]/70 to-[#2563eb]/40" />
+      {/* Left — Brand panel */}
+      <div className="relative hidden lg:flex lg:w-[52%] lg:flex-col lg:justify-between lg:overflow-hidden bg-gradient-to-br from-primary via-primary to-accent px-16 py-16 text-fg-on-accent">
+        <div className="absolute inset-0 opacity-10" aria-hidden>
+          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white blur-3xl" />
         </div>
 
-        {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="max-w-lg">
-            <h2 className="text-4xl font-bold mb-6 leading-tight">
-              Start monitoring{' '}
-              <span className="text-[#60a5fa]">in minutes.</span>
-            </h2>
-            <p className="text-lg text-white/80 leading-relaxed">
-              Set up in seconds. No credit card required.
-              Join hundreds of teams already using Infra to monitor their infrastructure.
+        <div className="relative">
+          <p className="text-sm font-medium uppercase tracking-wider opacity-80">
+            Welcome to Infra
+          </p>
+          <h2 className="mt-3 text-[2.25rem] font-bold leading-tight">
+            Set up in minutes.
+            <br />
+            Sleep well after.
+          </h2>
+          <p className="mt-4 max-w-md text-[0.9375rem] opacity-90">
+            Create your account and we'll start watching over your servers,
+            databases, and storage right away.
+          </p>
+        </div>
+
+        <div className="relative space-y-4">
+          <Promise
+            icon={CheckCircle2}
+            text="No credit card needed to get started"
+          />
+          <Promise
+            icon={ShieldCheck}
+            text="Your data is encrypted end to end"
+          />
+          <Promise
+            icon={Sparkles}
+            text="Cancel anytime — no questions, no fuss"
+          />
+        </div>
+      </div>
+
+      {/* Right — Form */}
+      <div className="flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-10 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm">
+              <Cloud className="h-5 w-5" aria-hidden />
+            </div>
+            <div>
+              <p className="text-[1.0625rem] font-semibold text-fg">Infra</p>
+              <p className="text-xs text-fg-muted">by Jetimworks</p>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-[2rem] font-bold leading-tight text-fg tracking-tight">
+              Create your account
+            </h1>
+            <p className="mt-2 text-[0.9375rem] text-fg-muted">
+              A few details and you're in. We'll never share your information.
             </p>
           </div>
 
-          {/* Features */}
-          <div className="flex flex-col gap-4 mt-12">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-white/90">Free 14-day trial, no credit card needed</p>
+          {registerError ? (
+            <div
+              role="alert"
+              className="mb-6 rounded-md border border-danger-soft bg-danger-soft p-3 text-sm text-danger-fg"
+            >
+              {registerError}
             </div>
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-white/90">Setup in less than 5 minutes</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-white/90">Cancel anytime, no questions asked</p>
-            </div>
-          </div>
-        </div>
+          ) : null}
 
-        {/* Decorative Elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
-
-      {/* Right Side - Form */}
-      <div className="flex w-full lg:w-[45%] items-center justify-center p-8 bg-[#faf8f5]">
-        <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-[#2563eb] flex items-center justify-center shadow-lg shadow-[#2563eb]/20">
-                <span className="text-white font-bold text-lg">I</span>
-              </div>
-              <span className="text-xl font-semibold text-[#1a1a2e]">{APP_FULL_NAME}</span>
-            </div>
-          </div>
-
-          {/* Heading */}
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-[#1a1a2e] mb-3 tracking-tight">Create account</h1>
-            <p className="text-[#64748b] text-lg">Get started with Infra today.</p>
-          </div>
-
-          {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="first_name" className="text-[#4a5568] font-medium">First name</Label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                  <Input
-                    id="first_name"
-                    placeholder="John"
-                    error={errors.first_name?.message}
-                    className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                    {...register("first_name")}
-                  />
-                </div>
-                {errors.first_name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.first_name.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="last_name" className="text-[#4a5568] font-medium">Last name</Label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                  <Input
-                    id="last_name"
-                    placeholder="Doe"
-                    error={errors.last_name?.message}
-                    className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                    {...register("last_name")}
-                  />
-                </div>
-                {errors.last_name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.last_name.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#4a5568] font-medium">Email address</Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field
+                label="First name"
+                htmlFor="first_name"
+                required
+                error={errors.first_name?.message}
+              >
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  error={errors.email?.message}
-                  className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                  {...register("email")}
+                  id="first_name"
+                  placeholder="Jane"
+                  autoComplete="given-name"
+                  leftIcon={User}
+                  aria-invalid={errors.first_name ? "true" : undefined}
+                  {...register("first_name")}
                 />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-              )}
+              </Field>
+              <Field
+                label="Last name"
+                htmlFor="last_name"
+                required
+                error={errors.last_name?.message}
+              >
+                <Input
+                  id="last_name"
+                  placeholder="Doe"
+                  autoComplete="family-name"
+                  leftIcon={User}
+                  aria-invalid={errors.last_name ? "true" : undefined}
+                  {...register("last_name")}
+                />
+              </Field>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-[#4a5568] font-medium">Phone number</Label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+14155551234"
-                  error={errors.phone?.message}
-                  className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                  {...register("phone")}
-                />
-              </div>
-              {errors.phone && (
-                <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
-              )}
-            </div>
+            <Field
+              label="Email address"
+              htmlFor="email"
+              required
+              error={errors.email?.message}
+            >
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                autoComplete="email"
+                leftIcon={Mail}
+                aria-invalid={errors.email ? "true" : undefined}
+                {...register("email")}
+              />
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#4a5568] font-medium">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Min 8 characters"
-                  error={errors.password?.message}
-                  className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                  {...register("password")}
-                />
-              </div>
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
-              )}
-            </div>
+            <Field
+              label="Phone number"
+              htmlFor="phone"
+              required
+              hint="So we can reach you if something needs urgent attention"
+              error={errors.phone?.message}
+            >
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 555 123 4567"
+                autoComplete="tel"
+                leftIcon={Phone}
+                aria-invalid={errors.phone ? "true" : undefined}
+                {...register("phone")}
+              />
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm_password" className="text-[#4a5568] font-medium">Confirm password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  placeholder="Re-enter password"
-                  error={errors.confirm_password?.message}
-                  className="pl-12 h-12 bg-white border-[#e2e8f0] rounded-xl text-[#1a1a2e] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all"
-                  {...register("confirm_password")}
-                />
-              </div>
-              {errors.confirm_password && (
-                <p className="text-sm text-red-500 mt-1">{errors.confirm_password.message}</p>
-              )}
-            </div>
+            <Field
+              label="Choose a password"
+              htmlFor="password"
+              required
+              hint="At least 8 characters — a sentence works great"
+              error={errors.password?.message}
+            >
+              <Input
+                id="password"
+                type="password"
+                placeholder="At least 8 characters"
+                autoComplete="new-password"
+                leftIcon={Lock}
+                aria-invalid={errors.password ? "true" : undefined}
+                {...register("password")}
+              />
+            </Field>
+
+            <Field
+              label="Confirm password"
+              htmlFor="confirm_password"
+              required
+              error={errors.confirm_password?.message}
+            >
+              <Input
+                id="confirm_password"
+                type="password"
+                placeholder="Type it again"
+                autoComplete="new-password"
+                leftIcon={Lock}
+                aria-invalid={errors.confirm_password ? "true" : undefined}
+                {...register("confirm_password")}
+              />
+            </Field>
 
             <Button
               type="submit"
-              className="w-full h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium rounded-xl shadow-lg shadow-[#2563eb]/25 transition-all flex items-center justify-center gap-2 mt-6"
+              variant="primary"
+              size="lg"
+              fullWidth
               isLoading={isSubmitting}
+              rightIcon={ArrowRight}
             >
-              Create account
-              <ArrowRight className="h-4 w-4" />
+              {isSubmitting ? "Creating your account…" : "Create my account"}
             </Button>
           </form>
 
-          {/* Login Link */}
-          <p className="mt-8 text-center text-[#64748b]">
+          <p className="mt-8 text-center text-sm text-fg-muted">
             Already have an account?{" "}
-            <Link to="/login" className="text-[#2563eb] font-medium hover:underline">
+            <Link to="/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+function Promise({
+  icon: Icon,
+  text,
+}: {
+  icon: typeof CheckCircle2
+  text: string
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 backdrop-blur-sm">
+      <Icon className="h-5 w-5 opacity-90" aria-hidden />
+      <p className="text-sm font-medium opacity-95">{text}</p>
     </div>
   )
 }
