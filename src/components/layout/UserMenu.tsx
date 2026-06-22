@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { LogOut, User as UserIcon, ChevronDown } from "lucide-react"
 import { useAuth } from "../../auth/useAuth"
-import { cn, initials } from "../../lib/utils"
+import { initials } from "../../lib/utils"
 
 export function UserMenu() {
   const { user, logout } = useAuth()
@@ -59,9 +59,7 @@ export function UserMenu() {
               <Link
                 to="/account"
                 onClick={() => setOpen(false)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm text-fg hover:bg-surface-sunken"
-                )}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-fg hover:bg-surface-sunken"
               >
                 <UserIcon className="h-4 w-4 text-fg-muted" aria-hidden />
                 Account settings

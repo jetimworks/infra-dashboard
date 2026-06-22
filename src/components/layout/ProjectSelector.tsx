@@ -1,10 +1,18 @@
 import { Cloud } from "lucide-react"
+import { useEffect } from "react"
 import { useProject } from "../../contexts/ProjectContext"
 import { useProjects } from "../../queries/projects"
 
 export function ProjectSelector() {
   const { selectedProjectId, setSelectedProjectId } = useProject()
   const { data: projects, isLoading } = useProjects()
+
+  // Auto-select first project if none selected and projects are loaded
+  useEffect(() => {
+    if (projects && projects.length > 0 && selectedProjectId === null) {
+      setSelectedProjectId(projects[0].id)
+    }
+  }, [projects, selectedProjectId, setSelectedProjectId])
 
   return (
     <div className="relative flex items-center">

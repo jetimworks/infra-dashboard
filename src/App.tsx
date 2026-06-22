@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
+import { useEffect } from "react"
 import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
@@ -33,6 +34,13 @@ import { AdminInstanceSystemActionPage } from "./pages/admin/AdminInstanceSystem
 import { AdminSecurityAuditsPage } from "./pages/admin/AdminSecurityAuditsPage"
 
 export default function App() {
+  // Always use vibrant mode - remove old color mode preferences
+  useEffect(() => {
+    document.documentElement.classList.add("vibrant")
+    localStorage.removeItem("colorMode")
+    localStorage.removeItem("colorModePopupShown")
+  }, [])
+
   return (
     <BrowserRouter>
       <AuthProvider>
