@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom"
 import { ChevronRight, Lock, RefreshCw, ShieldCheck } from "lucide-react"
+import { toast } from "sonner"
 import { useState } from "react"
 import { useInstance } from "../queries/instances"
 import { useSecurityCheck } from "../queries/security"
@@ -98,12 +99,11 @@ export function InstanceSecurityPage() {
         <Button
           variant="outline"
           size="sm"
+          leftIcon={RefreshCw}
           onClick={() => {
             setRefreshNonce((n) => n + 1)
-            securityQ.refetch()
+            securityQ.refetch().then(() => toast.success("Security scan complete"))
           }}
-          isLoading={securityQ.isFetching}
-          leftIcon={RefreshCw}
         >
           Check now
         </Button>

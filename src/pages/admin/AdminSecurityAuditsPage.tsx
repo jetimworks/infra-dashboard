@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { toast } from "sonner"
 import { Link } from "react-router-dom"
 import {
   ChevronRight,
@@ -192,10 +193,9 @@ function AuditDrawer({
                 // query key stays stable but the underlying request fires.
                 requestAnimationFrame(() => {
                   setRefresh(true)
-                  auditQ.refetch()
+                  auditQ.refetch().then(() => toast.success("Security scan complete"))
                 })
               }}
-              isLoading={auditQ.isFetching}
             >
               Check now
             </Button>
