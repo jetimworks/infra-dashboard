@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import { Menu } from "lucide-react"
 import { Breadcrumb, type BreadcrumbItem } from "./Breadcrumb"
 import { UserMenu } from "./UserMenu"
+import { ProjectSelector } from "./ProjectSelector"
 
 export interface TopNavProps {
   onOpenMobileSidebar?: () => void
@@ -25,6 +26,7 @@ export function TopNav({ onOpenMobileSidebar }: TopNavProps) {
         >
           <Menu className="h-5 w-5" aria-hidden />
         </button>
+        <ProjectSelector />
         <Breadcrumb items={items} />
       </div>
       <div className="flex items-center gap-2">

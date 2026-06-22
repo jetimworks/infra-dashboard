@@ -128,7 +128,12 @@ export async function apiGet<T>(
   url: string,
   params?: object
 ): Promise<T> {
-  const res = await apiClient.get<T>(url, { params })
+  const snakeParams = params
+    ? Object.fromEntries(
+        Object.entries(params).map(([k, v]) => [k.replace(/([A-Z])/g, "_$1").toLowerCase(), v])
+      )
+    : undefined
+  const res = await apiClient.get<T>(url, { params: snakeParams })
   return res.data
 }
 

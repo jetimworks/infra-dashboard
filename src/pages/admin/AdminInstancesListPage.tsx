@@ -15,6 +15,7 @@ import { useProjects } from "../../queries/projects"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Input } from "../../components/ui/Input"
 import { SegmentedControl } from "../../components/ui/SegmentedControl"
+import { AdminTabs } from "../../components/layout/AdminTabs"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
@@ -82,6 +83,8 @@ export function AdminInstancesListPage() {
 
   return (
     <div className="space-y-6">
+      <AdminTabs />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">

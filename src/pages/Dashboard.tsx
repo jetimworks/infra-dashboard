@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { useAuth } from "../auth/useAuth"
+import { useProject } from "../contexts/ProjectContext"
 import { useProjects } from "../queries/projects"
 import { useInstances } from "../queries/instances"
 import { useActions } from "../queries/actions"
@@ -76,18 +77,41 @@ function statusCopy(status: OverallStatus, count: number): {
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const { selectedProjectId } = useProject()
   const projectsQ = useProjects()
   const instancesQ = useInstances()
   const actionsQ = useActions({ limit: 5 })
 
+  const projects = projectsQ.data ?? []
+  const allInstances = instancesQ.data ?? []
+  const instances = useMemo(
+    () =>
+      selectedProjectId
+        ? allInstances.filter((i) => i.project_id === selectedProjectId)
+        : allInstances,
+    [allInstances, selectedProjectId]
+  )
+  const recentActions = useMemo(() => {
+    const actions = actionsQ.data?.data ?? []
+    if (!selectedProjectId) return actions
+    const projectInstanceIds = new Set(
+      allInstances
+        .filter((i) => i.project_id === selectedProjectId)
+        .map((i) => i.id)
+    )
+    return actions.filter((a) => projectInstanceIds.has(a.instance_id))
+  }, [actionsQ.data, allInstances, selectedProjectId])
+
   const overall = useMemo(
-    () => overallStatus(instancesQ.data),
-    [instancesQ.data]
+    () => overallStatus(instances),
+    [instances]
   )
   const hero = useMemo(
-    () => statusCopy(overall, instancesQ.data?.length ?? 0),
-    [overall, instancesQ.data?.length]
+    () => statusCopy(overall, instances.length),
+    [overall, instances.length]
   )
+  const firstName = user?.first_name ?? ""
+  const HeroIcon = hero.icon
 
   if (projectsQ.isLoading || instancesQ.isLoading) {
     return <LoadingPage label="Checking on your servers…" />
@@ -102,12 +126,6 @@ export function DashboardPage() {
     )
   }
 
-  const projects = projectsQ.data ?? []
-  const instances = instancesQ.data ?? []
-  const recentActions = actionsQ.data?.data ?? []
-  const firstName = user?.first_name ?? ""
-  const HeroIcon = hero.icon
-
   return (
     <div className="space-y-8">
       {/* Greeting */}
@@ -117,7 +135,9 @@ export function DashboardPage() {
           {firstName ? `, ${firstName}` : ""}
         </p>
         <h1 className="mt-1 text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
-          Your infrastructure
+          {selectedProjectId
+            ? projects.find((p) => p.id === selectedProjectId)?.name ?? "Project"
+            : "Your infrastructure"}
         </h1>
       </div>
 
@@ -169,24 +189,38 @@ export function DashboardPage() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard icon={Cloud} label="Projects" value={projects.length} to="/projects" />
-        <StatCard icon={Server} label="Servers and services" value={instances.length} to="/instances" />
+        <StatCard
+          icon={Cloud}
+          label="Projects"
+          value={selectedProjectId ? 1 : projects.length}
+          to={selectedProjectId ? `/projects/${selectedProjectId}` : "/projects"}
+        />
+        <StatCard
+          icon={Server}
+          label="Servers and services"
+          value={instances.length}
+          to={selectedProjectId ? `/instances?project_id=${selectedProjectId}` : "/instances"}
+        />
         <StatCard icon={Activity} label="Recent actions" value={recentActions.length} to="/activity" />
       </div>
 
       {/* Projects */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[1.25rem] font-semibold text-fg">Your projects</h2>
-          <Link
-            to="/projects"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-          >
-            All projects
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
+          <h2 className="text-[1.25rem] font-semibold text-fg">
+            {selectedProjectId ? "This project" : "Your projects"}
+          </h2>
+          {!selectedProjectId && (
+            <Link
+              to="/projects"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              All projects
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          )}
         </div>
-        {projects.length === 0 ? (
+        {(selectedProjectId ? projects.filter((p) => p.id === selectedProjectId) : projects).length === 0 ? (
           <Card>
             <EmptyState
               icon={Sparkles}
@@ -196,8 +230,8 @@ export function DashboardPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.slice(0, 6).map((project) => {
-              const projectInstances = instances.filter(
+            {(selectedProjectId ? projects.filter((p) => p.id === selectedProjectId) : projects).slice(0, 6).map((project) => {
+              const projectInstances = allInstances.filter(
                 (i) => i.project_id === project.id
               )
               return (

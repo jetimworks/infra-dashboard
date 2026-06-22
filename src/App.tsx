@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
 import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
 import { AppShell } from "./components/layout/AppShell"
-import { AdminLayout } from "./components/layout/AdminLayout"
 import { RequireAdmin } from "./components/feedback/RequireAdmin"
 
 import { LoginPage } from "./pages/Login"
@@ -82,14 +81,12 @@ export default function App() {
                 <Route path="/support" element={<SupportPage />} />
                 <Route path="/change-password" element={<ChangePasswordPage />} />
 
-                {/* Admin (gated) */}
+                {/* Admin (gated). Renders inside the same AppShell as
+                    every other page — admin uses in-page tabs for
+                    sub-navigation instead of a separate header strip. */}
                 <Route
                   path="/admin"
-                  element={
-                    <RequireAdmin>
-                      <AdminLayout />
-                    </RequireAdmin>
-                  }
+                  element={<RequireAdmin><Outlet /></RequireAdmin>}
                 >
                   <Route index element={<AdminOverviewPage />} />
                   <Route path="users" element={<AdminUsersPage />} />

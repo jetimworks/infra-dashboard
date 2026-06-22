@@ -10,8 +10,7 @@ export interface RequireAdminProps {
 
 /**
  * Route guard. Non-staff users are redirected to /dashboard with a toast.
- * Mirrors the existing ProtectedRoute pattern so admins can be wrapped in
- * AppShell or AdminLayout as needed.
+ * Mirrors the existing ProtectedRoute pattern.
  */
 export function RequireAdmin({ children }: RequireAdminProps) {
   const { user, isLoading } = useAuth()

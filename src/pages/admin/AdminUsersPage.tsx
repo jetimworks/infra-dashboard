@@ -5,6 +5,7 @@ import { z } from "zod"
 import { Plus, Shield, UserPlus } from "lucide-react"
 import { useAdminUsers, useCreateUser, useUpdateUser } from "../../queries/admin"
 import { Card } from "../../components/ui/Card"
+import { AdminTabs } from "../../components/layout/AdminTabs"
 import { Button } from "../../components/ui/Button"
 import { Input, Field } from "../../components/ui/Input"
 import { LoadingPage } from "../../components/ui/LoadingState"
@@ -68,6 +69,8 @@ export function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
+      <AdminTabs />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">

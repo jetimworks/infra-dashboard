@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import {
   Database,
   Folder,
@@ -7,6 +8,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react"
+import { useProject } from "../contexts/ProjectContext"
 import { useInstances } from "../queries/instances"
 import { Card } from "../components/ui/Card"
 import { Input } from "../components/ui/Input"
@@ -28,12 +30,17 @@ const filterOptions: { value: Filter; label: string; icon?: LucideIcon }[] = [
 ]
 
 export function InstancesListPage() {
+  const [searchParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>("ALL")
   const [search, setSearch] = useState("")
 
-  const instancesQ = useInstances(
-    filter === "ALL" ? undefined : { type: filter }
-  )
+  const projectIdFromUrl = searchParams.get("project_id") ?? searchParams.get("projectId")
+  const { selectedProjectId } = useProject()
+  const effectiveProjectId = projectIdFromUrl ?? selectedProjectId ?? undefined
+  const instancesQ = useInstances({
+    ...(effectiveProjectId && { projectId: effectiveProjectId }),
+    ...(filter !== "ALL" && { type: filter }),
+  })
 
   const filtered = useMemo(() => {
     const all = instancesQ.data ?? []

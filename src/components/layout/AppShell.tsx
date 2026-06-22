@@ -4,10 +4,12 @@ import { X } from "lucide-react"
 import { Sidebar } from "./Sidebar"
 import { TopNav } from "./TopNav"
 import { ErrorBoundary } from "../feedback/ErrorBoundary"
+import { ProjectProvider } from "../../contexts/ProjectContext"
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   return (
+    <ProjectProvider>
     <div className="min-h-screen bg-bg text-fg">
       <Sidebar />
       <div className="lg:pl-60">
@@ -43,6 +45,7 @@ export function AppShell() {
         </div>
       ) : null}
     </div>
+    </ProjectProvider>
   )
 }
 

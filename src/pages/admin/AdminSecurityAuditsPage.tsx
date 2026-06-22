@@ -22,6 +22,7 @@ import { ErrorState } from "../../components/ui/ErrorState"
 import { EmptyState } from "../../components/ui/EmptyState"
 import { SegmentedControl } from "../../components/ui/SegmentedControl"
 import { StatusPill } from "../../components/ui/StatusPill"
+import { AdminTabs } from "../../components/layout/AdminTabs"
 import { Drawer } from "../../components/ui/Drawer"
 import { formatDate } from "../../lib/utils"
 import type { Instance } from "../../api/types"
@@ -59,6 +60,8 @@ export function AdminSecurityAuditsPage() {
 
   return (
     <div className="space-y-6">
+      <AdminTabs />
+
       <div>
         <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
           Security audits

@@ -8,6 +8,7 @@ import { useProjects, useCreateProject } from "../../queries/projects"
 import { useInstances } from "../../queries/instances"
 import { useAdminUsers } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
+import { AdminTabs } from "../../components/layout/AdminTabs"
 import { Button } from "../../components/ui/Button"
 import { Input, Field, Textarea } from "../../components/ui/Input"
 import { LoadingPage } from "../../components/ui/LoadingState"
@@ -78,6 +79,8 @@ export function AdminProjectsPage() {
 
   return (
     <div className="space-y-6">
+      <AdminTabs />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">

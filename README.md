@@ -72,8 +72,8 @@ src/
 │   │                   # Drawer, SegmentedControl, Tabs, Tooltip, Toast, Table, …
 │   ├── data/           # MetricTile, ChartContainer, InstanceCard, BackupItem, …
 │   ├── feedback/       # AsyncActionTracker, RequireAdmin, ErrorBoundary, PageStub
-│   ├── layout/         # AppShell, Sidebar, TopNav, Breadcrumb, UserMenu, AdminLayout,
-│   │                   # ProtectedRoute, PublicRoute
+│   ├── layout/         # AppShell, Sidebar, TopNav, Breadcrumb, UserMenu, AdminTabs,
+│   │                   # ProjectSelector, ProtectedRoute, PublicRoute
 │   └── theme/          # ThemeToggle
 │
 ├── contexts/           # ThemeContext (light/dark)

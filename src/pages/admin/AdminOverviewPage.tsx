@@ -16,6 +16,7 @@ import { useInstances } from "../../queries/instances"
 import { useActions } from "../../queries/actions"
 import { useAdminUsers } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
+import { AdminTabs } from "../../components/layout/AdminTabs"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { StatusPill } from "../../components/ui/StatusPill"
@@ -79,6 +80,8 @@ export function AdminOverviewPage() {
 
   return (
     <div className="space-y-6">
+      <AdminTabs />
+
       <div>
         <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
           Admin overview

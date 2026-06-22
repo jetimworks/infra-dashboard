@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react"
 import { Activity, Search, Filter } from "lucide-react"
-import { useActions } from "../queries/actions"
+import { useProject } from "../contexts/ProjectContext"
+import { useInstances } from "../queries/instances"
+import { useActions, useInstanceActions } from "../queries/actions"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { Input } from "../components/ui/Input"
 import { SegmentedControl } from "../components/ui/SegmentedControl"
@@ -21,21 +23,36 @@ const statusOptions = [
 ]
 
 export function ActivityPage() {
+  const { selectedProjectId } = useProject()
   const [page, setPage] = useState(0)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [search, setSearch] = useState("")
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
 
   const limit = 25
   const offset = page * limit
 
-  const actionsQ = useActions({
-    limit,
-    offset,
-    status:
-      statusFilter === "all"
-        ? undefined
-        : (statusFilter.toUpperCase() as ActionStatus),
-  })
+  const instancesQ = useInstances(
+    selectedProjectId ? { projectId: selectedProjectId } : undefined
+  )
+
+  const actionsQ = selectedInstanceId
+    ? useInstanceActions(selectedInstanceId, {
+        limit,
+        offset,
+        status:
+          statusFilter === "all"
+            ? undefined
+            : (statusFilter.toUpperCase() as ActionStatus),
+      })
+    : useActions({
+        limit,
+        offset,
+        status:
+          statusFilter === "all"
+            ? undefined
+            : (statusFilter.toUpperCase() as ActionStatus),
+      })
 
   const all = useMemo(() => actionsQ.data?.data ?? [], [actionsQ.data])
   const total = actionsQ.data?.total ?? 0
@@ -51,6 +68,8 @@ export function ActivityPage() {
         (a.error_message ?? "").toLowerCase().includes(term)
     )
   }, [all, search])
+
+  const instances = instancesQ.data ?? []
 
   if (actionsQ.isLoading) return <LoadingPage label="Loading activity…" />
   if (actionsQ.isError) {
@@ -73,6 +92,38 @@ export function ActivityPage() {
           Everything that's happened across your infrastructure, newest first.
         </p>
       </div>
+
+      {/* Instance selector — only enabled once a project is selected */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filter by instance</CardTitle>
+        </CardHeader>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          {!selectedProjectId ? (
+            <p className="text-sm text-fg-muted">
+              Select a project from the top bar to filter by instance.
+            </p>
+          ) : instancesQ.isLoading ? (
+            <p className="text-sm text-fg-muted">Loading instances…</p>
+          ) : instances.length === 0 ? (
+            <p className="text-sm text-fg-muted">No instances in this project.</p>
+          ) : (
+            <select
+              className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              value={selectedInstanceId ?? ""}
+              onChange={(e) => setSelectedInstanceId(e.target.value || null)}
+              aria-label="Select instance"
+            >
+              <option value="">All instances</option>
+              {instances.map((inst) => (
+                <option key={inst.id} value={inst.id}>
+                  {inst.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </Card>
 
       <Card>
         <CardHeader>
