@@ -26,13 +26,14 @@ export function Tooltip({
             side={side}
             align={align}
             sideOffset={6}
+            style={{ backgroundColor: "#ffffff" }}
             className={cn(
-              "z-50 max-w-xs rounded-md bg-fg px-2.5 py-1.5 text-xs text-fg-on-accent shadow-[var(--shadow-modal)] animate-fade-in",
+              "z-50 max-w-xs rounded-md border border-border px-4 py-3 text-sm leading-relaxed text-fg shadow-[var(--shadow-modal)] animate-fade-in font-medium dark:border-[#334155]",
               className
             )}
           >
             {content}
-            <TooltipPrimitive.Arrow className="fill-fg" />
+            <TooltipPrimitive.Arrow style={{ fill: "#ffffff" }} />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

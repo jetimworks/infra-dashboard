@@ -64,6 +64,118 @@ const overallStatusLabel: Record<SecurityOverallStatus, string> = {
   action_required: "Action needed",
 }
 
+const METRIC_HELP: Record<string, { label: string; unit: string; help: string }> = {
+  // Redis
+  redis_connected_clients: { label: "Connected clients", unit: "", help: "How many clients are connected to the cache right now." },
+  redis_keys_total: { label: "Total keys", unit: "", help: "How many keys are stored in the cache." },
+  redis_memory_bytes: { label: "Memory used", unit: "MB", help: "Amount of memory the cache is currently using." },
+  redis_ping: { label: "Response time", unit: "ms", help: "How long the cache takes to respond to a ping." },
+  redis_uptime_in_seconds: { label: "Uptime", unit: "hrs", help: "How long the cache has been running." },
+  redis_mem_fragmentation_ratio: { label: "Memory fragmentation", unit: "", help: "Ratio of memory used by Redis vs. what the OS allocated." },
+
+  // VPS (servers) - with prefix
+  vps_ram: { label: "Memory", unit: "%", help: "How much of the server's memory is currently in use." },
+  vps_cpu: { label: "CPU", unit: "%", help: "How busy the server's processors are right now." },
+  vps_storage: { label: "Storage", unit: "%", help: "How full the server's disk is." },
+  vps_ping: { label: "Response time", unit: "ms", help: "How long the server takes to respond." },
+  vps_load_average: { label: "Load average", unit: "", help: "Average system load over the last minute." },
+  vps_swap: { label: "Swap", unit: "%", help: "How much swap space is being used." },
+  vps_disk_io_read: { label: "Disk read", unit: "MB/s", help: "How fast data is being read from disk." },
+  vps_disk_io_write: { label: "Disk write", unit: "MB/s", help: "How fast data is being written to disk." },
+  vps_network_rx: { label: "Network in", unit: "Mbps", help: "How much data the server is receiving." },
+  vps_network_tx: { label: "Network out", unit: "Mbps", help: "How much data the server is sending." },
+
+  // VPS (servers) - generic aliases without prefix
+  ram: { label: "Memory", unit: "%", help: "How much of the server's memory is currently in use." },
+  cpu: { label: "CPU", unit: "%", help: "How busy the server's processors are right now." },
+  storage: { label: "Storage", unit: "%", help: "How full the server's disk is." },
+  ping: { label: "Response time", unit: "ms", help: "How long the server takes to respond." },
+  load_average: { label: "Load average", unit: "", help: "Average system load over the last minute." },
+  swap: { label: "Swap", unit: "%", help: "How much swap space is being used." },
+  disk_io_read: { label: "Disk read", unit: "MB/s", help: "How fast data is being read from disk." },
+  disk_io_write: { label: "Disk write", unit: "MB/s", help: "How fast data is being written to disk." },
+  network_rx: { label: "Network in", unit: "Mbps", help: "How much data the server is receiving." },
+  network_tx: { label: "Network out", unit: "Mbps", help: "How much data the server is sending." },
+
+  // RDS (databases)
+  rds_connections: { label: "Connections", unit: "", help: "How many clients are connected to the database right now." },
+  rds_cache_hit: { label: "Cache hit rate", unit: "%", help: "How often the database finds data in its cache instead of hitting the disk." },
+  rds_memory_bytes: { label: "Memory used", unit: "MB", help: "Amount of memory the database is currently using." },
+  rds_disk_usage: { label: "Disk usage", unit: "GB", help: "How much disk space the database is using." },
+  rds_queries: { label: "Queries/sec", unit: "", help: "How many queries the database handles per second." },
+  rds_slow_queries: { label: "Slow queries", unit: "", help: "Number of queries that took longer than expected." },
+  rds_active_transactions: { label: "Active transactions", unit: "", help: "How many database transactions are currently running." },
+  rds_connection_test: { label: "Connection test", unit: "", help: "Whether the database connection is working." },
+  // RDS - generic aliases
+  connections: { label: "Connections", unit: "", help: "How many clients are connected to the database right now." },
+  cache_hit: { label: "Cache hit rate", unit: "%", help: "How often the database finds data in its cache instead of hitting the disk." },
+  memory_bytes: { label: "Memory used", unit: "MB", help: "Amount of memory the database is currently using." },
+  queries: { label: "Queries/sec", unit: "", help: "How many queries the database handles per second." },
+  slow_queries: { label: "Slow queries", unit: "", help: "Number of queries that took longer than expected." },
+  connection_test: { label: "Connection test", unit: "", help: "Whether the database connection is working." },
+
+  // STORAGE
+  storage_used: { label: "Used", unit: "%", help: "How full the storage bucket is." },
+  storage_size_bytes: { label: "Total size", unit: "GB", help: "Total capacity of the storage bucket." },
+  storage_object_count: { label: "Objects", unit: "", help: "How many files or objects are stored." },
+  storage_last_sync: { label: "Last sync", unit: "", help: "When the storage was last synchronized." },
+  // STORAGE - generic aliases
+  used: { label: "Used", unit: "%", help: "How full the storage bucket is." },
+  size_bytes: { label: "Total size", unit: "GB", help: "Total capacity of the storage bucket." },
+  object_count: { label: "Objects", unit: "", help: "How many files or objects are stored." },
+  last_sync: { label: "Last sync", unit: "", help: "When the storage was last synchronized." },
+
+  // Common percent-based metrics
+  cpu_percent: { label: "CPU", unit: "%", help: "How busy the processor is right now." },
+  memory_percent: { label: "Memory", unit: "%", help: "How much memory is currently in use." },
+  disk_percent: { label: "Disk", unit: "%", help: "How full the disk is." },
+  swap_percent: { label: "Swap", unit: "%", help: "How much swap space is being used." },
+  redis_memory_percent: { label: "Memory", unit: "%", help: "How much of the cache memory is in use." },
+  redis_fragmentation: { label: "Fragmentation", unit: "", help: "Memory fragmentation ratio." },
+
+  // Ping/monitoring metrics
+  http_status: { label: "HTTP status", unit: "", help: "Whether the endpoint is responding with a valid status code." },
+  ping_domain_ms: { label: "Domain ping", unit: "ms", help: "How long the domain takes to respond." },
+  ping_ip_ms: { label: "IP ping", unit: "ms", help: "How long the IP address takes to respond." },
+}
+
+function metricHelp(metricName: string) {
+  const info = METRIC_HELP[metricName]
+  if (info) return info
+  return { label: metricName, unit: "", help: "" }
+}
+
+function formatMetricValue(metricName: string, value: number | null): string | number {
+  if (value == null) return "—"
+
+  // Memory metrics in bytes -> MB
+  if (metricName.includes("memory_bytes") || metricName.includes("memory_actual") || metricName.includes("memory_max")) {
+    return Math.round(value / (1024 * 1024))
+  }
+
+  // Storage size in bytes -> GB
+  if (metricName === "storage_size_bytes" || metricName === "size_bytes") {
+    return (value / (1024 * 1024 * 1024)).toFixed(2)
+  }
+
+  // Uptime in seconds -> hours
+  if (metricName.includes("uptime_in_seconds")) {
+    return (value / 3600).toFixed(2)
+  }
+
+  // All percentage and decimal values -> 2 decimals
+  if (metricName.includes("rate") || metricName.includes("cache_hit") || metricName.includes("percent") || metricName.includes("ratio") || metricName.includes("ms") || metricName.includes("load_average") || metricName.includes(" fragmentation")) {
+    return value.toFixed(2)
+  }
+
+  // Disk usage in bytes -> GB
+  if (metricName.includes("disk_usage")) {
+    return (value / (1024 * 1024 * 1024)).toFixed(2)
+  }
+
+  return value
+}
+
 export function InstanceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -230,14 +342,19 @@ function OverviewTab({
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Object.values(metrics).slice(0, 4).map((m) => (
-              <MetricTile
-                key={m.metric_name}
-                label={m.metric_name}
-                value={m.value != null ? String(m.value) : "—"}
-                status={m.success ? "ok" : "danger"}
-              />
-            ))}
+            {Object.values(metrics).slice(0, 4).map((m) => {
+              const info = metricHelp(m.metric_name)
+              return (
+                <MetricTile
+                  key={m.metric_name}
+                  label={info.label}
+                  value={formatMetricValue(m.metric_name, m.value)}
+                  unit={info.unit}
+                  help={info.help}
+                  status={m.success ? "ok" : "danger"}
+                />
+              )
+            })}
           </div>
         )}
       </section>

@@ -72,22 +72,25 @@ export function InstancesListPage() {
     setSearchParams(newParams, { replace: true })
   }
 
+  // Always fetch ALL instances (no type filter) so counts stay stable
   const instancesQ = useInstances({
     ...(effectiveProjectId && { projectId: effectiveProjectId }),
-    ...(activeFilter !== "ALL" && { type: activeFilter }),
   })
 
+  // Filter client-side based on active filter and search
   const filtered = useMemo(() => {
     const all = instancesQ.data ?? []
     const term = search.trim().toLowerCase()
-    if (!term) return all
-    return all.filter(
-      (i) =>
+    return all.filter((i) => {
+      const matchesType = activeFilter === "ALL" || i.type === activeFilter
+      const matchesSearch =
+        !term ||
         i.name.toLowerCase().includes(term) ||
         (i.host ?? "").toLowerCase().includes(term) ||
         (i.domain ?? "").toLowerCase().includes(term)
-    )
-  }, [instancesQ.data, search])
+      return matchesType && matchesSearch
+    })
+  }, [instancesQ.data, activeFilter, search])
 
   if (instancesQ.isLoading) return <LoadingPage label="Loading your infrastructure…" />
   if (instancesQ.isError) {
@@ -156,7 +159,11 @@ export function InstancesListPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="px-4 py-8 text-center text-sm text-fg-muted">
-                No matches for "{search}".
+                {search
+                  ? `No matches for "${search}".`
+                  : activeFilter === "ALL"
+                    ? "No resources yet."
+                    : `No ${activeFilter === "VPS" ? "servers" : activeFilter === "RDS" ? "databases" : activeFilter === "REDIS" ? "caches" : "storage"} in this project.`}
               </p>
             </Card>
           ) : (

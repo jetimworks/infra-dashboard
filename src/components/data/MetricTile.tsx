@@ -75,21 +75,19 @@ export function MetricTile({
       )}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[0.8125rem] text-fg-muted">
-          {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
-          <span>{label}</span>
-        </div>
         {help ? (
-          <Tooltip content={help}>
-            <button
-              type="button"
-              className="text-fg-subtle hover:text-fg-muted"
-              aria-label={`About ${label}`}
-            >
-              <span className="text-xs underline decoration-dotted">what's this</span>
-            </button>
+          <Tooltip content={help} side="top">
+            <div className="flex items-center gap-1.5 text-[0.8125rem] text-fg-muted cursor-help">
+              {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
+              <span>{label}</span>
+            </div>
           </Tooltip>
-        ) : null}
+        ) : (
+          <div className="flex items-center gap-1.5 text-[0.8125rem] text-fg-muted">
+            {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
+            <span>{label}</span>
+          </div>
+        )}
       </div>
       <div className="flex items-baseline gap-1.5">
         <span className={cn("text-[1.5rem] font-semibold", statusText[status])}>
