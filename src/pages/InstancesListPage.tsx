@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import {
   Database,
@@ -29,17 +29,52 @@ const filterOptions: { value: Filter; label: string; icon?: LucideIcon }[] = [
   { value: "STORAGE", label: "Storage", icon: Folder },
 ]
 
+const validFilters: Filter[] = ["ALL", "VPS", "RDS", "REDIS", "STORAGE"]
+
 export function InstancesListPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>("ALL")
   const [search, setSearch] = useState("")
 
   const projectIdFromUrl = searchParams.get("project_id") ?? searchParams.get("projectId")
   const { selectedProjectId } = useProject()
   const effectiveProjectId = projectIdFromUrl ?? selectedProjectId ?? undefined
+
+  // Derive filter from URL directly — don't try to sync state during render
+  const typeParam = searchParams.get("type")
+  const filterFromUrl: Filter =
+    typeParam && validFilters.includes(typeParam as Filter)
+      ? (typeParam as Filter)
+      : "ALL"
+
+  // Use URL filter when available, otherwise use state
+  const activeFilter = searchParams.has("type") ? filterFromUrl : filter
+
+  // When project changes, clear URL type param so we see all
+  useEffect(() => {
+    if (searchParams.has("type")) {
+      const newParams = new URLSearchParams(searchParams)
+      newParams.delete("type")
+      setSearchParams(newParams, { replace: true })
+    }
+    setFilter("ALL")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveProjectId])
+
+  const handleFilterChange = (newFilter: Filter) => {
+    setFilter(newFilter)
+    const newParams = new URLSearchParams(searchParams)
+    if (newFilter === "ALL") {
+      newParams.delete("type")
+    } else {
+      newParams.set("type", newFilter)
+    }
+    setSearchParams(newParams, { replace: true })
+  }
+
   const instancesQ = useInstances({
     ...(effectiveProjectId && { projectId: effectiveProjectId }),
-    ...(filter !== "ALL" && { type: filter }),
+    ...(activeFilter !== "ALL" && { type: activeFilter }),
   })
 
   const filtered = useMemo(() => {
@@ -99,8 +134,8 @@ export function InstancesListPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <SegmentedControl
               ariaLabel="Filter by type"
-              value={filter}
-              onChange={setFilter}
+              value={activeFilter}
+              onChange={handleFilterChange}
               options={filterOptions.map((o) => ({
                 ...o,
                 label: `${o.label} · ${counts[o.value]}`,

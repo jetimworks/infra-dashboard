@@ -6,18 +6,14 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  Cloud,
   Server,
-  Sparkles,
 } from "lucide-react"
 import { useAuth } from "../auth/useAuth"
 import { useProject } from "../contexts/ProjectContext"
-import { useProjects } from "../queries/projects"
 import { useInstances } from "../queries/instances"
 import { useActions } from "../queries/actions"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { LoadingPage } from "../components/ui/LoadingState"
-import { EmptyState } from "../components/ui/EmptyState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { cn } from "../lib/utils"
@@ -78,11 +74,9 @@ function statusCopy(status: OverallStatus, count: number): {
 export function DashboardPage() {
   const { user } = useAuth()
   const { selectedProjectId } = useProject()
-  const projectsQ = useProjects()
   const instancesQ = useInstances()
   const actionsQ = useActions({ limit: 5 })
 
-  const projects = projectsQ.data ?? []
   const allInstances = instancesQ.data ?? []
   const instances = useMemo(
     () =>
@@ -113,15 +107,15 @@ export function DashboardPage() {
   const firstName = user?.first_name ?? ""
   const HeroIcon = hero.icon
 
-  if (projectsQ.isLoading || instancesQ.isLoading) {
+  if (instancesQ.isLoading) {
     return <LoadingPage label="Checking on your servers…" />
   }
-  if (projectsQ.isError) {
+  if (instancesQ.isError) {
     return (
       <ErrorState
         title="We couldn't load your overview"
-        error={projectsQ.error as Error}
-        onRetry={() => projectsQ.refetch()}
+        error={instancesQ.error as Error}
+        onRetry={() => instancesQ.refetch()}
       />
     )
   }
@@ -135,9 +129,7 @@ export function DashboardPage() {
           {firstName ? `, ${firstName}` : ""}
         </p>
         <h1 className="mt-1 text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
-          {selectedProjectId
-            ? projects.find((p) => p.id === selectedProjectId)?.name ?? "Project"
-            : "Your infrastructure"}
+          Your infrastructure
         </h1>
       </div>
 
@@ -188,13 +180,7 @@ export function DashboardPage() {
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
-          icon={Cloud}
-          label="Projects"
-          value={selectedProjectId ? 1 : projects.length}
-          to={selectedProjectId ? `/projects/${selectedProjectId}` : "/projects"}
-        />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StatCard
           icon={Server}
           label="Servers and services"
@@ -203,73 +189,6 @@ export function DashboardPage() {
         />
         <StatCard icon={Activity} label="Recent actions" value={recentActions.length} to="/activity" />
       </div>
-
-      {/* Projects */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[1.25rem] font-semibold text-fg">
-            {selectedProjectId ? "This project" : "Your projects"}
-          </h2>
-          {!selectedProjectId && (
-            <Link
-              to="/projects"
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-            >
-              All projects
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-            </Link>
-          )}
-        </div>
-        {(selectedProjectId ? projects.filter((p) => p.id === selectedProjectId) : projects).length === 0 ? (
-          <Card>
-            <EmptyState
-              icon={Sparkles}
-              title="No projects yet"
-              description="When we set up your first server, database, or storage, it'll live in a project. Until then, this is where it will show up."
-            />
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(selectedProjectId ? projects.filter((p) => p.id === selectedProjectId) : projects).slice(0, 6).map((project) => {
-              const projectInstances = allInstances.filter(
-                (i) => i.project_id === project.id
-              )
-              return (
-                <Link
-                  key={project.id}
-                  to={`/projects/${project.id}`}
-                  className="block"
-                >
-                  <Card interactive padding="md">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
-                        <Cloud className="h-5 w-5" aria-hidden />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-[1.0625rem] font-semibold text-fg">
-                          {project.name}
-                        </h3>
-                        {project.description ? (
-                          <p className="mt-0.5 truncate text-xs text-fg-muted">
-                            {project.description}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center gap-2 text-xs text-fg-muted">
-                      <Server className="h-3.5 w-3.5" aria-hidden />
-                      <span>
-                        {projectInstances.length}{" "}
-                        {projectInstances.length === 1 ? "resource" : "resources"}
-                      </span>
-                    </div>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </section>
 
       {/* Recent activity */}
       <section>
@@ -307,7 +226,7 @@ function StatCard({
   value,
   to,
 }: {
-  icon: typeof Cloud
+  icon: typeof Server
   label: string
   value: number
   to: string

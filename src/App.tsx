@@ -12,8 +12,6 @@ import { ForgotPasswordPage } from "./pages/ForgotPassword"
 import { ChangePasswordPage } from "./pages/ChangePassword"
 
 import { DashboardPage } from "./pages/Dashboard"
-import { ProjectsListPage } from "./pages/ProjectsListPage"
-import { ProjectDetailPage } from "./pages/ProjectDetailPage"
 import { InstancesListPage } from "./pages/InstancesListPage"
 import { InstanceDetailPage } from "./pages/InstanceDetailPage"
 import { InstanceMetricsPage } from "./pages/InstanceMetricsPage"
@@ -60,8 +58,6 @@ export default function App() {
               <Route element={<AppShell />}>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/projects" element={<ProjectsListPage />} />
-                <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/instances" element={<InstancesListPage />} />
                 <Route path="/instances/:id" element={<InstanceDetailPage />} />
                 <Route

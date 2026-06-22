@@ -24,7 +24,6 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/projects", label: "Projects", icon: Cloud },
   { to: "/instances", label: "Infrastructure", icon: ShieldCheck },
   { to: "/activity", label: "Activity", icon: Activity, staffOnly: true },
   { to: "/support", label: "Support", icon: LifeBuoy },
@@ -66,10 +65,10 @@ export function Sidebar() {
                     to={item.to}
                     end={item.end}
                     className={cn(
-                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 border",
                       isActive
-                        ? "bg-primary-soft text-primary-soft-fg"
-                        : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                        ? "bg-primary-soft text-primary-soft-fg border-primary"
+                        : "text-fg-muted hover:bg-surface-sunken hover:text-fg border-transparent"
                     )}
                   >
                     <Icon className="h-4 w-4" aria-hidden />
