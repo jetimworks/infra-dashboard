@@ -3,12 +3,13 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import {
   Activity,
   ChevronRight,
+  ClipboardList,
   Database,
   Folder,
   HardDriveDownload,
   LineChart,
-  Send,
   type LucideIcon,
+  Plus,
   Server,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -19,10 +20,10 @@ import { useInstance } from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
 import { useSecurityCheck } from "../queries/security"
 import { useInstanceActions } from "../queries/actions"
+import { useActionRequests } from "../queries/action-requests"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { Tabs } from "../components/ui/Tabs"
 import { Button } from "../components/ui/Button"
-import { Input, Field, Textarea } from "../components/ui/Input"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
@@ -30,6 +31,8 @@ import { StatusPill } from "../components/ui/StatusPill"
 import { MetricTile } from "../components/data/MetricTile"
 import { SecurityFindingItem } from "../components/data/SecurityFindingItem"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
+import { ActionRequestCard } from "../components/data/ActionRequestCard"
+import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { formatBytes, formatRelative } from "../lib/utils"
 import type {
   InstanceType,
@@ -44,6 +47,7 @@ type TabValue =
   | "security"
   | "backups"
   | "activity"
+  | "action-requests"
   | "settings"
 
 const typeIcon: Record<InstanceType, LucideIcon> = {
@@ -187,6 +191,7 @@ export function InstanceDetailPage() {
   const metricsQ = useInstanceMetricsLatest(id)
   const securityQ = useSecurityCheck(id, refreshNonce > 0)
   const actionsQ = useInstanceActions(id, { limit: 50 })
+  const actionRequestsQ = useActionRequests({ instanceId: id })
 
   if (instanceQ.isLoading) return <LoadingPage label="Loading…" />
   if (instanceQ.isError) {
@@ -226,6 +231,7 @@ export function InstanceDetailPage() {
         ]
       : []),
     { value: "activity", label: "Activity", icon: Activity },
+    { value: "action-requests", label: "Action Requests", icon: ClipboardList },
     { value: "settings", label: "Settings", icon: SettingsIcon },
   ]
 
@@ -301,6 +307,14 @@ export function InstanceDetailPage() {
         <ActivityTab
           actions={actionsQ.data?.data ?? []}
           loading={actionsQ.isLoading}
+        />
+      ) : tab === "action-requests" ? (
+        <ActionRequestsTab
+          instanceId={id!}
+          instanceName={instance.name}
+          instanceType={instance.type}
+          actionRequests={actionRequestsQ.data?.data ?? []}
+          loading={actionRequestsQ.isLoading}
         />
       ) : (
         <SettingsTab instance={instance} />
@@ -583,11 +597,81 @@ function ActivityTab({
   )
 }
 
+function ActionRequestsTab({
+  instanceId,
+  instanceName,
+  instanceType,
+  actionRequests,
+  loading,
+}: {
+  instanceId: string
+  instanceName: string
+  instanceType: InstanceType
+  actionRequests: import("../api/types").ActionRequest[]
+  loading: boolean
+}) {
+  const [createOpen, setCreateOpen] = useState(false)
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={Plus}
+          onClick={() => setCreateOpen(true)}
+        >
+          New Request
+        </Button>
+      </div>
+      {loading ? (
+        <p className="text-center text-sm text-fg-muted py-6">Loading…</p>
+      ) : actionRequests.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={ClipboardList}
+            title="No action requests for this instance"
+            description="Create a request and it'll show up here."
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={Plus}
+                onClick={() => setCreateOpen(true)}
+              >
+                Create request
+              </Button>
+            }
+          />
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {actionRequests.map((ar) => (
+            <ActionRequestCard
+              key={ar.id}
+              actionRequest={ar}
+              showInstance
+              instanceName={instanceName}
+              instanceType={instanceType}
+            />
+          ))}
+        </div>
+      )}
+      <ActionRequestCreateDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        instanceId={instanceId}
+      />
+    </div>
+  )
+}
+
 function SettingsTab({
   instance,
 }: {
   instance: import("../api/types").Instance
 }) {
+  const [createOpen, setCreateOpen] = useState(false)
   const configRecord = instance.config as Record<string, unknown>
   const sizeBytes =
     typeof configRecord?.size_bytes === "number"
@@ -648,80 +732,32 @@ function SettingsTab({
         </dl>
       </Card>
 
-      {instance.type === "VPS" ? <RequestActionForm instanceName={instance.name} /> : null}
-    </div>
-  )
-}
-
-function RequestActionForm({ instanceName }: { instanceName: string }) {
-  const [subject, setSubject] = useState("Restart a service")
-  const [details, setDetails] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!details.trim()) {
-      toast.error("Please describe what you need.")
-      return
-    }
-    setSubmitting(true)
-    // Simulate a brief request. The real customer-facing workflow isn't
-    // built yet — the backend's /system-action endpoint requires admin, so
-    // for now we open the user's mail client with the request pre-filled.
-    const body = encodeURIComponent(
-      `Hi team,\n\nI'd like to request the following action on ${instanceName}:\n\n${details}\n\nThanks!`
-    )
-    const subj = encodeURIComponent(`[${instanceName}] ${subject}`)
-    window.location.href = `mailto:support@jetimworks.com?subject=${subj}&body=${body}`
-    toast.success("Opening your email client…")
-    setSubmitting(false)
-    setDetails("")
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Request an action</CardTitle>
-      </CardHeader>
-      <p className="text-sm text-fg-muted">
-        Need us to restart a service, install an update, or change a setting?
-        Tell us what you need and we'll get it done.
-      </p>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <Field label="What kind of request" htmlFor="request-subject">
-          <Input
-            id="request-subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="e.g. Restart nginx, install an update"
-          />
-        </Field>
-        <Field
-          label="Tell us more"
-          htmlFor="request-details"
-          required
-          hint="The more detail you give, the faster we can help."
-        >
-          <Textarea
-            id="request-details"
-            rows={4}
-            value={details}
-            onChange={(e) => setDetails(e.target.value)}
-            placeholder="What needs to happen, and why?"
-          />
-        </Field>
-        <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Request an action</CardTitle>
+        </CardHeader>
+        <p className="text-sm text-fg-muted">
+          Need us to restart a service, install an update, or change a setting?
+          Tell us what you need and we'll get it done.
+        </p>
+        <div className="mt-4">
           <Button
-            type="submit"
             variant="primary"
-            isLoading={submitting}
-            leftIcon={Send}
+            size="sm"
+            leftIcon={Plus}
+            onClick={() => setCreateOpen(true)}
           >
-            Send request
+            New Request
           </Button>
         </div>
-      </form>
-    </Card>
+      </Card>
+
+      <ActionRequestCreateDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        instanceId={instance.id}
+      />
+    </div>
   )
 }
 

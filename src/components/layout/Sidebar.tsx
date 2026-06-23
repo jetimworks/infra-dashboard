@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom"
 import {
   Activity,
+  ClipboardList,
   Cloud,
   HelpCircle,
   LayoutDashboard,
@@ -25,6 +26,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/instances", label: "Infrastructure", icon: ShieldCheck },
+  { to: "/action-requests", label: "Action Requests", icon: ClipboardList },
   { to: "/activity", label: "Activity", icon: Activity, staffOnly: true },
   { to: "/support", label: "Support", icon: LifeBuoy },
   { to: "/account", label: "Account", icon: Settings },

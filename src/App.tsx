@@ -23,6 +23,8 @@ import { ActivityPage } from "./pages/ActivityPage"
 import { AccountPage } from "./pages/AccountPage"
 import { SupportPage } from "./pages/SupportPage"
 import { NotFoundPage } from "./pages/NotFoundPage"
+import { ActionRequestsPage } from "./pages/ActionRequestsPage"
+import { ActionRequestDetailPage } from "./pages/ActionRequestDetailPage"
 
 import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage"
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage"
@@ -33,6 +35,7 @@ import { AdminInstanceEditPage } from "./pages/admin/AdminInstanceEditPage"
 import { AdminInstanceSshKeyPage } from "./pages/admin/AdminInstanceSshKeyPage"
 import { AdminInstanceSystemActionPage } from "./pages/admin/AdminInstanceSystemActionPage"
 import { AdminSecurityAuditsPage } from "./pages/admin/AdminSecurityAuditsPage"
+import { AdminActionRequestsPage } from "./pages/admin/AdminActionRequestsPage"
 
 export default function App() {
   // Always use vibrant mode - remove old color mode preferences
@@ -86,6 +89,8 @@ export default function App() {
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/support" element={<SupportPage />} />
                 <Route path="/change-password" element={<ChangePasswordPage />} />
+                <Route path="/action-requests" element={<ActionRequestsPage />} />
+                <Route path="/action-requests/:id" element={<ActionRequestDetailPage />} />
 
                 {/* Admin (gated). Renders inside the same AppShell as
                     every other page — admin uses in-page tabs for
@@ -120,6 +125,10 @@ export default function App() {
                   <Route
                     path="security-audits"
                     element={<AdminSecurityAuditsPage />}
+                  />
+                  <Route
+                    path="action-requests"
+                    element={<AdminActionRequestsPage />}
                   />
                 </Route>
 

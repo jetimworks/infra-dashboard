@@ -385,3 +385,45 @@ export interface ActionListParams {
   started_from?: string
   started_to?: string
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Action Requests
+// ──────────────────────────────────────────────────────────────────────────
+
+export type ActionRequestStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
+
+export interface AdminNote {
+  sender_id: string
+  sender_type: "user" | "admin"
+  message: string
+  created_at: string
+}
+
+export interface ActionRequest {
+  id: string
+  user_id: string
+  project_id: string | null
+  instance_id: string | null
+  title: string
+  description: string
+  status: ActionRequestStatus
+  admin_notes: AdminNote[]
+  created_at: string
+  updated_at: string
+}
+
+export interface ActionRequestListResponse {
+  data: ActionRequest[]
+}
+
+export interface CreateActionRequestInput {
+  title: string
+  description: string
+  project_id?: string | null
+  instance_id?: string | null
+}
+
+export interface UpdateActionRequestInput {
+  title?: string
+  status?: ActionRequestStatus
+}

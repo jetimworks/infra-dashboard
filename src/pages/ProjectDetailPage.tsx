@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom"
 import {
   Activity,
   ChevronRight,
+  ClipboardList,
   Cloud,
+  Plus,
   Server,
   Settings as SettingsIcon,
   type LucideIcon,
@@ -11,17 +13,21 @@ import {
 import { useProject } from "../queries/projects"
 import { useInstances } from "../queries/instances"
 import { useActions } from "../queries/actions"
+import { useActionRequests } from "../queries/action-requests"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { Tabs } from "../components/ui/Tabs"
+import { Button } from "../components/ui/Button"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
 import { InstanceCard } from "../components/data/InstanceCard"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
+import { ActionRequestCard } from "../components/data/ActionRequestCard"
+import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { formatRelative, formatDate } from "../lib/utils"
 import type { Instance, InstanceType } from "../api/types"
 
-type TabValue = "servers" | "activity" | "settings"
+type TabValue = "servers" | "activity" | "settings" | "action-requests"
 
 const instanceTypeOrder: InstanceType[] = ["VPS", "RDS", "REDIS", "STORAGE"]
 const instanceTypeLabel: Record<InstanceType, string> = {
@@ -34,6 +40,7 @@ const instanceTypeLabel: Record<InstanceType, string> = {
 const tabItems: { value: TabValue; label: string; icon: LucideIcon }[] = [
   { value: "servers", label: "Servers", icon: Server },
   { value: "activity", label: "Activity", icon: Activity },
+  { value: "action-requests", label: "Action Requests", icon: ClipboardList },
   { value: "settings", label: "Settings", icon: SettingsIcon },
 ]
 
@@ -44,6 +51,7 @@ export function ProjectDetailPage() {
   const projectQ = useProject(id)
   const instancesQ = useInstances({ projectId: id })
   const actionsQ = useActions({ limit: 100 })
+  const actionRequestsQ = useActionRequests({ projectId: id })
 
   if (projectQ.isLoading) return <LoadingPage label="Loading project…" />
   if (projectQ.isError) {
@@ -106,6 +114,13 @@ export function ProjectDetailPage() {
         <ServersTab instances={instances} />
       ) : tab === "activity" ? (
         <ActivityTab actions={projectActions} loading={actionsQ.isLoading} />
+      ) : tab === "action-requests" ? (
+        <ActionRequestsTab
+          projectId={id!}
+          projectName={project.name}
+          actionRequests={actionRequestsQ.data?.data ?? []}
+          loading={actionRequestsQ.isLoading}
+        />
       ) : (
         <SettingsTab project={project} />
       )}
@@ -258,6 +273,72 @@ function SettingsTab({ project }: { project: import("../api/types").Project }) {
         </a>
         .
       </p>
+    </div>
+  )
+}
+
+function ActionRequestsTab({
+  projectId,
+  projectName,
+  actionRequests,
+  loading,
+}: {
+  projectId: string
+  projectName: string
+  actionRequests: import("../api/types").ActionRequest[]
+  loading: boolean
+}) {
+  const [createOpen, setCreateOpen] = useState(false)
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={Plus}
+          onClick={() => setCreateOpen(true)}
+        >
+          New Request
+        </Button>
+      </div>
+      {loading ? (
+        <p className="text-center text-sm text-fg-muted py-6">Loading…</p>
+      ) : actionRequests.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={ClipboardList}
+            title="No action requests for this project"
+            description="Create a request and it'll show up here."
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={Plus}
+                onClick={() => setCreateOpen(true)}
+              >
+                Create request
+              </Button>
+            }
+          />
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {actionRequests.map((ar) => (
+            <ActionRequestCard
+              key={ar.id}
+              actionRequest={ar}
+              showProject
+              projectName={projectName}
+            />
+          ))}
+        </div>
+      )}
+      <ActionRequestCreateDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        projectId={projectId}
+      />
     </div>
   )
 }

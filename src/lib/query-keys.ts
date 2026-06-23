@@ -35,5 +35,9 @@ export const qk = {
     ["actions", filters ?? {}] as const,
   action: (id: string) => ["actions", id] as const,
 
+  actionRequests: (filters?: { project_id?: string; instance_id?: string }) =>
+    ["actionRequests", filters ?? {}] as const,
+  actionRequest: (id: string) => ["actionRequests", id] as const,
+
   adminUsers: () => ["admin", "users"] as const,
 }

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 import type { LucideIcon } from "lucide-react"
-import { Activity, Cloud, LayoutDashboard, Server, ShieldCheck, Users } from "lucide-react"
+import { Activity, ClipboardList, Cloud, LayoutDashboard, Server, ShieldCheck, Users } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 interface AdminTab {
@@ -16,6 +16,7 @@ const tabs: AdminTab[] = [
   { to: "/admin/projects", label: "Projects", icon: Cloud },
   { to: "/admin/instances", label: "Instances", icon: Server },
   { to: "/admin/security-audits", label: "Security audits", icon: ShieldCheck },
+  { to: "/admin/action-requests", label: "Action Requests", icon: ClipboardList },
   { to: "/activity", label: "Activity", icon: Activity },
 ]
 
