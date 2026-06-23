@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   { to: "/account", label: "Account", icon: Settings },
 ]
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const { user } = useAuth()
   const location = useLocation()
   const isStaff = user?.is_staff ?? false
@@ -41,7 +41,8 @@ export function Sidebar() {
     <aside
       className={cn(
         "hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 lg:left-0",
-        "border-r border-border/40 bg-surface"
+        "border-r border-border/40 bg-surface",
+        className
       )}
     >
       <div className="flex h-16 items-center gap-2.5 px-5">

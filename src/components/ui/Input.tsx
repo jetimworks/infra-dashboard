@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={cn(
               "flex h-11 w-full rounded-md border bg-surface px-3.5 text-[0.9375rem] text-fg",
-              "placeholder:text-fg-subtle",
+              "placeholder:text-fg-subtle/50",
               "transition-colors duration-150",
               "focus:outline-none focus:ring-2",
               "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
@@ -85,7 +85,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           className={cn(
             "flex w-full min-h-24 rounded-md border bg-surface px-3.5 py-2.5 text-[0.9375rem] text-fg",
-            "placeholder:text-fg-subtle",
+            "placeholder:text-fg-subtle/50",
             "transition-colors duration-150",
             "focus:outline-none focus:ring-2",
             "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",

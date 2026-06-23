@@ -9,6 +9,12 @@
   bg-primary/20 work out of the box.
 */
 
+/* Make Tailwind's dark: variant follow the .dark class on <html> (controlled by
+   ThemeContext), not the OS prefers-color-scheme media query. Without this,
+   dark:* utilities would apply whenever the system is in dark mode regardless
+   of the app's selected theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Surfaces — warm paper whites */
   --color-bg: 248 250 252;

@@ -21,7 +21,7 @@ export function TopNav({ onOpenMobileSidebar }: TopNavProps) {
         <button
           type="button"
           onClick={onOpenMobileSidebar}
-          className="rounded-md p-2 text-fg-muted hover:bg-surface-sunken hover:text-fg lg:hidden"
+          className="rounded-md p-2 text-fg hover:bg-surface-sunken hover:text-fg ring-1 ring-border/40 lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" aria-hidden />
