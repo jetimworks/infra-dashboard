@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Drawer } from "../ui/Drawer"
@@ -38,12 +38,16 @@ export function ActionRequestCreateDialog({
   const [descError, setDescError] = useState("")
   const [instanceError, setInstanceError] = useState("")
 
+  const wasOpen = useRef(false)
+
   // Sync state when dialog opens with new prefill values
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpen.current) {
       setTitle(initialTitle ?? "")
       setDescription(initialDescription ?? "")
     }
+    wasOpen.current = open
   }, [open, initialTitle, initialDescription])
 
   const handleClose = () => {
