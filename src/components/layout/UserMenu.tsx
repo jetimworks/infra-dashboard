@@ -48,7 +48,7 @@ export function UserMenu() {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-lg bg-surface border border-border/60 shadow-[var(--shadow-modal)] animate-fade-in"
+          className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-black border border-border/60 shadow-[var(--shadow-modal)] animate-fade-in"
         >
           <div className="border-b border-border/50 px-4 py-3">
             <p className="text-sm font-medium text-fg">{fullName}</p>
