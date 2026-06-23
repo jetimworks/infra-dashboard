@@ -232,6 +232,19 @@ function SettingsTab({ project }: { project: import("../api/types").Project }) {
               value={project.redis_memory}
             />
           ) : null}
+          {project.instance_type ? (
+            <DetailRow
+              label="Instance type"
+              value={project.instance_type}
+              mono
+            />
+          ) : null}
+          {project.billing_info ? (
+            <DetailRow
+              label="Billing"
+              value={project.billing_info}
+            />
+          ) : null}
         </dl>
       </Card>
       <p className="text-xs text-fg-subtle">

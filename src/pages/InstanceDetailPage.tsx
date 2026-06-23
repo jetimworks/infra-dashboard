@@ -35,6 +35,7 @@ import type {
   InstanceType,
   SecurityOverallStatus,
   InstanceMetric,
+  Action,
 } from "../api/types"
 
 type TabValue =
@@ -284,6 +285,7 @@ export function InstanceDetailPage() {
           metricsLoading={metricsQ.isLoading}
           security={securityQ.data}
           securityLoading={securityQ.isLoading}
+          actions={actionsQ.data?.data ?? []}
         />
       ) : tab === "metrics" ? (
         <MetricsTab instanceId={id!} type={instance.type} />
@@ -313,12 +315,14 @@ function OverviewTab({
   metricsLoading,
   security,
   securityLoading,
+  actions,
 }: {
   instanceType: InstanceType
   metrics?: Record<string, InstanceMetric>
   metricsLoading: boolean
   security?: import("../api/types").SecurityCheck
   securityLoading: boolean
+  actions: Action[]
 }) {
   return (
     <div className="space-y-6">
@@ -377,29 +381,38 @@ function OverviewTab({
           </Card>
         ) : (
           <Card>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <StatusPill
-                    status={security.overall_status}
-                    label={overallStatusLabel[security.overall_status]}
-                    size="md"
-                  />
+            {(() => {
+              const hasFailedActions = actions.some((a) => a.status === "FAILED")
+              const displayStatus: SecurityOverallStatus =
+                security.overall_status === "action_required" && !hasFailedActions
+                  ? "safe"
+                  : security.overall_status
+              return (
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <StatusPill
+                        status={displayStatus}
+                        label={overallStatusLabel[displayStatus]}
+                        size="md"
+                      />
+                    </div>
+                    <p className="mt-2 text-[0.9375rem] text-fg-muted">
+                      {displayStatus === "safe"
+                        ? "We didn't find anything that needs your attention."
+                        : displayStatus === "needs_attention"
+                          ? "A few things could use a look. Nothing urgent."
+                          : "There are issues that need your attention."}
+                    </p>
+                  </div>
+                  {security.last_checked_at ? (
+                    <p className="text-xs text-fg-subtle">
+                      Last checked {formatRelative(security.last_checked_at)}
+                    </p>
+                  ) : null}
                 </div>
-                <p className="mt-2 text-[0.9375rem] text-fg-muted">
-                  {security.overall_status === "safe"
-                    ? "We didn't find anything that needs your attention."
-                    : security.overall_status === "needs_attention"
-                      ? "A few things could use a look. Nothing urgent."
-                      : "There are issues that need your attention."}
-                </p>
-              </div>
-              {security.last_checked_at ? (
-                <p className="text-xs text-fg-subtle">
-                  Last checked {formatRelative(security.last_checked_at)}
-                </p>
-              ) : null}
-            </div>
+              )
+            })()}
           </Card>
         )}
       </section>

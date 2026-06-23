@@ -18,6 +18,27 @@ import { Drawer } from "../../components/ui/Drawer"
 import { formatDate } from "../../lib/utils"
 import { normalizeError } from "../../api/errors"
 
+const INSTANCE_TYPES = [
+  { value: "t3.micro", label: "t3.micro" },
+  { value: "t3.small", label: "t3.small" },
+  { value: "t3.medium", label: "t3.medium" },
+  { value: "t3.large", label: "t3.large" },
+  { value: "t3.xlarge", label: "t3.xlarge" },
+  { value: "t3.2xlarge", label: "t3.2xlarge" },
+  { value: "m5.large", label: "m5.large" },
+  { value: "m5.xlarge", label: "m5.xlarge" },
+  { value: "m5.2xlarge", label: "m5.2xlarge" },
+  { value: "m5.4xlarge", label: "m5.4xlarge" },
+  { value: "c5.large", label: "c5.large" },
+  { value: "c5.xlarge", label: "c5.xlarge" },
+  { value: "c5.2xlarge", label: "c5.2xlarge" },
+  { value: "c5.4xlarge", label: "c5.4xlarge" },
+  { value: "r5.large", label: "r5.large" },
+  { value: "r5.xlarge", label: "r5.xlarge" },
+  { value: "r5.2xlarge", label: "r5.2xlarge" },
+  { value: "r5.4xlarge", label: "r5.4xlarge" },
+]
+
 const createSchema = z.object({
   user_id: z.string().min(1, "Pick a customer"),
   name: z.string().min(1, "Name is required"),
@@ -25,6 +46,7 @@ const createSchema = z.object({
   total_allocated_ram: z.string().optional(),
   total_storage_capacity: z.string().optional(),
   server_ip_addresses: z.string().optional(),
+  instance_type: z.string().min(1, "Pick an instance type"),
   cpu_details: z.string().optional(),
   database_driver: z.string().optional(),
   database_version: z.string().optional(),
@@ -211,6 +233,21 @@ export function AdminProjectsPage() {
               </Field>
               <Field label="Server IPs" htmlFor="np-ips">
                 <Input id="np-ips" placeholder="e.g. 10.0.0.1, 10.0.0.2" {...register("server_ip_addresses")} />
+              </Field>
+              <Field label="Instance type" htmlFor="np-instance-type" required error={errors.instance_type?.message}>
+                <div className="relative">
+                  <Input
+                    id="np-instance-type"
+                    list="instance-type-suggestions"
+                    placeholder="e.g. t3.xlarge"
+                    {...register("instance_type")}
+                  />
+                  <datalist id="instance-type-suggestions">
+                    {INSTANCE_TYPES.map((t) => (
+                      <option key={t.value} value={t.value} />
+                    ))}
+                  </datalist>
+                </div>
               </Field>
               <Field label="CPU" htmlFor="np-cpu">
                 <Input id="np-cpu" placeholder="e.g. 4 vCPU" {...register("cpu_details")} />
