@@ -36,6 +36,14 @@ export function Drawer({
   useEffect(() => {
     const dlg = dialogRef.current
     if (!dlg) return
+    if (open && dlg.backdrop) {
+      dlg.backdrop.style.backgroundColor = "rgba(0, 0, 0, 1)"
+    }
+  }, [open])
+
+  useEffect(() => {
+    const dlg = dialogRef.current
+    if (!dlg) return
     const handler = () => onClose()
     dlg.addEventListener("close", handler)
     return () => dlg.removeEventListener("close", handler)
@@ -48,8 +56,9 @@ export function Drawer({
         "m-0 ml-auto h-screen max-h-screen",
         side === "right" ? "ml-auto" : "mr-auto",
         widthClass,
-        "bg-surface p-0 shadow-[var(--shadow-modal)] animate-fade-in"
+        "p-0 shadow-[var(--shadow-modal)] animate-fade-in"
       )}
+      style={{ backgroundColor: "#ffffff" }}
       onClick={(e) => {
         if (e.target === dialogRef.current) onClose()
       }}
