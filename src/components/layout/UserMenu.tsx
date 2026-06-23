@@ -34,7 +34,7 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3 text-sm transition-colors hover:bg-surface-sunken"
+        className="flex items-center gap-2 rounded-full bg-surface/90 py-1 pl-1 pr-3 text-sm transition-colors hover:bg-surface-sunken"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -48,9 +48,9 @@ export function UserMenu() {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-lg border border-border bg-white shadow-[var(--shadow-modal)] animate-fade-in"
+          className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-lg bg-surface shadow-[var(--shadow-modal)] animate-fade-in"
         >
-          <div className="border-b border-border-subtle px-4 py-3">
+          <div className="border-b border-border/50 px-4 py-3">
             <p className="text-sm font-medium text-fg">{fullName}</p>
             <p className="mt-0.5 truncate text-xs text-fg-muted">{user.email}</p>
           </div>

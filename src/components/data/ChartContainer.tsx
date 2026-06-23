@@ -29,7 +29,7 @@ export function ChartContainer({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-surface p-5 shadow-[var(--shadow-card)]",
+        "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40",
         className
       )}
     >

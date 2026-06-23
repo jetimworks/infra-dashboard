@@ -187,7 +187,7 @@ export function AdminInstanceCreatePage() {
                 className={
                   selected
                     ? "rounded-lg border-2 border-primary bg-primary-soft p-4 text-left transition-colors"
-                    : "rounded-lg border border-border bg-surface p-4 text-left transition-colors hover:border-primary/40"
+                    : "rounded-lg border border-border/50 bg-surface p-4 text-left transition-colors hover:border-primary/40"
                 }
               >
                 <Icon
@@ -235,7 +235,7 @@ export function AdminInstanceCreatePage() {
                 <select
                   id="ci-project"
                   {...vpsForm.register("project_id")}
-                  className="h-11 w-full rounded-md border border-border bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Select a project</option>
                   {projects.map((p) => (
@@ -345,7 +345,7 @@ export function AdminInstanceCreatePage() {
                 <select
                   id="cl-project"
                   {...localForm.register("project_id")}
-                  className="h-11 w-full rounded-md border border-border bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Select a project</option>
                   {projects.map((p) => (

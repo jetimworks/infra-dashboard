@@ -134,7 +134,7 @@ export function AdminInstanceSshKeyPage() {
         </CardHeader>
 
         {downloadQ.isLoading ? (
-          <p className="rounded-md border border-border-subtle bg-surface-sunken p-4 text-sm text-fg-muted">
+          <p className="rounded-md border border-border/40 bg-surface-sunken p-4 text-sm text-fg-muted">
             Loading key…
           </p>
         ) : downloadQ.isError ? (
@@ -147,7 +147,7 @@ export function AdminInstanceSshKeyPage() {
         ) : sshKey ? (
           <div className="space-y-2">
             <div className="relative">
-              <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border-subtle bg-surface-sunken p-3 pr-16 font-mono text-xs text-fg">
+              <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border/40 bg-surface-sunken p-3 pr-16 font-mono text-xs text-fg">
                 {sshKey}
               </pre>
               <button
@@ -259,7 +259,7 @@ export function AdminInstanceSshKeyPage() {
               </p>
             )}
           </div>
-          <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
             <Button
               type="button"
               variant="ghost"

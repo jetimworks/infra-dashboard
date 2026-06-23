@@ -38,8 +38,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               LeftIcon && "pl-10",
               RightIcon && "pr-10",
               error
-                ? "border-danger focus:border-danger focus:ring-danger/20"
-                : "border-border focus:border-primary focus:ring-primary/20",
+                ? "border-danger/60 focus:border-danger focus:ring-danger/20"
+                : "border-border/60 focus:border-primary/70 focus:ring-primary/20",
               className
             )}
             aria-invalid={error ? "true" : undefined}
@@ -90,8 +90,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             "focus:outline-none focus:ring-2",
             "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
             error
-              ? "border-danger focus:border-danger focus:ring-danger/20"
-              : "border-border focus:border-primary focus:ring-primary/20",
+              ? "border-danger/60 focus:border-danger focus:ring-danger/20"
+              : "border-border/60 focus:border-primary/70 focus:ring-primary/20",
             className
           )}
           aria-invalid={error ? "true" : undefined}

@@ -158,7 +158,7 @@ export function AdminOverviewPage() {
             </Link>
           </CardHeader>
           {recentActions.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border-subtle bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
+            <p className="rounded-md border border-dashed border-border/50 bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
               No recent activity.
             </p>
           ) : (

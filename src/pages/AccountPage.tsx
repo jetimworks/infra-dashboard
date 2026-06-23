@@ -153,7 +153,7 @@ export function AccountPage() {
                 {...register("phone")}
               />
             </Field>
-            <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+            <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
               <Button
                 type="submit"
                 variant="primary"
@@ -209,7 +209,7 @@ function SecurityRow({
   tone?: "default" | "danger"
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-sunken/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-md border border-border/40 bg-surface-sunken/30 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-sm font-medium text-fg">{label}</p>
         <p className="mt-0.5 text-xs text-fg-muted">{description}</p>

@@ -141,7 +141,7 @@ export function AdminInstanceSystemActionPage() {
                 {actionOptions.map((opt) => (
                   <label
                     key={opt.value}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-surface p-3 transition-colors hover:border-primary/40 has-[:checked]:border-primary has-[:checked]:bg-primary-soft/40"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border/50 bg-surface p-3 transition-colors hover:border-primary/40 has-[:checked]:border-primary has-[:checked]:bg-primary-soft/40"
                   >
                     <input
                       type="radio"
@@ -176,7 +176,7 @@ export function AdminInstanceSystemActionPage() {
                 {...register("service")}
               />
             </Field>
-            <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+            <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -218,7 +218,7 @@ export function AdminInstanceSystemActionPage() {
               <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-fg-muted">
                 stdout
               </p>
-              <pre className="overflow-auto rounded-md border border-border-subtle bg-surface-sunken p-3 font-mono text-xs text-fg">
+              <pre className="overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-xs text-fg">
                 {result.stdout || "(empty)"}
               </pre>
             </div>
@@ -230,7 +230,7 @@ export function AdminInstanceSystemActionPage() {
                 className={
                   result.stderr
                     ? "overflow-auto rounded-md border border-warning-soft bg-warning-soft/40 p-3 font-mono text-xs text-fg"
-                    : "overflow-auto rounded-md border border-border-subtle bg-surface-sunken p-3 font-mono text-xs text-fg-muted"
+                    : "overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-xs text-fg-muted"
                 }
               >
                 {result.stderr || "(empty)"}

@@ -109,7 +109,7 @@ export function ActivityPage() {
             <p className="text-sm text-fg-muted">No instances in this project.</p>
           ) : (
             <select
-              className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              className="h-9 rounded-md border border-border/60 bg-surface px-3 text-sm text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
               value={selectedInstanceId ?? ""}
               onChange={(e) => setSelectedInstanceId(e.target.value || null)}
               aria-label="Select instance"

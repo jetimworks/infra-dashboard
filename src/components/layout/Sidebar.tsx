@@ -39,10 +39,10 @@ export function Sidebar() {
     <aside
       className={cn(
         "hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 lg:left-0",
-        "border-r border-border bg-surface"
+        "border-r border-border/40 bg-surface"
       )}
     >
-      <div className="flex h-16 items-center gap-2.5 border-b border-border px-5">
+      <div className="flex h-16 items-center gap-2.5 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-fg-on-accent">
           <Cloud className="h-4 w-4" aria-hidden />
         </div>
@@ -65,10 +65,10 @@ export function Sidebar() {
                     to={item.to}
                     end={item.end}
                     className={cn(
-                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 border",
+                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
                       isActive
-                        ? "bg-primary-soft text-primary-soft-fg border-primary"
-                        : "text-fg-muted hover:bg-surface-sunken hover:text-fg border-transparent"
+                        ? "bg-primary-soft text-primary shadow-[var(--shadow-card)] border-l-2 border-l-primary"
+                        : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
                     )}
                   >
                     <Icon className="h-4 w-4" aria-hidden />
@@ -80,14 +80,14 @@ export function Sidebar() {
         </ul>
 
         {isStaff ? (
-          <div className="mt-6 border-t border-border-subtle pt-4">
+          <div className="mt-6 pt-4">
             <NavLink
               to="/admin"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
                 location.pathname.startsWith("/admin")
-                  ? "bg-accent-soft text-accent-soft-fg"
-                  : "text-accent hover:bg-accent-soft hover:text-accent-soft-fg"
+                  ? "bg-accent-soft text-accent shadow-[var(--shadow-card)] border-l-2 border-l-accent"
+                  : "text-accent hover:bg-accent-soft hover:text-accent"
               )}
             >
               <Users className="h-4 w-4" aria-hidden />
@@ -97,7 +97,7 @@ export function Sidebar() {
         ) : null}
       </nav>
 
-      <div className="border-t border-border px-4 py-3">
+      <div className="border-t border-border/40 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <a
             href="mailto:support@jetimworks.com"

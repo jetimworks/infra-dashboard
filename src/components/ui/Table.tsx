@@ -11,7 +11,7 @@ export function Table({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-border bg-surface",
+        "overflow-hidden rounded-lg bg-surface shadow-[var(--shadow-card)]",
         className
       )}
     >
@@ -33,7 +33,7 @@ export function TableHead({ children }: { children: ReactNode }) {
 TableHead.displayName = "TableHead"
 
 export function TableBody({ children }: { children: ReactNode }) {
-  return <tbody className="divide-y divide-border-subtle">{children}</tbody>
+  return <tbody className="divide-y divide-border/50">{children}</tbody>
 }
 
 TableBody.displayName = "TableBody"

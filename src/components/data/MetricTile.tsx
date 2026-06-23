@@ -20,11 +20,11 @@ export interface MetricTileProps {
   className?: string
 }
 
-const statusBorder: Record<MetricStatus, string> = {
-  ok: "border-border",
-  warning: "border-warning-soft",
-  danger: "border-danger-soft",
-  unknown: "border-border-subtle",
+const statusBg: Record<MetricStatus, string> = {
+  ok: "",
+  warning: "bg-warning-soft/30",
+  danger: "bg-danger-soft/30",
+  unknown: "",
 }
 
 const statusText: Record<MetricStatus, string> = {
@@ -51,7 +51,7 @@ export function MetricTile({
     return (
       <div
         className={cn(
-          "rounded-lg border border-border bg-surface p-5 shadow-[var(--shadow-card)]",
+          "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40",
           className
         )}
       >
@@ -69,8 +69,8 @@ export function MetricTile({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-surface p-5 shadow-[var(--shadow-card)]",
-        statusBorder[status],
+        "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40",
+        statusBg[status],
         className
       )}
     >

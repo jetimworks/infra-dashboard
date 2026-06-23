@@ -39,7 +39,7 @@ export function SecurityFindingItem({ finding }: SecurityFindingItemProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="rounded-lg bg-surface p-4 shadow-[var(--shadow-card)] border-b border-l border-border/40">
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -69,7 +69,7 @@ export function SecurityFindingItem({ finding }: SecurityFindingItemProps) {
               <p className="mb-1.5 text-xs font-medium text-fg-muted">
                 What to do
               </p>
-              <div className="flex items-center gap-2 rounded-md border border-border-subtle bg-surface-sunken px-3 py-2">
+              <div className="flex items-center gap-2 rounded-md border border-border/40 bg-surface-sunken px-3 py-2">
                 <code className="min-w-0 flex-1 truncate font-mono text-xs text-fg">
                   {finding.action}
                 </code>

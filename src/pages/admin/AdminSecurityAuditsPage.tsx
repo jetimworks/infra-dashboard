@@ -202,7 +202,7 @@ function AuditDrawer({
           </div>
 
           {auditQ.isLoading ? (
-            <p className="rounded-md border border-border-subtle bg-surface-sunken p-4 text-sm text-fg-muted">
+            <p className="rounded-md border border-border/40 bg-surface-sunken p-4 text-sm text-fg-muted">
               Loading audit…
             </p>
           ) : auditQ.isError ? (
@@ -235,7 +235,7 @@ function AuditDrawer({
                     Open instance →
                   </Link>
                 </div>
-                <pre className="max-h-96 overflow-auto rounded-md border border-border-subtle bg-surface-sunken p-3 font-mono text-xs text-fg">
+                <pre className="max-h-96 overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-xs text-fg">
                   {auditJson}
                 </pre>
               </div>
@@ -414,7 +414,7 @@ function Field({
       ? "text-success-fg"
       : "text-fg"
   return (
-    <div className="rounded-md border border-border-subtle bg-surface p-3">
+    <div className="rounded-md border border-border/40 bg-surface p-3">
       <p className="text-[0.6875rem] font-medium uppercase tracking-wider text-fg-muted">
         {label}
       </p>

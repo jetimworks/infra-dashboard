@@ -198,12 +198,12 @@ export function AdminInstanceEditPage() {
           <CardHeader>
             <CardTitle>Configuration</CardTitle>
           </CardHeader>
-          <pre className="overflow-x-auto rounded-md border border-border-subtle bg-surface-sunken p-3 font-mono text-xs text-fg">
+          <pre className="overflow-x-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-xs text-fg">
             {JSON.stringify(instance.config, null, 2)}
           </pre>
         </Card>
 
-        <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+        <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
           <Button
             type="submit"
             variant="primary"
@@ -221,7 +221,7 @@ export function AdminInstanceEditPage() {
           <CardTitle>Danger zone</CardTitle>
         </CardHeader>
         <div className="space-y-3">
-          <div className="flex items-center justify-between rounded-md border border-border bg-surface p-3">
+          <div className="flex items-center justify-between rounded-md border border-border/50 bg-surface p-3">
             <div>
               <p className="text-sm font-medium text-fg">
                 {instance.is_active ? "Deactivate" : "Reactivate"} this instance

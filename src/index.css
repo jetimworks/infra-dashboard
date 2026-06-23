@@ -10,12 +10,12 @@
 */
 
 @theme {
-  /* Surfaces */
+  /* Surfaces — warm paper whites */
   --color-bg: 248 250 252;
-  --color-surface: 255 255 255;
-  --color-surface-raised: 255 255 255;
-  --color-surface-sunken: 241 245 249;
-  --color-surface-overlay: 255 255 255;
+  --color-surface: 254 253 251;
+  --color-surface-raised: 254 253 251;
+  --color-surface-sunken: 243 245 247;
+  --color-surface-overlay: 254 253 251;
 
   /* Text */
   --color-fg: 15 23 42;
@@ -23,20 +23,20 @@
   --color-fg-subtle: 100 116 139;
   --color-fg-on-accent: 255 255 255;
 
-  /* Borders */
-  --color-border: 226 232 240;
-  --color-border-subtle: 241 245 249;
-  --color-border-strong: 203 213 225;
+  /* Borders — warm, soft, low-contrast */
+  --color-border: 212 215 220;
+  --color-border-subtle: 235 237 240;
+  --color-border-strong: 190 194 202;
 
   /* Primary — calm blue */
   --color-primary: 37 99 235;
   --color-primary-hover: 29 78 216;
-  --color-primary-soft: 239 246 255;
+  --color-primary-soft: 219 234 254;
   --color-primary-soft-fg: 30 64 175;
 
   /* Accent — warm teal for "yours / active" */
   --color-accent: 13 148 136;
-  --color-accent-soft: 240 253 250;
+  --color-accent-soft: 204 251 241;
   --color-accent-soft-fg: 15 118 110;
 
   /* Status — calibrated for non-technical eyes */
@@ -62,12 +62,10 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
 
-  /* Elevation */
-  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04);
-  --shadow-card-hover: 0 4px 12px -2px rgb(15 23 42 / 0.06),
-    0 2px 4px -2px rgb(15 23 42 / 0.04);
-  --shadow-modal: 0 12px 24px -8px rgb(15 23 42 / 0.08),
-    0 4px 8px -4px rgb(15 23 42 / 0.04);
+  /* Elevation — soft and diffused */
+  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 1px 2px -1px rgb(15 23 42 / 0.03);
+  --shadow-card-hover: 0 4px 16px -3px rgb(15 23 42 / 0.07), 0 2px 6px -2px rgb(15 23 42 / 0.04);
+  --shadow-modal: 0 8px 30px -8px rgb(15 23 42 / 0.08), 0 4px 12px -4px rgb(15 23 42 / 0.05);
 
   /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -76,18 +74,18 @@
 
 :root {
   --bg: 248 250 252;
-  --surface: 255 255 255;
-  --surface-sunken: 241 245 249;
+  --surface: 254 253 251;
+  --surface-sunken: 243 245 247;
   --fg: 15 23 42;
   --fg-muted: 71 85 105;
   --fg-subtle: 100 116 139;
-  --border: 226 232 240;
-  --border-subtle: 241 245 249;
+  --border: 212 215 220;
+  --border-subtle: 235 237 240;
   --primary: 37 99 235;
   --primary-hover: 29 78 216;
-  --primary-soft: 239 246 255;
+  --primary-soft: 219 234 254;
   --accent: 13 148 136;
-  --accent-soft: 240 253 250;
+  --accent-soft: 204 251 241;
   --success: 22 163 74;
   --success-soft: 220 252 231;
   --success-fg: 21 128 61;
@@ -103,14 +101,14 @@
 }
 
 .dark {
-  --bg: 9 13 22;
-  --surface: 17 24 39;
+  --bg: 9 13 24;
+  --surface: 17 24 38;
   --surface-sunken: 11 16 28;
   --fg: 241 245 249;
   --fg-muted: 148 163 184;
   --fg-subtle: 100 116 139;
-  --border: 30 41 59;
-  --border-subtle: 22 32 46;
+  --border: 32 42 60;
+  --border-subtle: 22 32 48;
   --primary: 96 165 250;
   --primary-hover: 59 130 246;
   --primary-soft: 23 37 84;
@@ -155,20 +153,17 @@
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2) !important;
 }
 
-/* Vibrant metric cards */
+/* Vibrant metric cards — no border-left stripes */
 .vibrant [data-metric-status="warning"] {
-  border-left: 3px solid #eab308 !important;
-  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15), 0 0 0 1px rgba(234, 179, 8, 0.2) !important;
 }
 
 .vibrant [data-metric-status="danger"] {
-  border-left: 3px solid #ef4444 !important;
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15), 0 0 0 1px rgba(220, 38, 38, 0.2) !important;
 }
 
 .vibrant [data-metric-status="ok"] {
-  border-left: 3px solid #22c55e !important;
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1), 0 0 0 1px rgba(34, 197, 94, 0.15) !important;
 }
 
 * {

@@ -620,7 +620,7 @@ function SettingsTab({
               <dt className="text-xs font-medium text-fg-muted">
                 Configuration
               </dt>
-              <dd className="mt-1 rounded-md border border-border-subtle bg-surface-sunken p-3">
+              <dd className="mt-1 rounded-md border border-border/40 bg-surface-sunken p-3">
                 <pre className="overflow-x-auto font-mono text-xs text-fg">
                   {JSON.stringify(instance.config, null, 2)}
                 </pre>
@@ -697,7 +697,7 @@ function RequestActionForm({ instanceName }: { instanceName: string }) {
             placeholder="What needs to happen, and why?"
           />
         </Field>
-        <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+        <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
           <Button
             type="submit"
             variant="primary"

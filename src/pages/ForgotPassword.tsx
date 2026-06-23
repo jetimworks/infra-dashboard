@@ -73,7 +73,7 @@ export function ForgotPasswordPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface p-5">
+          <div className="rounded-lg border border-border/50 bg-surface p-5">
             <h2 className="text-[0.9375rem] font-semibold text-fg">
               What to do
             </h2>

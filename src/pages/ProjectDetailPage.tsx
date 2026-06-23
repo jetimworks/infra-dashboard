@@ -167,7 +167,7 @@ function ActivityTab({
       {loading ? (
         <p className="px-4 py-6 text-center text-sm text-fg-muted">Loading…</p>
       ) : actions.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border-subtle bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
+        <p className="rounded-md border border-dashed border-border/50 bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
           No activity yet. Backups, security patches, and certificate renewals
           for this project's resources will show up here.
         </p>

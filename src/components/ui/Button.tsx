@@ -32,11 +32,11 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary:
     "bg-primary text-fg-on-accent hover:bg-primary-hover shadow-sm",
   secondary:
-    "bg-surface text-fg border border-border hover:bg-surface-sunken",
+    "bg-surface-sunken/80 text-fg hover:bg-surface-sunken",
   ghost:
     "bg-transparent text-fg-muted hover:bg-surface-sunken hover:text-fg",
   outline:
-    "bg-transparent text-fg border border-border hover:bg-surface-sunken",
+    "bg-surface/80 text-fg border border-border/60 hover:bg-surface-sunken",
   danger:
     "bg-danger text-white hover:bg-danger/90 shadow-sm",
   success:

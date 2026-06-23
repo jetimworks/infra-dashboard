@@ -136,18 +136,18 @@ export function DashboardPage() {
       {/* Status hero */}
       <div
         className={cn(
-          "rounded-lg border p-6",
+          "rounded-lg p-6 shadow-[var(--shadow-card-hover)] border-l-4",
           hero.tone === "success"
-            ? "border-success-soft bg-success-soft/40"
+            ? "bg-success-soft/40 border-l-green-400"
             : hero.tone === "warning"
-              ? "border-warning-soft bg-warning-soft/40"
-              : "border-danger-soft bg-danger-soft/40"
+              ? "bg-warning-soft/40 border-l-warning"
+              : "bg-danger-soft/40 border-l-danger"
         )}
       >
         <div className="flex items-start gap-4">
           <div
             className={cn(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white",
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-success-fg",
               hero.tone === "success"
                 ? "bg-success"
                 : hero.tone === "warning"
@@ -203,7 +203,7 @@ export function DashboardPage() {
             </Link>
           </CardHeader>
           {recentActions.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border-subtle bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
+            <p className="rounded-md border border-dashed border-border/50 bg-surface-sunken/50 px-4 py-6 text-center text-sm text-fg-muted">
               Nothing yet. When you trigger a backup, renew a certificate, or
               apply a security patch, you'll see it here.
             </p>

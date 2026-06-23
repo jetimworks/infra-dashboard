@@ -27,7 +27,7 @@ export function SegmentedControl<T extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-border bg-surface-sunken p-1",
+        "inline-flex items-center gap-1 rounded-md bg-surface-sunken/60 p-1",
         className
       )}
     >
@@ -43,7 +43,7 @@ export function SegmentedControl<T extends string>({
             className={cn(
               "inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors duration-150",
               active
-                ? "bg-surface text-primary shadow-sm"
+                ? "bg-surface text-primary shadow-[var(--shadow-card)] border border-border/40"
                 : "text-fg-muted hover:text-fg"
             )}
           >

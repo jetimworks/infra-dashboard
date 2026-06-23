@@ -16,7 +16,7 @@ export function TopNav({ onOpenMobileSidebar }: TopNavProps) {
     [location.pathname]
   )
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border bg-surface/90 px-6 backdrop-blur-md md:px-10">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border/50 bg-surface/90 px-6 backdrop-blur-md md:px-10">
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"

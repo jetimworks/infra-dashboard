@@ -27,7 +27,7 @@ export function BackupItem({
   const canRestore = isRds && backup.status === "SUCCESS" && !!onRestore
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-md border border-border-subtle bg-surface px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-md border border-border/40 bg-surface px-4 py-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-mono text-sm text-fg">

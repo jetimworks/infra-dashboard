@@ -16,10 +16,10 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantClasses: Record<CardVariant, string> = {
   default:
-    "bg-surface border border-border shadow-[var(--shadow-card)]",
+    "bg-surface shadow-[var(--shadow-card)] border-b border-l border-border/30",
   raised:
-    "bg-surface-raised border border-border-subtle shadow-[var(--shadow-card)]",
-  outline: "bg-transparent border border-border",
+    "bg-surface-raised shadow-[var(--shadow-card-hover)] border-b border-l border-border/30",
+  outline: "bg-surface/60 border-b border-l border-border/40",
 }
 
 const paddingClasses: Record<CardPadding, string> = {
@@ -126,7 +126,7 @@ export const CardFooter = ({
 }: HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-6 flex items-center justify-end gap-3 border-t border-border-subtle pt-4",
+      "mt-6 flex items-center justify-end gap-3 border-t border-border/50 pt-4",
       className
     )}
     {...props}

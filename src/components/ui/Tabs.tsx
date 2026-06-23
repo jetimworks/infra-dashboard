@@ -26,7 +26,7 @@ export function Tabs<T extends string>({
     <div
       role="tablist"
       className={cn(
-        "flex items-center gap-1 border-b border-border",
+        "flex items-center gap-1",
         className
       )}
     >
@@ -43,8 +43,8 @@ export function Tabs<T extends string>({
               "relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors duration-150",
               "-mb-px border-b-2",
               active
-                ? "border-primary text-primary"
-                : "border-transparent text-fg-muted hover:text-fg"
+                ? "border-primary/70 text-primary"
+                : "border-transparent/0 text-fg-muted hover:text-fg"
             )}
           >
             {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}

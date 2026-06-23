@@ -55,7 +55,7 @@ export function Drawer({
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+        <div className="flex items-start justify-between gap-4 border-b border-border/50 px-6 py-4">
           <div>
             <h2 className="text-[1.25rem] font-semibold text-fg">{title}</h2>
             {description ? (
@@ -73,7 +73,7 @@ export function Drawer({
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
         {footer ? (
-          <div className="border-t border-border px-6 py-4">{footer}</div>
+          <div className="border-t border-border/50 px-6 py-4">{footer}</div>
         ) : null}
       </div>
     </dialog>

@@ -88,7 +88,7 @@ export function ConfirmDialog({
         </div>
 
         {requireCheckbox ? (
-          <label className="mt-5 flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-surface-sunken p-3">
+          <label className="mt-5 flex cursor-pointer items-start gap-2.5 rounded-md bg-surface-sunken/60 p-3">
             <input
               type="checkbox"
               checked={checked}

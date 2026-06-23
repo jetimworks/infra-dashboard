@@ -200,7 +200,7 @@ export function AdminUsersPage() {
           >
             <Input id="cu-phone" type="tel" {...register("phone")} />
           </Field>
-          <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
             <Button
               type="button"
               variant="ghost"
@@ -297,7 +297,7 @@ function EditUserForm({
           id="edit-status"
           value={status}
           onChange={(e) => setStatus(e.target.value as UserStatus)}
-          className="h-11 w-full rounded-md border border-border bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -305,12 +305,12 @@ function EditUserForm({
         </select>
       </Field>
 
-      <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-surface p-3">
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border/50 bg-surface p-3">
         <input
           type="checkbox"
           checked={isStaff}
           onChange={(e) => setIsStaff(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+          className="mt-0.5 h-4 w-4 rounded border-border/60 text-primary focus:ring-primary"
         />
         <span>
           <span className="text-sm font-medium text-fg">Staff member</span>
@@ -320,12 +320,12 @@ function EditUserForm({
         </span>
       </label>
 
-      <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-surface p-3">
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border/50 bg-surface p-3">
         <input
           type="checkbox"
           checked={isVerified}
           onChange={(e) => setIsVerified(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+          className="mt-0.5 h-4 w-4 rounded border-border/60 text-primary focus:ring-primary"
         />
         <span>
           <span className="text-sm font-medium text-fg">
@@ -337,7 +337,7 @@ function EditUserForm({
         </span>
       </label>
 
-      <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+      <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
         <Button variant="ghost" onClick={onClose} disabled={isSaving}>
           Cancel
         </Button>

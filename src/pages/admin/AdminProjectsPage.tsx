@@ -180,7 +180,7 @@ export function AdminProjectsPage() {
             <select
               id="np-user"
               {...register("user_id")}
-              className="h-11 w-full rounded-md border border-border bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="">Select a customer</option>
               {users.map((u) => (
@@ -236,7 +236,7 @@ export function AdminProjectsPage() {
           <Field label="Additional notes" htmlFor="np-additional">
             <Textarea id="np-additional" rows={2} {...register("additional_info")} />
           </Field>
-          <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
             <Button
               type="button"
               variant="ghost"
@@ -263,7 +263,7 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <div className="space-y-3 rounded-md border border-border-subtle bg-surface-sunken/30 p-4">
+    <div className="space-y-3 rounded-md border border-border/40 bg-surface-sunken/30 p-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">
         {title}
       </p>
