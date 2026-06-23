@@ -102,13 +102,14 @@ export function SupportPage() {
               <ContactRow
                 icon={Phone}
                 label="Phone (urgent)"
-                value="+1 (555) 123-4567"
-                href="tel:+15551234567"
+                value="+234 703 670 4548"
+                href="tel:+2347036704548"
               />
               <ContactRow
                 icon={MessageCircle}
                 label="Live chat"
-                value="Available 9am – 6pm in your timezone"
+                value="Book a Calendly meeting"
+                href="https://calendly.com/jetimworks/30min"
               />
             </div>
           </Card>
