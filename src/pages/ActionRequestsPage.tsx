@@ -78,7 +78,6 @@ export function ActionRequestsPage() {
       <ActionRequestCreateDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        projectId={selectedProjectId ?? undefined}
       />
     </div>
   )

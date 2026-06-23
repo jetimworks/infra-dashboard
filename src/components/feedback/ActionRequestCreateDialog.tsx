@@ -5,43 +5,46 @@ import { Drawer } from "../ui/Drawer"
 import { Button } from "../ui/Button"
 import { Input, Field, Textarea } from "../ui/Input"
 import { useCreateActionRequest } from "../../queries/action-requests"
+import { useInstances } from "../../queries/instances"
+import { useProject } from "../../contexts/ProjectContext"
 
 interface ActionRequestCreateDialogProps {
   open: boolean
   onClose: () => void
-  projectId?: string
+  /** Pre-selected instance (optional) */
   instanceId?: string
 }
 
 export function ActionRequestCreateDialog({
   open,
   onClose,
-  projectId,
-  instanceId,
+  instanceId: preSelectedInstanceId,
 }: ActionRequestCreateDialogProps) {
   const navigate = useNavigate()
+  const { selectedProjectId } = useProject()
   const createMutation = useCreateActionRequest()
+  const instancesQ = useInstances({ projectId: selectedProjectId ?? undefined })
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
+  const [instanceId, setInstanceId] = useState(preSelectedInstanceId ?? "")
   const [titleError, setTitleError] = useState("")
   const [descError, setDescError] = useState("")
-
-  const hasProject = Boolean(projectId)
-  const hasInstance = Boolean(instanceId)
+  const [instanceError, setInstanceError] = useState("")
 
   const handleClose = () => {
     setTitle("")
     setDescription("")
+    setInstanceId(preSelectedInstanceId ?? "")
     setTitleError("")
     setDescError("")
+    setInstanceError("")
     onClose()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate
     let hasError = false
     if (!title.trim()) {
       setTitleError("Title is required")
@@ -55,13 +58,15 @@ export function ActionRequestCreateDialog({
     } else {
       setDescError("")
     }
-    if (!hasProject) {
-      toast.error("Please select a project before creating an action request")
+    if (!selectedProjectId) {
+      toast.error("No project selected. Please select a project first.")
       hasError = true
     }
-    if (!hasInstance) {
-      toast.error("Please select an instance before creating an action request")
+    if (!instanceId) {
+      setInstanceError("Please select an instance")
       hasError = true
+    } else {
+      setInstanceError("")
     }
     if (hasError) return
 
@@ -69,8 +74,8 @@ export function ActionRequestCreateDialog({
       const result = await createMutation.mutateAsync({
         title: title.trim(),
         description: description.trim(),
-        project_id: projectId || null,
-        instance_id: instanceId || null,
+        project_id: selectedProjectId,
+        instance_id: instanceId,
       })
       handleClose()
       navigate(`/action-requests/${result.id}`)
@@ -78,6 +83,8 @@ export function ActionRequestCreateDialog({
       // Error handled by mutation
     }
   }
+
+  const instances = instancesQ.data ?? []
 
   return (
     <Drawer
@@ -117,6 +124,34 @@ export function ActionRequestCreateDialog({
             rows={5}
             placeholder="What needs to happen, and why?"
           />
+        </Field>
+
+        <Field
+          label="Instance"
+          htmlFor="ar-instance"
+          required
+          error={instanceError}
+          hint={!selectedProjectId ? "Select a project first to see instances" : undefined}
+        >
+          <select
+            id="ar-instance"
+            value={instanceId}
+            onChange={(e) => {
+              setInstanceId(e.target.value)
+              setInstanceError("")
+            }}
+            disabled={!selectedProjectId || instancesQ.isLoading}
+            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <option value="">
+              {instancesQ.isLoading ? "Loading instances..." : "Select an instance"}
+            </option>
+            {instances.map((inst) => (
+              <option key={inst.id} value={inst.id}>
+                {inst.name} {inst.host ? `(${inst.host})` : ""}
+              </option>
+            ))}
+          </select>
         </Field>
 
         <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">

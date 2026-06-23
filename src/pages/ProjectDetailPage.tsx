@@ -116,7 +116,6 @@ export function ProjectDetailPage() {
         <ActivityTab actions={projectActions} loading={actionsQ.isLoading} />
       ) : tab === "action-requests" ? (
         <ActionRequestsTab
-          projectId={id!}
           projectName={project.name}
           actionRequests={actionRequestsQ.data?.data ?? []}
           loading={actionRequestsQ.isLoading}
@@ -278,12 +277,10 @@ function SettingsTab({ project }: { project: import("../api/types").Project }) {
 }
 
 function ActionRequestsTab({
-  projectId,
   projectName,
   actionRequests,
   loading,
 }: {
-  projectId: string
   projectName: string
   actionRequests: import("../api/types").ActionRequest[]
   loading: boolean
@@ -333,7 +330,6 @@ function ActionRequestsTab({
       <ActionRequestCreateDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        projectId={projectId}
       />
     </div>
   )
