@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
+
+permissions:
+  contents: write
+  statuses: write
 
 jobs:
   deploy:
