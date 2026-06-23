@@ -36,8 +36,9 @@ export function Drawer({
   useEffect(() => {
     const dlg = dialogRef.current
     if (!dlg) return
-    if (open && dlg.backdrop) {
-      dlg.backdrop.style.backgroundColor = "rgba(0, 0, 0, 1)"
+    const backdrop = dlg as HTMLDialogElement & { backdrop: HTMLElement }
+    if (open && backdrop.backdrop) {
+      backdrop.backdrop.style.backgroundColor = "rgba(0, 0, 0, 1)"
     }
   }, [open])
 
