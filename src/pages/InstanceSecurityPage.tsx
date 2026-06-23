@@ -102,7 +102,6 @@ export function InstanceSecurityPage() {
           leftIcon={RefreshCw}
           onClick={() => {
             setRefreshNonce((n) => n + 1)
-            securityQ.refetch().then(() => toast.success("Security scan complete"))
           }}
         >
           Check now
