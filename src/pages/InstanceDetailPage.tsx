@@ -186,6 +186,9 @@ export function InstanceDetailPage() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<TabValue>("overview")
   const [refreshNonce, setRefreshNonce] = useState(0)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [prefillTitle, setPrefillTitle] = useState("")
+  const [prefillDescription, setPrefillDescription] = useState("")
 
   const instanceQ = useInstance(id)
   const metricsQ = useInstanceMetricsLatest(id)
@@ -236,90 +239,107 @@ export function InstanceDetailPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-        <Link to="/instances" className="hover:text-fg">
-          Infrastructure
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="font-medium text-fg">{instance.name}</span>
-      </nav>
+    <>
+      <div className="space-y-6">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
+          <Link to="/instances" className="hover:text-fg">
+            Infrastructure
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          <span className="font-medium text-fg">{instance.name}</span>
+        </nav>
 
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
-            <Icon className="h-6 w-6" aria-hidden />
-          </div>
-          <div>
-            <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
-              {instance.name}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-fg-muted">
-              <span>{typeLabel[instance.type]}</span>
-              {instance.host ? (
-                <>
-                  <span aria-hidden>·</span>
-                  <span className="font-mono">{instance.host}</span>
-                </>
-              ) : null}
-              {!instance.is_active ? (
-                <StatusPill status="inactive" size="sm" />
-              ) : null}
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+              <Icon className="h-6 w-6" aria-hidden />
+            </div>
+            <div>
+              <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+                {instance.name}
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-fg-muted">
+                <span>{typeLabel[instance.type]}</span>
+                {instance.host ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span className="font-mono">{instance.host}</span>
+                  </>
+                ) : null}
+                {!instance.is_active ? (
+                  <StatusPill status="inactive" size="sm" />
+                ) : null}
+              </div>
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setRefreshNonce((n) => n + 1)
+              securityQ.refetch().then(() => toast.success("Security scan complete"))
+            }}
+          >
+            Check now
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setRefreshNonce((n) => n + 1)
-            securityQ.refetch().then(() => toast.success("Security scan complete"))
-          }}
-        >
-          Check now
-        </Button>
+
+        <Tabs value={tab} onChange={setTab} items={tabItems} />
+
+        {tab === "overview" ? (
+          <OverviewTab
+            instanceType={instance.type}
+            metrics={metricsQ.data}
+            metricsLoading={metricsQ.isLoading}
+            security={securityQ.data}
+            securityLoading={securityQ.isLoading}
+            actions={actionsQ.data?.data ?? []}
+            onViewSecurity={() => setTab("security")}
+          />
+        ) : tab === "metrics" ? (
+          <MetricsTab instanceId={id!} type={instance.type} />
+        ) : tab === "security" ? (
+          <SecurityTab
+            security={securityQ.data}
+            loading={securityQ.isLoading}
+            instanceType={instance.type}
+            instanceId={id!}
+            onRequestAction={(title, description) => {
+              setPrefillTitle(title)
+              setPrefillDescription(description)
+              setCreateOpen(true)
+            }}
+          />
+        ) : tab === "backups" ? (
+          <BackupsTab instanceId={id!} instanceType={instance.type} />
+        ) : tab === "activity" ? (
+          <ActivityTab
+            actions={actionsQ.data?.data ?? []}
+            loading={actionsQ.isLoading}
+          />
+        ) : tab === "action-requests" ? (
+          <ActionRequestsTab
+            instanceId={id!}
+            instanceName={instance.name}
+            instanceType={instance.type}
+            actionRequests={actionRequestsQ.data?.data ?? []}
+            loading={actionRequestsQ.isLoading}
+          />
+        ) : (
+          <SettingsTab instance={instance} />
+        )}
       </div>
 
-      <Tabs value={tab} onChange={setTab} items={tabItems} />
-
-      {tab === "overview" ? (
-        <OverviewTab
-          instanceType={instance.type}
-          metrics={metricsQ.data}
-          metricsLoading={metricsQ.isLoading}
-          security={securityQ.data}
-          securityLoading={securityQ.isLoading}
-          actions={actionsQ.data?.data ?? []}
-        />
-      ) : tab === "metrics" ? (
-        <MetricsTab instanceId={id!} type={instance.type} />
-      ) : tab === "security" ? (
-        <SecurityTab
-          security={securityQ.data}
-          loading={securityQ.isLoading}
-          instanceType={instance.type}
-        />
-      ) : tab === "backups" ? (
-        <BackupsTab instanceId={id!} instanceType={instance.type} />
-      ) : tab === "activity" ? (
-        <ActivityTab
-          actions={actionsQ.data?.data ?? []}
-          loading={actionsQ.isLoading}
-        />
-      ) : tab === "action-requests" ? (
-        <ActionRequestsTab
-          instanceId={id!}
-          instanceName={instance.name}
-          instanceType={instance.type}
-          actionRequests={actionRequestsQ.data?.data ?? []}
-          loading={actionRequestsQ.isLoading}
-        />
-      ) : (
-        <SettingsTab instance={instance} />
-      )}
-    </div>
+      <ActionRequestCreateDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        instanceId={id}
+        initialTitle={prefillTitle}
+        initialDescription={prefillDescription}
+      />
+    </>
   )
 }
 
@@ -330,6 +350,7 @@ function OverviewTab({
   security,
   securityLoading,
   actions,
+  onViewSecurity,
 }: {
   instanceType: InstanceType
   metrics?: Record<string, InstanceMetric>
@@ -337,6 +358,7 @@ function OverviewTab({
   security?: import("../api/types").SecurityCheck
   securityLoading: boolean
   actions: Action[]
+  onViewSecurity: () => void
 }) {
   return (
     <div className="space-y-6">
@@ -378,9 +400,17 @@ function OverviewTab({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-fg-muted">
-          Security at a glance
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-fg-muted">
+            Security at a glance
+          </h2>
+          <button
+            onClick={onViewSecurity}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            View all
+          </button>
+        </div>
         {securityLoading ? (
           <Card>
             <p className="px-4 py-6 text-center text-sm text-fg-muted">
@@ -396,11 +426,7 @@ function OverviewTab({
         ) : (
           <Card>
             {(() => {
-              const hasFailedActions = actions.some((a) => a.status === "FAILED")
-              const displayStatus: SecurityOverallStatus =
-                security.overall_status === "action_required" && !hasFailedActions
-                  ? "safe"
-                  : security.overall_status
+              const displayStatus = security.overall_status
               return (
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -464,10 +490,14 @@ function SecurityTab({
   security,
   loading,
   instanceType,
+  instanceId,
+  onRequestAction,
 }: {
   security?: import("../api/types").SecurityCheck
   loading: boolean
   instanceType: InstanceType
+  instanceId: string
+  onRequestAction: (title: string, description: string) => void
 }) {
   if (loading) {
     return (
@@ -527,7 +557,28 @@ function SecurityTab({
       ) : (
         <div className="space-y-3">
           {sorted.map((f, i) => (
-            <SecurityFindingItem key={i} finding={f} />
+            <SecurityFindingItem
+              key={i}
+              finding={f}
+              actionButton={
+                f.status === "action_required" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onRequestAction(
+                        f.title,
+                        f.detail
+                          ? `${f.detail}${f.action ? `\n\nSuggested fix: ${f.action}` : ""}`
+                          : f.action ?? ""
+                      )
+                    }
+                  >
+                    Request action
+                  </Button>
+                ) : undefined
+              }
+            />
           ))}
         </div>
       )}

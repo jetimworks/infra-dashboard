@@ -24,9 +24,11 @@ const statusLabel = {
 
 export interface SecurityFindingItemProps {
   finding: SecurityFinding
+  /** Optional action button rendered inside the card (e.g. for action_required findings) */
+  actionButton?: React.ReactNode
 }
 
-export function SecurityFindingItem({ finding }: SecurityFindingItemProps) {
+export function SecurityFindingItem({ finding, actionButton }: SecurityFindingItemProps) {
   const Icon = statusIcon[finding.status]
   const [copied, setCopied] = useState(false)
 
@@ -88,6 +90,9 @@ export function SecurityFindingItem({ finding }: SecurityFindingItemProps) {
               </div>
             </div>
           ) : null}
+          {actionButton && (
+            <div className="mt-3">{actionButton}</div>
+          )}
         </div>
       </div>
     </div>

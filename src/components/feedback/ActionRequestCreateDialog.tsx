@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Drawer } from "../ui/Drawer"
@@ -13,24 +13,38 @@ interface ActionRequestCreateDialogProps {
   onClose: () => void
   /** Pre-selected instance (optional) */
   instanceId?: string
+  /** Pre-fill title (optional) */
+  initialTitle?: string
+  /** Pre-fill description (optional) */
+  initialDescription?: string
 }
 
 export function ActionRequestCreateDialog({
   open,
   onClose,
   instanceId: preSelectedInstanceId,
+  initialTitle,
+  initialDescription,
 }: ActionRequestCreateDialogProps) {
   const navigate = useNavigate()
   const { selectedProjectId } = useProject()
   const createMutation = useCreateActionRequest()
   const instancesQ = useInstances({ projectId: selectedProjectId ?? undefined })
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
+  const [title, setTitle] = useState(initialTitle ?? "")
+  const [description, setDescription] = useState(initialDescription ?? "")
   const [instanceId, setInstanceId] = useState(preSelectedInstanceId ?? "")
   const [titleError, setTitleError] = useState("")
   const [descError, setDescError] = useState("")
   const [instanceError, setInstanceError] = useState("")
+
+  // Sync state when dialog opens with new prefill values
+  useEffect(() => {
+    if (open) {
+      setTitle(initialTitle ?? "")
+      setDescription(initialDescription ?? "")
+    }
+  }, [open, initialTitle, initialDescription])
 
   const handleClose = () => {
     setTitle("")
