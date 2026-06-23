@@ -9,7 +9,7 @@ import { qk } from "../lib/query-keys"
 export function useSecurityCheck(id: string | undefined, refresh = false) {
   return useQuery({
     queryKey: id
-      ? qk.instanceSecurityCheck(id)
+      ? qk.instanceSecurityCheck(id).concat(refresh ? ["refresh"] : [])
       : ["instances", id, "security-check", "noop"],
     queryFn: () => securityApi.check(id as string, refresh),
     enabled: Boolean(id),
@@ -21,7 +21,7 @@ export function useSecurityCheck(id: string | undefined, refresh = false) {
 export function useSecurityAudit(id: string | undefined, refresh = false) {
   return useQuery({
     queryKey: id
-      ? qk.instanceSecurityAudit(id)
+      ? qk.instanceSecurityAudit(id).concat(refresh ? ["refresh"] : [])
       : ["instances", id, "security-audit", "noop"],
     queryFn: () => securityApi.audit(id as string, refresh),
     enabled: Boolean(id),
@@ -32,7 +32,7 @@ export function useSecurityAudit(id: string | undefined, refresh = false) {
 export function useRdsSecurityAudit(id: string | undefined, refresh = false) {
   return useQuery({
     queryKey: id
-      ? qk.instanceRdsSecurityAudit(id)
+      ? qk.instanceRdsSecurityAudit(id).concat(refresh ? ["refresh"] : [])
       : ["instances", id, "rds-security-audit", "noop"],
     queryFn: () => securityApi.rdsAudit(id as string, refresh),
     enabled: Boolean(id),

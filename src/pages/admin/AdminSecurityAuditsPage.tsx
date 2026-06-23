@@ -151,10 +151,10 @@ function AuditDrawer({
   instance: Instance | null
   onClose: () => void
 }) {
-  const [refresh, setRefresh] = useState(false)
+  const [refreshNonce, setRefreshNonce] = useState(0)
   const isVps = instance?.type === "VPS"
-  const vpsAudit = useSecurityAudit(isVps ? instance?.id : undefined, refresh)
-  const rdsAudit = useRdsSecurityAudit(!isVps && instance?.type === "RDS" ? instance?.id : undefined, refresh)
+  const vpsAudit = useSecurityAudit(isVps ? instance?.id : undefined, refreshNonce > 0)
+  const rdsAudit = useRdsSecurityAudit(!isVps && instance?.type === "RDS" ? instance?.id : undefined, refreshNonce > 0)
 
   const auditQ = isVps ? vpsAudit : rdsAudit
   const audit = auditQ.data
@@ -188,13 +188,8 @@ function AuditDrawer({
               size="sm"
               leftIcon={RefreshCw}
               onClick={() => {
-                setRefresh(false)
-                // Force-refetch by toggling refresh param off-then-on so the
-                // query key stays stable but the underlying request fires.
-                requestAnimationFrame(() => {
-                  setRefresh(true)
-                  auditQ.refetch().then(() => toast.success("Security scan complete"))
-                })
+                setRefreshNonce((n) => n + 1)
+                auditQ.refetch().then(() => toast.success("Security scan complete"))
               }}
             >
               Check now
