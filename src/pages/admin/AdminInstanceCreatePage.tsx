@@ -555,7 +555,6 @@ export function AdminInstanceCreatePage() {
                       shouldValidate: true,
                     })
                   }
-                  error={localForm.formState.errors.parent_id?.message}
                 />
               </Field>
               <Field

@@ -352,7 +352,6 @@ function OverviewTab({
   metricsLoading: boolean
   security?: import("../api/types").SecurityCheck
   securityLoading: boolean
-  actions: Action[]
   onViewSecurity: () => void
 }) {
   return (
@@ -490,7 +489,6 @@ function SecurityTab({
   security?: import("../api/types").SecurityCheck
   loading: boolean
   instanceType: InstanceType
-  instanceId: string
   onRequestAction: (title: string, description: string) => void
 }) {
   if (loading) {
