@@ -10,6 +10,7 @@ import { Input } from "../components/ui/Input"
 import { Field } from "../components/ui/Input"
 import { Card } from "../components/ui/Card"
 import { normalizeError } from "../api/errors"
+import { toast } from "../components/ui/Toast"
 
 const changePasswordSchema = z
   .object({
@@ -48,12 +49,15 @@ export function ChangePasswordPage() {
         current_password: data.current_password,
         new_password: data.new_password,
       })
+      toast.success("Password updated successfully", { duration: 5000 })
       // Re-fetch user to update onboarding_stage
       await refreshUser()
       reset()
       navigate("/dashboard", { replace: true })
     } catch (err) {
-      setSubmitError(normalizeError(err).message)
+      const error = normalizeError(err)
+      toast.error(error.message, { duration: 5000 })
+      setSubmitError(error.message)
     }
   }
 

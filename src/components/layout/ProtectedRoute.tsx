@@ -23,11 +23,6 @@ export function ProtectedRoute() {
     return <Navigate to="/change-password" state={{ from: location }} replace />
   }
 
-  // If user is past onboarding and on change-password page, redirect away
-  if (user.onboarding_stage === "HOME" && location.pathname === "/change-password") {
-    return <Navigate to="/dashboard" replace />
-  }
-
   return <Outlet />
 }
 

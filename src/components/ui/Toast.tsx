@@ -1,13 +1,13 @@
 import { toast as sonnerToast } from "sonner"
 
 export const toast = {
-  success: (message: string, opts?: { description?: string }) =>
+  success: (message: string, opts?: { description?: string; duration?: number }) =>
     sonnerToast.success(message, opts),
-  error: (message: string, opts?: { description?: string }) =>
+  error: (message: string, opts?: { description?: string; duration?: number }) =>
     sonnerToast.error(message, opts),
-  info: (message: string, opts?: { description?: string }) =>
+  info: (message: string, opts?: { description?: string; duration?: number }) =>
     sonnerToast.info(message, opts),
-  warning: (message: string, opts?: { description?: string }) =>
+  warning: (message: string, opts?: { description?: string; duration?: number }) =>
     sonnerToast.warning(message, opts),
   promise: <T,>(
     promise: Promise<T>,

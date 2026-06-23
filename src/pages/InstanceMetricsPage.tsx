@@ -25,37 +25,53 @@ import type { InstanceType, InstanceMetric } from "../api/types"
 
 type Range = "1h" | "24h" | "7d"
 
+// Converts raw metric value to a display-friendly number.
+// Rounds to 2 decimal places and converts bytes to MB for redis_memory_bytes.
+function displayValue(apiMetric: string, value: number | null): number | null {
+  if (value == null) return null
+  if (apiMetric === "redis_memory_bytes") {
+    return Math.round((value / (1024 * 1024)) * 100) / 100
+  }
+  return Math.round(value * 100) / 100
+}
+
 const rangeOptions: { value: Range; label: string; hours: number }[] = [
   { value: "1h", label: "Last hour", hours: 1 },
   { value: "24h", label: "Last 24 hours", hours: 24 },
   { value: "7d", label: "Last 7 days", hours: 24 * 7 },
 ]
 
+// metric values must match the backend constants in
+// infra-backend/internal/services/metrics/poller.go
 const metricCatalog: Record<
   InstanceType,
-  { key: string; label: string; unit: string; help: string }[]
+  { key: string; apiMetric: string; label: string; unit: string; help: string }[]
 > = {
   VPS: [
     {
       key: "ram",
+      apiMetric: "ram_used_mb",
       label: "Memory",
-      unit: "%",
+      unit: "MB",
       help: "How much of the server's memory is in use.",
     },
     {
       key: "cpu",
+      apiMetric: "cpu_percent",
       label: "CPU",
       unit: "%",
       help: "How busy the processors are right now.",
     },
     {
       key: "storage",
+      apiMetric: "storage_used_percent",
       label: "Storage",
       unit: "%",
       help: "How full the disk is.",
     },
     {
       key: "ping",
+      apiMetric: "ping_ip_ms",
       label: "Response time",
       unit: "ms",
       help: "How long it takes the server to respond.",
@@ -64,18 +80,21 @@ const metricCatalog: Record<
   REDIS: [
     {
       key: "memory",
+      apiMetric: "redis_memory_bytes",
       label: "Memory used",
-      unit: "%",
+      unit: "MB",
       help: "How much of the cache is in use.",
     },
     {
       key: "clients",
+      apiMetric: "redis_connected_clients",
       label: "Connected clients",
       unit: "",
       help: "How many clients are connected to the cache right now.",
     },
     {
       key: "keys",
+      apiMetric: "redis_keys_total",
       label: "Total keys",
       unit: "",
       help: "How many keys are stored in the cache.",
@@ -83,21 +102,17 @@ const metricCatalog: Record<
   ],
   RDS: [
     {
-      key: "connections",
-      label: "Connections",
+      key: "connection",
+      apiMetric: "rds_connection_test",
+      label: "Connection test",
       unit: "",
-      help: "Active database connections.",
-    },
-    {
-      key: "cache_hit",
-      label: "Cache hit rate",
-      unit: "%",
-      help: "How often the database hits its cache instead of disk.",
+      help: "Whether the database connection is working.",
     },
   ],
   STORAGE: [
     {
       key: "used",
+      apiMetric: "storage_used_percent",
       label: "Used",
       unit: "%",
       help: "How full the storage is.",
@@ -169,7 +184,7 @@ export function InstanceMetricsPage() {
             <MetricChart
               key={m.key}
               instanceId={id!}
-              metric={m.key}
+              apiMetric={m.apiMetric}
               label={m.label}
               unit={m.unit}
               help={m.help}
@@ -184,14 +199,14 @@ export function InstanceMetricsPage() {
 
 function MetricChart({
   instanceId,
-  metric,
+  apiMetric,
   label,
   unit,
   help,
   range,
 }: {
   instanceId: string
-  metric: string
+  apiMetric: string
   label: string
   unit: string
   help: string
@@ -204,7 +219,7 @@ function MetricChart({
     [hours]
   )
   const historyQ = useInstanceMetricsHistory(instanceId, {
-    metric,
+    metric: apiMetric,
     from,
     limit: 500,
   })
@@ -224,10 +239,10 @@ function MetricChart({
     () =>
       sorted.map((m: InstanceMetric) => ({
         t: new Date(m.recorded_at).getTime(),
-        v: m.value,
+        v: displayValue(apiMetric, m.value),
         failed: !m.success,
       })),
-    [sorted]
+    [sorted, apiMetric]
   )
 
   // Find failed gaps (successive failed points) to render as red bands.
@@ -266,7 +281,7 @@ function MetricChart({
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `${metric}-${range}.csv`
+    a.download = `${apiMetric}-${range}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -282,7 +297,7 @@ function MetricChart({
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #e5e7eb)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--border-subtle))" />
           <XAxis
             dataKey="t"
             type="number"
@@ -299,24 +314,25 @@ function MetricChart({
                     minute: "2-digit",
                   })
             }
-            stroke="var(--fg-subtle, #94a3b8)"
+            stroke="rgb(var(--fg-subtle))"
             fontSize={11}
           />
           <YAxis
-            stroke="var(--fg-subtle, #94a3b8)"
+            stroke="rgb(var(--fg-subtle))"
             fontSize={11}
-            width={36}
+            width={44}
+            tickFormatter={(v) => (v == null ? "" : `${v}`)}
           />
           <Tooltip
             contentStyle={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e5e7eb)",
+              background: "rgb(var(--surface))",
+              border: "1px solid rgb(var(--border))",
               borderRadius: 6,
               fontSize: 12,
             }}
             labelFormatter={(t) => formatDate(new Date(t as number).toISOString())}
             formatter={(value) => [
-              value == null ? "—" : `${value}${unit}`,
+              value == null ? "—" : `${Number(value).toFixed(2)}${unit}`,
               label,
             ]}
           />
@@ -325,20 +341,20 @@ function MetricChart({
               key={i}
               x1={b.x1}
               x2={b.x2}
-              fill="var(--danger, #dc2626)"
-              fillOpacity={0.08}
-              stroke="var(--danger, #dc2626)"
+              fill="#dc2626"
+              fillOpacity={0.1}
+              stroke="#dc2626"
               strokeOpacity={0.2}
             />
           ))}
           <Line
             type="monotone"
             dataKey="v"
-            stroke="var(--primary, #2563eb)"
-            strokeWidth={2}
+            stroke="#3b82f6"
+            strokeWidth={2.5}
             dot={false}
             isAnimationActive={false}
-            connectNulls={false}
+            connectNulls={true}
           />
         </LineChart>
       </ResponsiveContainer>
