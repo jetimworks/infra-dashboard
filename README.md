@@ -1,6 +1,6 @@
 # Infra Dashboard
 
-The customer-facing dashboard for **Infra by Jetimworks** — a calm, hand-holding control panel where non-technical customers manage their servers, databases, caches, and storage. Built for the [infra-backend](https://github.com/jetimworks/infra-backend) Go service.
+The customer-facing dashboard for **Infra by Jetimworks** — a calm, hand-holding control panel where non-technical customers manage their servers, databases, caches, and storage.
 
 The UI is built around a single idea: **customers should feel at home and confident that their resources are safe with us.** Plain language. Generous whitespace. Clear status. No jargon unless we define it inline.
 
@@ -158,6 +158,5 @@ npm run lint       # ESLint (React 19 purity rules enforced)
 
 ## Reference
 
-- Backend source of truth: `infra-backend/internal/rest/*.go`
 - Bruno API collection: `~/Documents/bruno/infrastructure/`
 - Plan document: `~/.claude/plans/linear-leaping-nest.md`
