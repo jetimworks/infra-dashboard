@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router-dom"
 import { ChevronRight, Lock, RefreshCw, ShieldCheck } from "lucide-react"
-import { toast } from "sonner"
 import { useState } from "react"
 import { useInstance } from "../queries/instances"
 import { useSecurityCheck } from "../queries/security"

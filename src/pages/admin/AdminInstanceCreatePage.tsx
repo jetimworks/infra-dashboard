@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useForm, useFormContext } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import {
@@ -31,11 +31,9 @@ import type { Instance, InstanceType } from "../../api/types"
 function ParentServerSelect({
   value,
   onChange,
-  error,
 }: {
   value: string
   onChange: (id: string) => void
-  error?: string
 }) {
   const { data: vpsInstances, isLoading } = useInstances({ type: "VPS" })
 

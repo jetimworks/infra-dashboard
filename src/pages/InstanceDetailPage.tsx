@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react"
-import { toast } from "sonner"
 import { useInstance } from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
 import { useSecurityCheck } from "../queries/security"
@@ -294,7 +293,6 @@ export function InstanceDetailPage() {
             metricsLoading={metricsQ.isLoading}
             security={securityQ.data}
             securityLoading={securityQ.isLoading}
-            actions={actionsQ.data?.data ?? []}
             onViewSecurity={() => setTab("security")}
           />
         ) : tab === "metrics" ? (
@@ -304,7 +302,6 @@ export function InstanceDetailPage() {
             security={securityQ.data}
             loading={securityQ.isLoading}
             instanceType={instance.type}
-            instanceId={id!}
             onRequestAction={(title, description) => {
               setPrefillTitle(title)
               setPrefillDescription(description)
@@ -348,7 +345,6 @@ function OverviewTab({
   metricsLoading,
   security,
   securityLoading,
-  actions,
   onViewSecurity,
 }: {
   instanceType: InstanceType
@@ -489,7 +485,6 @@ function SecurityTab({
   security,
   loading,
   instanceType,
-  instanceId,
   onRequestAction,
 }: {
   security?: import("../api/types").SecurityCheck
