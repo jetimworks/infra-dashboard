@@ -310,16 +310,12 @@ function ActionRequestsTab({
             icon={ClipboardList}
             title="No action requests for this project"
             description="Create a request and it'll show up here."
-            action={
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={Plus}
-                onClick={() => setCreateOpen(true)}
-              >
-                Create request
-              </Button>
-            }
+            action={{
+              label: "Create request",
+              onClick: () => setCreateOpen(true),
+              variant: "primary",
+              icon: Plus,
+            }}
           />
         </Card>
       ) : (

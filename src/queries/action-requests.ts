@@ -13,7 +13,10 @@ export function useActionRequests(filters?: {
   instanceId?: string
 }) {
   return useQuery({
-    queryKey: qk.actionRequests(filters),
+    queryKey: qk.actionRequests({
+      project_id: filters?.projectId,
+      instance_id: filters?.instanceId,
+    }),
     queryFn: () =>
       actionRequestsApi.list({
         project_id: filters?.projectId,

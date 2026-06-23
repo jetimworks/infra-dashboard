@@ -57,16 +57,12 @@ export function ActionRequestsPage() {
             icon={ClipboardList}
             title="No action requests yet"
             description="When you need something from the team — more resources, a service restart, or anything else — create a request here."
-            action={
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={Plus}
-                onClick={() => setCreateOpen(true)}
-              >
-                Create your first request
-              </Button>
-            }
+            action={{
+              label: "Create your first request",
+              onClick: () => setCreateOpen(true),
+              variant: "primary",
+              icon: Plus,
+            }}
           />
         </Card>
       ) : (
