@@ -37,7 +37,6 @@ import type {
   InstanceType,
   SecurityOverallStatus,
   InstanceMetric,
-  Action,
 } from "../api/types"
 
 type TabValue =
