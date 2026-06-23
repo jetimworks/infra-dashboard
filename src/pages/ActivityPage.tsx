@@ -36,23 +36,28 @@ export function ActivityPage() {
     selectedProjectId ? { projectId: selectedProjectId } : undefined
   )
 
-  const actionsQ = selectedInstanceId
-    ? useInstanceActions(selectedInstanceId, {
-        limit,
-        offset,
-        status:
-          statusFilter === "all"
-            ? undefined
-            : (statusFilter.toUpperCase() as ActionStatus),
-      })
-    : useActions({
-        limit,
-        offset,
-        status:
-          statusFilter === "all"
-            ? undefined
-            : (statusFilter.toUpperCase() as ActionStatus),
-      })
+  // Always call both hooks unconditionally to satisfy React's rules of hooks
+  const instanceActionsQ = useInstanceActions(
+    selectedInstanceId ?? "",
+    {
+      limit,
+      offset,
+      status:
+        statusFilter === "all"
+          ? undefined
+          : (statusFilter.toUpperCase() as ActionStatus),
+    }
+  )
+  const globalActionsQ = useActions({
+    limit,
+    offset,
+    status:
+      statusFilter === "all"
+        ? undefined
+        : (statusFilter.toUpperCase() as ActionStatus),
+  })
+  // Use the appropriate query based on whether an instance is selected
+  const actionsQ = selectedInstanceId ? instanceActionsQ : globalActionsQ
 
   const all = useMemo(() => actionsQ.data?.data ?? [], [actionsQ.data])
   const total = actionsQ.data?.total ?? 0

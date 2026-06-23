@@ -57,6 +57,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
 export { ProjectContext }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useProject() {
   const ctx = useContext(ProjectContext)
   if (!ctx) throw new Error("useProject must be used inside ProjectProvider")

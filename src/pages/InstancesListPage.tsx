@@ -50,14 +50,13 @@ export function InstancesListPage() {
   // Use URL filter when available, otherwise use state
   const activeFilter = searchParams.has("type") ? filterFromUrl : filter
 
-  // When project changes, clear URL type param so we see all
+  // When project changes, clear URL type param so filter falls back to "ALL"
   useEffect(() => {
     if (searchParams.has("type")) {
       const newParams = new URLSearchParams(searchParams)
       newParams.delete("type")
       setSearchParams(newParams, { replace: true })
     }
-    setFilter("ALL")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveProjectId])
 
