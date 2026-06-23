@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { Drawer } from "../ui/Drawer"
 import { Button } from "../ui/Button"
 import { Input, Field, Textarea } from "../ui/Input"
@@ -26,6 +27,9 @@ export function ActionRequestCreateDialog({
   const [titleError, setTitleError] = useState("")
   const [descError, setDescError] = useState("")
 
+  const hasProject = Boolean(projectId)
+  const hasInstance = Boolean(instanceId)
+
   const handleClose = () => {
     setTitle("")
     setDescription("")
@@ -50,6 +54,14 @@ export function ActionRequestCreateDialog({
       hasError = true
     } else {
       setDescError("")
+    }
+    if (!hasProject) {
+      toast.error("Please select a project before creating an action request")
+      hasError = true
+    }
+    if (!hasInstance) {
+      toast.error("Please select an instance before creating an action request")
+      hasError = true
     }
     if (hasError) return
 

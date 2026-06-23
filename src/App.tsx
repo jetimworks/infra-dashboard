@@ -36,6 +36,7 @@ import { AdminInstanceSshKeyPage } from "./pages/admin/AdminInstanceSshKeyPage"
 import { AdminInstanceSystemActionPage } from "./pages/admin/AdminInstanceSystemActionPage"
 import { AdminSecurityAuditsPage } from "./pages/admin/AdminSecurityAuditsPage"
 import { AdminActionRequestsPage } from "./pages/admin/AdminActionRequestsPage"
+import { AdminActionRequestDetailPage } from "./pages/admin/AdminActionRequestDetailPage"
 
 export default function App() {
   // Always use vibrant mode - remove old color mode preferences
@@ -129,6 +130,10 @@ export default function App() {
                   <Route
                     path="action-requests"
                     element={<AdminActionRequestsPage />}
+                  />
+                  <Route
+                    path="action-requests/:id"
+                    element={<AdminActionRequestDetailPage />}
                   />
                 </Route>
 

@@ -427,3 +427,17 @@ export interface UpdateActionRequestInput {
   title?: string
   status?: ActionRequestStatus
 }
+
+// Admin view — nested objects instead of IDs
+export interface AdminActionRequest {
+  id: string
+  user: User
+  project: Project | null
+  instance: Instance | null
+  title: string
+  description: string
+  status: ActionRequestStatus
+  admin_notes: AdminNote[]
+  created_at: string
+  updated_at: string
+}

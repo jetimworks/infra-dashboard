@@ -40,4 +40,6 @@ export const qk = {
   actionRequest: (id: string) => ["actionRequests", id] as const,
 
   adminUsers: () => ["admin", "users"] as const,
+  adminActionRequests: () => ["admin", "actionRequests"] as const,
+  adminActionRequest: (id: string) => ["admin", "actionRequests", id] as const,
 }

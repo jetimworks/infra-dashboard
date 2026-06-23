@@ -8,6 +8,23 @@ import type {
   UpdateActionRequestInput,
 } from "../api/types"
 
+export function useAdminActionRequests() {
+  return useQuery({
+    queryKey: qk.adminActionRequests(),
+    queryFn: () => actionRequestsApi.listAdmin(),
+    staleTime: 30_000,
+  })
+}
+
+export function useAdminActionRequest(id: string | undefined) {
+  return useQuery({
+    queryKey: id ? qk.adminActionRequest(id) : ["admin", "actionRequests", "detail", "noop"],
+    queryFn: () => actionRequestsApi.get(id as string),
+    enabled: Boolean(id),
+    staleTime: 30_000,
+  })
+}
+
 export function useActionRequests(filters?: {
   projectId?: string
   instanceId?: string

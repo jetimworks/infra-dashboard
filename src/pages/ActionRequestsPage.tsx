@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { useActionRequests } from "../queries/action-requests"
+import { useProject } from "../contexts/ProjectContext"
 import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { LoadingPage } from "../components/ui/LoadingState"
@@ -11,8 +12,9 @@ import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestC
 import { ClipboardList } from "lucide-react"
 
 export function ActionRequestsPage() {
+  const { selectedProjectId } = useProject()
   const [createOpen, setCreateOpen] = useState(false)
-  const actionRequestsQ = useActionRequests()
+  const actionRequestsQ = useActionRequests({ projectId: selectedProjectId ?? undefined })
 
   if (actionRequestsQ.isLoading) {
     return <LoadingPage label="Loading action requests…" />
@@ -76,6 +78,7 @@ export function ActionRequestsPage() {
       <ActionRequestCreateDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
+        projectId={selectedProjectId ?? undefined}
       />
     </div>
   )
