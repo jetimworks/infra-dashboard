@@ -2,6 +2,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from "./client"
 import type {
   CreateInstanceInput,
   CreateLocalServiceInput,
+  CreateRemoteServiceInput,
   Instance,
   InstanceType,
   SshKeyResponse,
@@ -61,4 +62,13 @@ export const instancesApi = {
       `/instances/${id}/create-storage`,
       body
     ),
+
+  createRemoteRedis: (body: CreateRemoteServiceInput) =>
+    apiPost<Instance, CreateRemoteServiceInput>("/instances", body),
+
+  createRemoteRds: (body: CreateRemoteServiceInput) =>
+    apiPost<Instance, CreateRemoteServiceInput>("/instances", body),
+
+  createRemoteStorage: (body: CreateRemoteServiceInput) =>
+    apiPost<Instance, CreateRemoteServiceInput>("/instances", body),
 }

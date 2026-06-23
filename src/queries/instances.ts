@@ -6,6 +6,7 @@ import { qk } from "../lib/query-keys"
 import type {
   CreateInstanceInput,
   CreateLocalServiceInput,
+  CreateRemoteServiceInput,
   InstanceType,
   SshKeyUploadInput,
   SystemActionInput,
@@ -62,6 +63,30 @@ export function useCreateLocalService() {
       if (type === "REDIS") return instancesApi.createLocalRedis(parentId, body)
       if (type === "RDS") return instancesApi.createLocalRds(parentId, body)
       return instancesApi.createLocalStorage(parentId, body)
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["instances"] })
+      toast.success("Service added")
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message)
+    },
+  })
+}
+
+export function useCreateRemoteService() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      type,
+      body,
+    }: {
+      type: Exclude<InstanceType, "VPS">
+      body: CreateRemoteServiceInput
+    }) => {
+      if (type === "REDIS") return instancesApi.createRemoteRedis(body)
+      if (type === "RDS") return instancesApi.createRemoteRds(body)
+      return instancesApi.createRemoteStorage(body)
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["instances"] })

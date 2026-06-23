@@ -190,6 +190,19 @@ export interface CreateLocalServiceInput {
   is_local?: boolean
 }
 
+export interface CreateRemoteServiceInput {
+  project_id: string
+  name: string
+  host?: string | null
+  port?: number | null
+  username?: string | null
+  password?: string | null
+  domain?: string | null
+  config?: InstanceConfig
+  is_active?: boolean
+  is_local: false
+}
+
 export interface SystemActionInput {
   action: SystemActionVerb
   service: string
