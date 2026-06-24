@@ -11,10 +11,9 @@ import {
   Users,
   Zap,
 } from "lucide-react"
-import { useProjects } from "../../queries/projects"
 import { useInstances } from "../../queries/instances"
 import { useActions } from "../../queries/actions"
-import { useAdminUsers } from "../../queries/admin"
+import { useAdminUsers, useAdminProjects } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { AdminTabs } from "../../components/layout/AdminTabs"
 import { LoadingPage } from "../../components/ui/LoadingState"
@@ -25,7 +24,7 @@ import type { InstanceType } from "../../api/types"
 
 export function AdminOverviewPage() {
   const usersQ = useAdminUsers()
-  const projectsQ = useProjects()
+  const projectsQ = useAdminProjects()
   const instancesQ = useInstances()
   const actionsQ = useActions({ limit: 50 })
 

@@ -8,6 +8,7 @@ import type {
 export const projectsApi = {
   list: (params?: { user_id?: string }) =>
     apiGet<Project[]>("/projects", params),
+  listAdmin: () => apiGet<Project[]>("/projects", { view: "admin" }),
   get: (id: string) => apiGet<Project>(`/projects/${id}`),
   create: (body: ProjectCreateInput) =>
     apiPost<Project, ProjectCreateInput>("/projects", body),

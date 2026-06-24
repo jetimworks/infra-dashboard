@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Cloud, Plus, Server } from "lucide-react"
-import { useProjects, useCreateProject } from "../../queries/projects"
+import { useCreateProject } from "../../queries/projects"
 import { useInstances } from "../../queries/instances"
-import { useAdminUsers } from "../../queries/admin"
+import { useAdminUsers, useAdminProjects } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { AdminTabs } from "../../components/layout/AdminTabs"
 import { Button } from "../../components/ui/Button"
@@ -57,7 +57,7 @@ const createSchema = z.object({
 type CreateForm = z.infer<typeof createSchema>
 
 export function AdminProjectsPage() {
-  const projectsQ = useProjects()
+  const projectsQ = useAdminProjects()
   const instancesQ = useInstances()
   const usersQ = useAdminUsers()
   const [createOpen, setCreateOpen] = useState(false)

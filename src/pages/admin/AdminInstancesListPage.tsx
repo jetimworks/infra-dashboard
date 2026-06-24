@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { useInstances } from "../../queries/instances"
-import { useProjects } from "../../queries/projects"
+import { useAdminProjects } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Input } from "../../components/ui/Input"
 import { SegmentedControl } from "../../components/ui/SegmentedControl"
@@ -52,7 +52,7 @@ export function AdminInstancesListPage() {
   const instancesQ = useInstances(
     filter === "ALL" ? undefined : { type: filter }
   )
-  const projectsQ = useProjects()
+  const projectsQ = useAdminProjects()
 
   const instances = useMemo(() => {
     const all = instancesQ.data ?? []

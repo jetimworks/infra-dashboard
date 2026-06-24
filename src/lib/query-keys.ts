@@ -7,6 +7,7 @@ export const qk = {
 
   projects: (filters?: { userId?: string }) => ["projects", filters ?? {}] as const,
   project: (id: string) => ["projects", id] as const,
+  adminProjects: () => ["admin", "projects"] as const,
 
   instances: (filters?: { projectId?: string; type?: string; parentId?: string }) =>
     ["instances", filters ?? {}] as const,

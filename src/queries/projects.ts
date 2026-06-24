@@ -28,6 +28,7 @@ export function useCreateProject() {
     mutationFn: (body: ProjectCreateInput) => projectsApi.create(body),
     onSuccess: (project) => {
       qc.invalidateQueries({ queryKey: ["projects"] })
+      qc.invalidateQueries({ queryKey: qk.adminProjects() })
       toast.success("Project created")
       return project
     },
@@ -44,6 +45,7 @@ export function useUpdateProject() {
       projectsApi.update(id, body),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["projects"] })
+      qc.invalidateQueries({ queryKey: qk.adminProjects() })
       qc.invalidateQueries({ queryKey: qk.project(vars.id) })
       toast.success("Project updated")
     },
@@ -59,6 +61,7 @@ export function useDeleteProject() {
     mutationFn: (id: string) => projectsApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["projects"] })
+      qc.invalidateQueries({ queryKey: qk.adminProjects() })
       qc.invalidateQueries({ queryKey: ["instances"] })
       toast.success("Project removed")
     },

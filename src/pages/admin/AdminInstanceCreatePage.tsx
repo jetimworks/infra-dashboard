@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
-import { useProjects } from "../../queries/projects"
+import { useAdminProjects } from "../../queries/admin"
 import {
   useCreateInstance,
   useCreateLocalService,
@@ -164,7 +164,7 @@ const typeOptions: {
 
 export function AdminInstanceCreatePage() {
   const navigate = useNavigate()
-  const projectsQ = useProjects()
+  const projectsQ = useAdminProjects()
   const createInstance = useCreateInstance()
   const createLocal = useCreateLocalService()
   const createRemote = useCreateRemoteService()
