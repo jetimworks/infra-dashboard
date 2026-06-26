@@ -7,6 +7,7 @@ interface AuthContextType {
   login: (credentials: LoginInput) => Promise<void>
   register: (data: RegisterInput) => Promise<void>
   logout: () => void
+  impersonate: (accessToken: string, user: User) => void
   updateProfile: (data: {
     first_name: string
     last_name: string

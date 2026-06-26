@@ -112,6 +112,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate("/login", { replace: true })
   }, [navigate])
 
+  const impersonate = useCallback(
+    (accessToken: string, userData: User) => {
+      // Set access token in memory (no localStorage — this is a temporary session)
+      setAccessToken(accessToken)
+      // Set user in state (no localStorage persistence)
+      setUser(userData)
+      // Navigate to dashboard as the impersonated user
+      navigate("/dashboard", { replace: true })
+    },
+    [navigate]
+  )
+
   const updateProfile = useCallback(
     async (data: { first_name: string; last_name: string; phone: string }) => {
       const updatedUser = await userApi.updateProfile(data)
@@ -144,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        impersonate,
         updateProfile,
         changePassword,
         refreshUser,

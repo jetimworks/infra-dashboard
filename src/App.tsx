@@ -5,7 +5,7 @@ import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
 import { AppShell } from "./components/layout/AppShell"
-import { AdminRoute } from "./components/auth/AdminRoute"
+import { AdminRoute, CosplayRoute } from "./components/auth/AdminRoute"
 import { AdminShell } from "./components/layout/AdminShell"
 
 import { LoginPage } from "./pages/Login"
@@ -26,6 +26,7 @@ import { SupportPage } from "./pages/SupportPage"
 import { NotFoundPage } from "./pages/NotFoundPage"
 import { ActionRequestsPage } from "./pages/ActionRequestsPage"
 import { ActionRequestDetailPage } from "./pages/ActionRequestDetailPage"
+import { CosplayPage } from "./pages/Cosplay"
 
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage"
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage"
@@ -144,6 +145,16 @@ export default function App() {
                   />
                 </Route>
               </Route>
+
+              {/* Cosplay — standalone admin-only page (no AdminShell) */}
+              <Route
+                path="/cosplay"
+                element={
+                  <CosplayRoute>
+                    <CosplayPage />
+                  </CosplayRoute>
+                }
+              />
 
               <Route path="*" element={<NotFoundPage />} />
             </Route>

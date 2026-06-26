@@ -14,6 +14,10 @@ import { StatusPill } from "../../components/ui/StatusPill"
 import { Drawer } from "../../components/ui/Drawer"
 import { formatDate } from "../../lib/utils"
 import { normalizeError } from "../../api/errors"
+import { cosplayApi } from "../../api/cosplay"
+import { userApi } from "../../api/user"
+import { setAccessToken } from "../../api/client"
+import { useAuth } from "../../auth/useAuth"
 import type { User, UserStatus } from "../../api/types"
 
 const createSchema = z.object({
@@ -25,13 +29,27 @@ const createSchema = z.object({
 type CreateForm = z.infer<typeof createSchema>
 
 export function AdminUsersPage() {
+  const { impersonate } = useAuth()
   const usersQ = useAdminUsers()
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<User | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
   const create = useCreateUser()
   const update = useUpdateUser()
+
+  const onCosplay = async (email: string) => {
+    setImpersonatingId(email)
+    try {
+      const { access_token } = await cosplayApi.impersonate(email)
+      setAccessToken(access_token)
+      const userData = await userApi.getProfile()
+      impersonate(access_token, userData)
+    } catch {
+      setImpersonatingId(null)
+    }
+  }
 
   const {
     register,
@@ -136,7 +154,16 @@ export function AdminUsersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => onCosplay(u.email)}
+                      isLoading={impersonatingId === u.email}
+                    >
+                      Impersonate
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditing(u)}
+                      className="ml-2"
                     >
                       Edit
                     </Button>
