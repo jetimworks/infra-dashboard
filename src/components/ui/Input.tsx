@@ -1,5 +1,8 @@
 import {
   forwardRef,
+  useEffect,
+  useRef,
+  useState,
   type InputHTMLAttributes,
   type ReactNode,
 } from "react"
@@ -18,6 +21,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     { className, error, hint, leftIcon: LeftIcon, rightIcon: RightIcon, ...props },
     ref
   ) => {
+    const [shouldShake, setShouldShake] = useState(false)
+    const prevError = useRef<string | undefined>(error)
+
+    useEffect(() => {
+      // Trigger the shake animation only when error *appears*, not on every
+      // render that has an error prop.
+      if (error && error !== prevError.current) {
+        setShouldShake(true)
+        const t = window.setTimeout(() => setShouldShake(false), 340)
+        return () => window.clearTimeout(t)
+      }
+      prevError.current = error
+    }, [error])
+
     return (
       <div className="w-full">
         <div className="relative">
@@ -32,14 +49,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "flex h-11 w-full rounded-md border bg-surface px-3.5 text-[0.9375rem] text-fg",
               "placeholder:text-fg-subtle/50",
-              "transition-colors duration-150",
-              "focus:outline-none focus:ring-2",
+              "transition-[border-color,box-shadow] duration-200",
+              "focus:outline-none focus:ring-4",
               "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
               LeftIcon && "pl-10",
               RightIcon && "pr-10",
               error
-                ? "border-danger/60 focus:border-danger focus:ring-danger/20"
-                : "border-border/60 focus:border-primary/70 focus:ring-primary/20",
+                ? "border-danger/60 focus:border-danger focus:ring-danger/15"
+                : "border-border/60 focus:border-primary/70 focus:ring-primary/15",
+              shouldShake && "animate-shake",
               className
             )}
             aria-invalid={error ? "true" : undefined}
@@ -78,6 +96,18 @@ export interface TextareaProps
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, error, hint, rows = 4, ...props }, ref) => {
+    const [shouldShake, setShouldShake] = useState(false)
+    const prevError = useRef<string | undefined>(error)
+
+    useEffect(() => {
+      if (error && error !== prevError.current) {
+        setShouldShake(true)
+        const t = window.setTimeout(() => setShouldShake(false), 340)
+        return () => window.clearTimeout(t)
+      }
+      prevError.current = error
+    }, [error])
+
     return (
       <div className="w-full">
         <textarea
@@ -86,12 +116,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={cn(
             "flex w-full min-h-24 rounded-md border bg-surface px-3.5 py-2.5 text-[0.9375rem] text-fg",
             "placeholder:text-fg-subtle/50",
-            "transition-colors duration-150",
-            "focus:outline-none focus:ring-2",
+            "transition-[border-color,box-shadow] duration-200",
+            "focus:outline-none focus:ring-4",
             "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
             error
-              ? "border-danger/60 focus:border-danger focus:ring-danger/20"
-              : "border-border/60 focus:border-primary/70 focus:ring-primary/20",
+              ? "border-danger/60 focus:border-danger focus:ring-danger/15"
+              : "border-border/60 focus:border-primary/70 focus:ring-primary/15",
+            shouldShake && "animate-shake",
             className
           )}
           aria-invalid={error ? "true" : undefined}

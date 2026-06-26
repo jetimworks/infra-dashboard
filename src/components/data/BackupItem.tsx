@@ -1,7 +1,9 @@
 import { ArchiveRestore, Download } from "lucide-react"
+import { motion } from "framer-motion"
 import { Button } from "../ui/Button"
 import { StatusPill } from "../ui/StatusPill"
 import { formatBytes, formatRelative, formatDuration } from "../../lib/utils"
+import { listItem } from "../../lib/motion"
 import type { BackupListItem, InstanceType } from "../../api/types"
 
 export interface BackupItemProps {
@@ -27,7 +29,10 @@ export function BackupItem({
   const canRestore = isRds && backup.status === "SUCCESS" && !!onRestore
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-md border border-border/40 bg-surface px-4 py-3">
+    <motion.div
+      variants={listItem}
+      className="flex items-center justify-between gap-4 rounded-md border border-border/40 bg-surface px-4 py-3 transition-colors duration-200 hover:border-primary/30 hover:bg-primary/[0.02]"
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-mono text-sm text-fg">
@@ -76,7 +81,7 @@ export function BackupItem({
           </Button>
         ) : null}
       </div>
-    </div>
+    </motion.div>
   )
 }
 

@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import { useEffect } from "react"
+import { AnimatePresence } from "framer-motion"
 import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
@@ -7,6 +8,7 @@ import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
 import { AppShell } from "./components/layout/AppShell"
 import { AdminRoute, CosplayRoute } from "./components/auth/AdminRoute"
 import { AdminShell } from "./components/layout/AdminShell"
+import { PageWrapper } from "./components/layout/PageWrapper"
 
 import { LoginPage } from "./pages/Login"
 import { RegisterPage } from "./pages/Register"
@@ -63,104 +65,119 @@ export default function App() {
               duration: 5000,
             }}
           />
-          <Routes>
-            {/* Public */}
-            <Route element={<PublicRoute />}>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            </Route>
-
-            {/* Protected (any authed user) */}
-            <Route element={<ProtectedRoute />}>
-              <Route element={<AppShell />}>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/instances" element={<InstancesListPage />} />
-                <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                <Route path="/instances/:id" element={<InstanceDetailPage />} />
-                <Route
-                  path="/instances/:id/metrics"
-                  element={<InstanceMetricsPage />}
-                />
-                <Route
-                  path="/instances/:id/security"
-                  element={<InstanceSecurityPage />}
-                />
-                <Route
-                  path="/instances/:id/backups"
-                  element={<InstanceBackupsPage />}
-                />
-                <Route path="/activity" element={<ActivityPage />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/support" element={<SupportPage />} />
-                <Route path="/change-password" element={<ChangePasswordPage />} />
-                <Route path="/action-requests" element={<ActionRequestsPage />} />
-                <Route path="/action-requests/:id" element={<ActionRequestDetailPage />} />
-              </Route>
-
-              {/* Admin routes — rendered in AdminShell, guarded by AdminRoute */}
-              <Route element={<AdminRoute />}>
-                <Route element={<AdminShell />}>
-                  <Route path="/admin" element={<AdminDashboardPage />} />
-                  <Route path="/admin/users" element={<AdminUsersPage />} />
-                  <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
-                  <Route path="/admin/projects" element={<AdminProjectsPage />} />
-                  <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
-                  <Route
-                    path="/admin/instances"
-                    element={<AdminInstancesListPage />}
-                  />
-                  <Route
-                    path="/admin/instances/new"
-                    element={<AdminInstanceCreatePage />}
-                  />
-                  <Route
-                    path="/admin/instances/:id/edit"
-                    element={<AdminInstanceEditPage />}
-                  />
-                  <Route
-                    path="/admin/instances/:id/ssh-key"
-                    element={<AdminInstanceSshKeyPage />}
-                  />
-                  <Route
-                    path="/admin/instances/:id/system-action"
-                    element={<AdminInstanceSystemActionPage />}
-                  />
-                  <Route
-                    path="/admin/security-audits"
-                    element={<AdminSecurityAuditsPage />}
-                  />
-                  <Route
-                    path="/admin/action-requests"
-                    element={<AdminActionRequestsPage />}
-                  />
-                  <Route
-                    path="/admin/action-requests/:id"
-                    element={<AdminActionRequestDetailPage />}
-                  />
-                  <Route
-                    path="/admin/activity"
-                    element={<AdminActivityPage />}
-                  />
-                </Route>
-              </Route>
-
-              {/* Cosplay — standalone admin-only page (no AdminShell) */}
-              <Route
-                path="/cosplay"
-                element={
-                  <CosplayRoute>
-                    <CosplayPage />
-                  </CosplayRoute>
-                }
-              />
-
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-          </Routes>
+          <AnimatedRoutes />
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
+  )
+}
+
+/**
+ * Wraps the route tree in <AnimatePresence> and forces a remount on every
+ * path change so that each route's <PageWrapper> can play its enter/exit
+ * animation. mode="wait" ensures the exit animation finishes before the
+ * next page enters.
+ */
+function AnimatedRoutes() {
+  const location = useLocation()
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={location.pathname}>
+        {/* Public */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+          <Route path="/register" element={<PageWrapper><RegisterPage /></PageWrapper>} />
+          <Route path="/forgot-password" element={<PageWrapper><ForgotPasswordPage /></PageWrapper>} />
+        </Route>
+
+        {/* Protected (any authed user) */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<PageWrapper><DashboardPage /></PageWrapper>} />
+            <Route path="/instances" element={<PageWrapper><InstancesListPage /></PageWrapper>} />
+            <Route path="/projects/:id" element={<PageWrapper><ProjectDetailPage /></PageWrapper>} />
+            <Route path="/instances/:id" element={<PageWrapper><InstanceDetailPage /></PageWrapper>} />
+            <Route
+              path="/instances/:id/metrics"
+              element={<PageWrapper><InstanceMetricsPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/security"
+              element={<PageWrapper><InstanceSecurityPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/backups"
+              element={<PageWrapper><InstanceBackupsPage /></PageWrapper>}
+            />
+            <Route path="/activity" element={<PageWrapper><ActivityPage /></PageWrapper>} />
+            <Route path="/account" element={<PageWrapper><AccountPage /></PageWrapper>} />
+            <Route path="/support" element={<PageWrapper><SupportPage /></PageWrapper>} />
+            <Route path="/change-password" element={<PageWrapper><ChangePasswordPage /></PageWrapper>} />
+            <Route path="/action-requests" element={<PageWrapper><ActionRequestsPage /></PageWrapper>} />
+            <Route path="/action-requests/:id" element={<PageWrapper><ActionRequestDetailPage /></PageWrapper>} />
+          </Route>
+
+          {/* Admin routes — rendered in AdminShell, guarded by AdminRoute */}
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminShell />}>
+              <Route path="/admin" element={<PageWrapper><AdminDashboardPage /></PageWrapper>} />
+              <Route path="/admin/users" element={<PageWrapper><AdminUsersPage /></PageWrapper>} />
+              <Route path="/admin/users/:id" element={<PageWrapper><AdminUserDetailPage /></PageWrapper>} />
+              <Route path="/admin/projects" element={<PageWrapper><AdminProjectsPage /></PageWrapper>} />
+              <Route path="/admin/projects/:id" element={<PageWrapper><AdminProjectDetailPage /></PageWrapper>} />
+              <Route
+                path="/admin/instances"
+                element={<PageWrapper><AdminInstancesListPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/instances/new"
+                element={<PageWrapper><AdminInstanceCreatePage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/instances/:id/edit"
+                element={<PageWrapper><AdminInstanceEditPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/instances/:id/ssh-key"
+                element={<PageWrapper><AdminInstanceSshKeyPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/instances/:id/system-action"
+                element={<PageWrapper><AdminInstanceSystemActionPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/security-audits"
+                element={<PageWrapper><AdminSecurityAuditsPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/action-requests"
+                element={<PageWrapper><AdminActionRequestsPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/action-requests/:id"
+                element={<PageWrapper><AdminActionRequestDetailPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/activity"
+                element={<PageWrapper><AdminActivityPage /></PageWrapper>}
+              />
+            </Route>
+          </Route>
+
+          {/* Cosplay — standalone admin-only page (no AdminShell) */}
+          <Route
+            path="/cosplay"
+            element={
+              <CosplayRoute>
+                <PageWrapper><CosplayPage /></PageWrapper>
+              </CosplayRoute>
+            }
+          />
+
+          <Route path="*" element={<PageWrapper><NotFoundPage /></PageWrapper>} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
   )
 }

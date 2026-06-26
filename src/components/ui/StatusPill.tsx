@@ -69,12 +69,12 @@ const statusMap: Record<
 }
 
 const toneClasses: Record<BadgeTone, string> = {
-  neutral: "bg-surface-sunken text-fg-muted",
-  primary: "bg-primary-soft text-primary-soft-fg",
-  success: "bg-success-soft text-success-fg",
-  warning: "bg-warning-soft text-warning-fg",
-  danger: "bg-danger-soft text-danger-fg",
-  info: "bg-info-soft text-info-fg",
+  neutral: "bg-surface-sunken text-fg-muted ring-1 ring-inset ring-border/40",
+  primary: "bg-primary-soft text-primary-soft-fg ring-1 ring-inset ring-primary/15",
+  success: "bg-success-soft text-success-fg ring-1 ring-inset ring-success/20",
+  warning: "bg-warning-soft text-warning-fg ring-1 ring-inset ring-warning/25",
+  danger: "bg-danger-soft text-danger-fg ring-1 ring-inset ring-danger/20",
+  info: "bg-info-soft text-info-fg ring-1 ring-inset ring-info/20",
 }
 
 export function StatusPill({
@@ -95,7 +95,7 @@ export function StatusPill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-medium",
+        "inline-flex items-center gap-1.5 rounded-full font-medium transition-colors duration-200",
         size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-xs",
         toneClasses[mapping.tone],
         className

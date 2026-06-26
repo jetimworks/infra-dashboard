@@ -341,19 +341,20 @@ function MetricChart({
               key={i}
               x1={b.x1}
               x2={b.x2}
-              fill="#dc2626"
+              fill="rgb(var(--danger))"
               fillOpacity={0.1}
-              stroke="#dc2626"
+              stroke="rgb(var(--danger))"
               strokeOpacity={0.2}
             />
           ))}
           <Line
             type="monotone"
             dataKey="v"
-            stroke="#3b82f6"
+            stroke="rgb(var(--primary))"
             strokeWidth={2.5}
             dot={false}
-            isAnimationActive={false}
+            isAnimationActive={true}
+            animationDuration={800}
             connectNulls={true}
           />
         </LineChart>

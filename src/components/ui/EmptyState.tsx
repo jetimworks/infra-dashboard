@@ -13,8 +13,19 @@ export interface EmptyStateProps {
     variant?: ButtonVariant
     icon?: LucideIcon
   }
+  /** Tints the icon background. Defaults to "info" (soft blue). */
+  tone?: "info" | "primary" | "accent" | "success" | "warning" | "danger"
   className?: string
   children?: ReactNode
+}
+
+const toneClasses: Record<NonNullable<EmptyStateProps["tone"]>, string> = {
+  info: "bg-info-soft text-info-fg",
+  primary: "bg-primary-soft text-primary-soft-fg",
+  accent: "bg-accent-soft text-accent-soft-fg",
+  success: "bg-success-soft text-success-fg",
+  warning: "bg-warning-soft text-warning-fg",
+  danger: "bg-danger-soft text-danger-fg",
 }
 
 export function EmptyState({
@@ -22,6 +33,7 @@ export function EmptyState({
   title,
   description,
   action,
+  tone = "info",
   className,
   children,
 }: EmptyStateProps) {
@@ -33,8 +45,13 @@ export function EmptyState({
       )}
     >
       {Icon ? (
-        <div className="mb-4 rounded-full bg-surface-sunken p-4">
-          <Icon className="h-8 w-8 text-fg-subtle" aria-hidden />
+        <div
+          className={cn(
+            "mb-4 flex h-16 w-16 items-center justify-center rounded-full animate-float",
+            toneClasses[tone]
+          )}
+        >
+          <Icon className="h-8 w-8" aria-hidden />
         </div>
       ) : null}
       <h3 className="text-[1.25rem] font-semibold text-fg">{title}</h3>

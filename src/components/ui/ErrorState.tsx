@@ -23,12 +23,12 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center px-6 py-12 rounded-lg border border-warning-soft bg-warning-soft/40",
+        "flex flex-col items-center justify-center text-center px-6 py-12 rounded-lg border border-danger/20 bg-danger-soft/40",
         className
       )}
     >
-      <div className="mb-4 rounded-full bg-warning-soft p-4">
-        <AlertTriangle className="h-8 w-8 text-warning-fg" aria-hidden />
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-danger-soft text-danger-fg animate-float">
+        <AlertTriangle className="h-8 w-8" aria-hidden />
       </div>
       <h3 className="text-[1.25rem] font-semibold text-fg">{title}</h3>
       {message ? (

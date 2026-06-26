@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Clock, Loader2, CheckCircle2, XCircle, StopCircle } from "lucide-react"
+import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 import { Button } from "../ui/Button"
 import { StatusPill } from "../ui/StatusPill"
@@ -112,6 +113,8 @@ export function AsyncActionTracker({
         />
       </div>
 
+      <ProgressBar status={status} elapsedMs={elapsedMs} timeoutMs={timeoutMs} />
+
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-3 text-xs text-fg-muted">
         <span>{action?.id ? `Action ${action.id.slice(0, 8)}` : null}</span>
         {TERMINAL.includes(status) ? null : (
@@ -137,6 +140,44 @@ export function AsyncActionTracker({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function ProgressBar({
+  status,
+  elapsedMs,
+  timeoutMs,
+}: {
+  status: ActionStatus
+  elapsedMs: number
+  timeoutMs: number
+}) {
+  if (TERMINAL.includes(status)) {
+    return (
+      <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface-sunken">
+        <motion.div
+          className={cn(
+            "h-full rounded-full",
+            status === "SUCCESS" ? "bg-success" : "bg-danger"
+          )}
+          initial={{ width: "60%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+        />
+      </div>
+    )
+  }
+  // Indeterminate-feel progress: cap at 90% until terminal.
+  const ratio = Math.min(0.9, (elapsedMs / timeoutMs) * 0.9)
+  return (
+    <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface-sunken">
+      <motion.div
+        className="h-full rounded-full bg-info"
+        initial={{ width: 0 }}
+        animate={{ width: `${ratio * 100}%` }}
+        transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+      />
     </div>
   )
 }

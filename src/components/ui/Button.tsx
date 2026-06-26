@@ -1,7 +1,9 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react"
+import { motion, type HTMLMotionProps, useReducedMotion } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "../../lib/utils"
+import { pressTransition } from "../../lib/motion"
 
 export type ButtonVariant =
   | "primary"
@@ -14,7 +16,8 @@ export type ButtonVariant =
 
 export type ButtonSize = "sm" | "md" | "lg"
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref"> {
   variant?: ButtonVariant
   size?: ButtonSize
   isLoading?: boolean
@@ -25,7 +28,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const baseClasses =
   "inline-flex items-center justify-center gap-2 rounded-md font-medium " +
-  "transition-colors duration-150 " +
+  "transition-[background-color,color,box-shadow,border-color] duration-200 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg " +
   "disabled:opacity-50 disabled:pointer-events-none"
 
@@ -40,13 +43,19 @@ const variantTextColor: Record<ButtonVariant, string> = {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-primary hover:bg-primary-hover shadow-sm",
-  secondary: "bg-surface-sunken/80 hover:bg-surface-sunken",
+  primary:
+    "bg-primary hover:bg-primary-hover shadow-sm hover:shadow-md hover:shadow-primary/20",
+  secondary:
+    "bg-surface-sunken/80 hover:bg-surface-sunken border border-border/40",
   ghost: "bg-transparent hover:bg-surface-sunken",
-  outline: "bg-surface/80 border border-border/60 hover:bg-surface-sunken",
-  "outline-danger": "border border-danger bg-danger/10 hover:bg-danger/20",
-  danger: "bg-danger border border-danger hover:bg-danger/90 shadow-sm",
-  success: "hover:bg-success/90 shadow-sm",
+  outline:
+    "bg-surface/80 border border-border/60 hover:bg-surface-sunken hover:border-border",
+  "outline-danger":
+    "border border-danger bg-danger/10 hover:bg-danger/20",
+  danger:
+    "bg-danger border border-danger hover:bg-danger/90 shadow-sm hover:shadow-md hover:shadow-danger/20",
+  success:
+    "bg-success border border-success hover:bg-success/90 shadow-sm hover:shadow-md hover:shadow-success/20",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -72,8 +81,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    const prefersReducedMotion = useReducedMotion()
     return (
-      <button
+      <motion.button
         ref={ref}
         type={type}
         className={cn(
@@ -85,7 +95,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         style={{ color: variantTextColor[variant], ...props.style }}
         disabled={disabled || isLoading}
-        {...props}
+        whileTap={
+          !prefersReducedMotion && !disabled && !isLoading
+            ? { scale: 0.97 }
+            : undefined
+        }
+        transition={pressTransition}
+        {...(props as HTMLMotionProps<"button">)}
       >
         {isLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -96,7 +112,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {!isLoading && RightIcon ? (
           <RightIcon className="h-4 w-4" aria-hidden />
         ) : null}
-      </button>
+      </motion.button>
     )
   }
 )

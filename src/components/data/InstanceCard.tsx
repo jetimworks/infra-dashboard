@@ -7,9 +7,11 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react"
+import { motion } from "framer-motion"
 import { Card } from "../ui/Card"
 import { StatusPill } from "../ui/StatusPill"
 import { Skeleton } from "../ui/LoadingState"
+import { listItem } from "../../lib/motion"
 import type { Instance, InstanceMetricsLatest, InstanceType } from "../../api/types"
 
 const typeIcon: Record<InstanceType, LucideIcon> = {
@@ -24,6 +26,13 @@ const typeLabel: Record<InstanceType, string> = {
   RDS: "Database",
   REDIS: "Cache",
   STORAGE: "Storage",
+}
+
+const typeAccent: Record<InstanceType, string> = {
+  VPS: "bg-primary-soft text-primary",
+  RDS: "bg-info-soft text-info-fg",
+  REDIS: "bg-accent-soft text-accent-soft-fg",
+  STORAGE: "bg-warning-soft text-warning-fg",
 }
 
 export interface InstanceCardProps {
@@ -47,36 +56,40 @@ export function InstanceCard({ instance, latestMetrics, loading }: InstanceCardP
   }
 
   return (
-    <Card interactive padding="md">
-      <Link to={`/instances/${instance.id}`} className="block">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
-              <Icon className="h-5 w-5" aria-hidden />
+    <motion.div variants={listItem}>
+      <Card interactive padding="md">
+        <Link to={`/instances/${instance.id}`} className="block">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${typeAccent[instance.type]}`}
+              >
+                <Icon className="h-5 w-5" aria-hidden />
+              </div>
+              <div>
+                <h3 className="text-[1.0625rem] font-semibold text-fg group-hover:text-primary transition-colors">
+                  {instance.name}
+                </h3>
+                <p className="mt-0.5 text-xs text-fg-muted">
+                  {typeLabel[instance.type]}
+                  {instance.host ? (
+                    <>
+                      <span className="mx-1.5">·</span>
+                      <span className="font-mono">{instance.host}</span>
+                    </>
+                  ) : null}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-[1.0625rem] font-semibold text-fg">
-                {instance.name}
-              </h3>
-              <p className="mt-0.5 text-xs text-fg-muted">
-                {typeLabel[instance.type]}
-                {instance.host ? (
-                  <>
-                    <span className="mx-1.5">·</span>
-                    <span className="font-mono">{instance.host}</span>
-                  </>
-                ) : null}
-              </p>
-            </div>
+            <StatusPill status={status} size="sm" />
           </div>
-          <StatusPill status={status} size="sm" />
-        </div>
-        <div className="mt-4 flex items-center justify-between text-xs text-fg-muted">
-          <span>{stale ? "Stale data" : "Updated just now"}</span>
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </div>
-      </Link>
-    </Card>
+          <div className="mt-4 flex items-center justify-between text-xs text-fg-muted">
+            <span>{stale ? "Stale data" : "Updated just now"}</span>
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </div>
+        </Link>
+      </Card>
+    </motion.div>
   )
 }
 

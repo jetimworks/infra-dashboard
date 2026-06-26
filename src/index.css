@@ -246,3 +246,236 @@ body {
 .animate-scale-in {
   animation: scale-in 200ms ease-out;
 }
+
+/* ------------------------------------------------------------------
+   Card accent borders — semantic left border + soft glow
+   Use: <Card accent="success"> or add .card-accent-success directly
+------------------------------------------------------------------ */
+.card-accent {
+  position: relative;
+}
+.card-accent::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 3px;
+  transition: background-color 200ms ease-out, box-shadow 200ms ease-out;
+}
+.card-accent-info::before {
+  background-color: rgb(var(--info));
+  box-shadow: 0 0 12px -2px rgba(2, 132, 199, 0.4);
+}
+.card-accent-success::before {
+  background-color: rgb(var(--success));
+  box-shadow: 0 0 12px -2px rgba(22, 163, 74, 0.4);
+}
+.card-accent-warning::before {
+  background-color: rgb(var(--warning));
+  box-shadow: 0 0 12px -2px rgba(217, 119, 6, 0.4);
+}
+.card-accent-danger::before {
+  background-color: rgb(var(--danger));
+  box-shadow: 0 0 12px -2px rgba(220, 38, 38, 0.4);
+}
+.card-accent-primary::before {
+  background-color: rgb(var(--primary));
+  box-shadow: 0 0 12px -2px rgba(37, 99, 235, 0.4);
+}
+.card-accent-accent::before {
+  background-color: rgb(var(--accent));
+  box-shadow: 0 0 12px -2px rgba(13, 148, 136, 0.4);
+}
+
+/* ------------------------------------------------------------------
+   Nav rail — animated active state for sidebar
+   Use: a <motion.span layoutId="nav-rail" /> inside the active link
+------------------------------------------------------------------ */
+.nav-rail {
+  position: absolute;
+  left: 0;
+  top: 0.375rem;
+  bottom: 0.375rem;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background-color: rgb(var(--primary));
+  box-shadow: 0 0 8px -1px rgba(37, 99, 235, 0.5);
+}
+.nav-rail-accent {
+  background-color: rgb(var(--accent));
+  box-shadow: 0 0 8px -1px rgba(13, 148, 136, 0.5);
+}
+
+/* ------------------------------------------------------------------
+   Input focus glow — used in addition to Tailwind ring
+------------------------------------------------------------------ */
+.input-focus-glow:focus-visible {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* ------------------------------------------------------------------
+   Auth / hero card accent bar — gradient strip on top
+------------------------------------------------------------------ */
+.accent-bar-top {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--primary)) 0%,
+    rgb(var(--accent)) 100%
+  );
+}
+
+/* ------------------------------------------------------------------
+   Shimmer skeleton — used for loading placeholders
+------------------------------------------------------------------ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 215, 220, 0.25) 0%,
+    rgba(212, 215, 220, 0.55) 50%,
+    rgba(212, 215, 220, 0.25) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(32, 42, 60, 0.4) 0%,
+    rgba(32, 42, 60, 0.8) 50%,
+    rgba(32, 42, 60, 0.4) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ------------------------------------------------------------------
+   Slide-up / slide-in animations
+------------------------------------------------------------------ */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 250ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 220ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 220ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ------------------------------------------------------------------
+   Float — gentle bobbing for empty-state icons
+------------------------------------------------------------------ */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------
+   Shake — form error feedback
+------------------------------------------------------------------ */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+.animate-shake {
+  animation: shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* ------------------------------------------------------------------
+   Pulse for live indicators (e.g. "running" status)
+------------------------------------------------------------------ */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.8s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------
+   Native dialog backdrop — match the new motion aesthetic
+------------------------------------------------------------------ */
+dialog::backdrop {
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  animation: fade-in 180ms ease-out;
+}
+
+.dark dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ------------------------------------------------------------------
+   Reduced motion — collapse durations, kill transforms
+------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-accent::before,
+  .nav-rail {
+    box-shadow: none !important;
+  }
+}

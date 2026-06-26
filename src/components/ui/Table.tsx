@@ -50,9 +50,10 @@ export function TableRow({
   return (
     <tr
       className={cn(
-        "text-sm",
-        onClick &&
-          "cursor-pointer transition-colors hover:bg-surface-sunken",
+        "text-sm transition-colors duration-150",
+        onClick
+          ? "cursor-pointer hover:bg-primary/[0.04] active:bg-primary/[0.06]"
+          : "hover:bg-surface-sunken/60",
         className
       )}
       onClick={onClick}
@@ -78,6 +79,7 @@ export function TableHeader({
     </th>
   )
 }
+
 TableHeader.displayName = "TableHeader"
 
 export function TableCell({
@@ -91,6 +93,7 @@ export function TableCell({
     </td>
   )
 }
+
 TableCell.displayName = "TableCell"
 
 export function TableEmpty({ children }: { children: ReactNode }) {
@@ -105,4 +108,5 @@ export function TableEmpty({ children }: { children: ReactNode }) {
     </tr>
   )
 }
+
 TableEmpty.displayName = "TableEmpty"

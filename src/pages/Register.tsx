@@ -109,10 +109,11 @@ export function RegisterPage() {
       </div>
 
       {/* Right — Form */}
-      <div className="flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+      <div className="relative flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+        <div className="absolute right-0 top-0 h-1 w-full accent-bar-top lg:bottom-0 lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
         <div className="mx-auto w-full max-w-md">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm shadow-primary/30">
               <Cloud className="h-5 w-5" aria-hidden />
             </div>
             <div>

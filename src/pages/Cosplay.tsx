@@ -59,10 +59,11 @@ export function CosplayPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left — Form */}
-      <div className="flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+      <div className="relative flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
+        <div className="absolute left-0 right-0 top-0 h-1 accent-bar-top lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
         <div className="mx-auto w-full max-w-md">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-fg-on-accent shadow-sm shadow-accent/30">
               <Cloud className="h-5 w-5" aria-hidden />
             </div>
             <div>
@@ -82,13 +83,13 @@ export function CosplayPage() {
 
           {/* Warning banner */}
           <div
-            className="mb-6 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950"
+            className="mb-6 card-accent card-accent-warning flex items-start gap-3 rounded-md border border-warning-soft bg-warning-soft/60 p-4"
             role="alert"
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
-            <div className="text-sm text-amber-800 dark:text-amber-200">
-              <p className="font-medium">Temporary impersonation session</p>
-              <p className="mt-0.5 opacity-80">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-fg" aria-hidden />
+            <div className="text-sm text-fg">
+              <p className="font-medium text-warning-fg">Temporary impersonation session</p>
+              <p className="mt-0.5 text-fg-muted">
                 This session will not persist on page refresh. You will need to
                 re-authenticate as yourself to impersonate another user.
               </p>

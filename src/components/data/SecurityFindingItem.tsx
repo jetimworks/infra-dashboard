@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { Copy, Check, AlertTriangle, AlertOctagon, CheckCircle2 } from "lucide-react"
+import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 import { Button } from "../ui/Button"
+import { listItem } from "../../lib/motion"
 import type { SecurityFinding } from "../../api/types"
 
 const statusIcon = {
@@ -14,6 +16,12 @@ const statusClass = {
   ok: "text-success-fg bg-success-soft",
   warning: "text-warning-fg bg-warning-soft",
   action_required: "text-danger-fg bg-danger-soft",
+} as const
+
+const statusAccent = {
+  ok: "success",
+  warning: "warning",
+  action_required: "danger",
 } as const
 
 const statusLabel = {
@@ -41,7 +49,13 @@ export function SecurityFindingItem({ finding, actionButton }: SecurityFindingIt
   }
 
   return (
-    <div className="rounded-lg bg-surface p-4 shadow-[var(--shadow-card)] border-b border-l border-border/40">
+    <motion.div
+      variants={listItem}
+      className={cn(
+        "card-accent card-accent-" + statusAccent[finding.status],
+        "rounded-lg bg-surface p-4 shadow-[var(--shadow-card)] border-b border-l border-border/40 transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]"
+      )}
+    >
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -95,7 +109,7 @@ export function SecurityFindingItem({ finding, actionButton }: SecurityFindingIt
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

@@ -3,15 +3,21 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react"
+import { motion, type HTMLMotionProps, useReducedMotion } from "framer-motion"
 import { cn } from "../../lib/utils"
+import { cardHoverTransition } from "../../lib/motion"
 
 export type CardVariant = "default" | "raised" | "outline"
 export type CardPadding = "none" | "sm" | "md" | "lg"
+export type CardAccent = "info" | "success" | "warning" | "danger" | "primary" | "accent"
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+export interface CardProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "ref"> {
   variant?: CardVariant
   padding?: CardPadding
   interactive?: boolean
+  /** Semantic left border in the chosen status color. */
+  accent?: CardAccent
 }
 
 const variantClasses: Record<CardVariant, string> = {
@@ -36,26 +42,35 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       variant = "default",
       padding = "md",
       interactive,
+      accent,
       children,
       ...props
     },
     ref
   ) => {
+    const prefersReducedMotion = useReducedMotion()
     return (
-      <div
+      <motion.div
         ref={ref}
         className={cn(
           "rounded-lg",
           variantClasses[variant],
           paddingClasses[padding],
+          accent && "card-accent",
+          accent && `card-accent-${accent}`,
           interactive &&
-            "transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 cursor-pointer",
+            !prefersReducedMotion &&
+            "cursor-pointer hover:shadow-[var(--shadow-card-hover)]",
           className
         )}
-        {...props}
+        whileHover={
+          interactive && !prefersReducedMotion ? { y: -1.5 } : undefined
+        }
+        transition={cardHoverTransition}
+        {...(props as HTMLMotionProps<"div">)}
       >
         {children}
-      </div>
+      </motion.div>
     )
   }
 )
@@ -119,11 +134,15 @@ export const CardContent = ({
 )
 CardContent.displayName = "CardContent"
 
+export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode
+}
+
 export const CardFooter = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLDivElement>) => (
+}: CardFooterProps) => (
   <div
     className={cn(
       "mt-6 flex items-center justify-end gap-3 border-t border-border/50 pt-4",

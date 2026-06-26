@@ -11,6 +11,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react"
+import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 import { ThemeToggle } from "../theme/ThemeToggle"
 
@@ -43,7 +44,7 @@ export function AdminSidebar({ className }: { className?: string }) {
       )}
     >
       <div className="flex h-16 items-center gap-2.5 px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-fg-on-accent">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-fg-on-accent shadow-sm shadow-accent/20">
           <ShieldCheck className="h-4 w-4" aria-hidden />
         </div>
         <div>
@@ -60,14 +61,21 @@ export function AdminSidebar({ className }: { className?: string }) {
               ? location.pathname === item.to
               : location.pathname.startsWith(item.to)
             return (
-              <li key={item.to}>
+              <li key={item.to} className="relative">
+                {isActive ? (
+                  <motion.span
+                    layoutId="admin-sidebar-rail"
+                    className="nav-rail nav-rail-accent"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                ) : null}
                 <NavLink
                   to={item.to}
                   end={item.end}
                   className={cn(
-                    "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                    "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
                     isActive
-                      ? "bg-accent-soft text-accent shadow-[var(--shadow-card)] border-l-2 border-l-accent"
+                      ? "bg-accent-soft text-accent"
                       : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
                   )}
                 >
@@ -83,12 +91,19 @@ export function AdminSidebar({ className }: { className?: string }) {
           <NavLink
             to="/dashboard"
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
               location.pathname.startsWith("/dashboard")
-                ? "bg-primary-soft text-primary shadow-[var(--shadow-card)] border-l-2 border-l-primary"
+                ? "bg-primary-soft text-primary"
                 : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
             )}
           >
+            {location.pathname.startsWith("/dashboard") ? (
+              <motion.span
+                layoutId="admin-sidebar-rail"
+                className="nav-rail"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
+            ) : null}
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Back to user dashboard
           </NavLink>

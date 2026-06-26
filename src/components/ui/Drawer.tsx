@@ -36,15 +36,6 @@ export function Drawer({
   useEffect(() => {
     const dlg = dialogRef.current
     if (!dlg) return
-    const backdrop = dlg as HTMLDialogElement & { backdrop: HTMLElement }
-    if (open && backdrop.backdrop) {
-      backdrop.backdrop.style.backgroundColor = "rgba(0, 0, 0, 1)"
-    }
-  }, [open])
-
-  useEffect(() => {
-    const dlg = dialogRef.current
-    if (!dlg) return
     const handler = () => onClose()
     dlg.addEventListener("close", handler)
     return () => dlg.removeEventListener("close", handler)
@@ -54,12 +45,13 @@ export function Drawer({
     <dialog
       ref={dialogRef}
       className={cn(
-        "m-0 ml-auto h-screen max-h-screen",
+        "m-0 h-screen max-h-screen",
         side === "right" ? "ml-auto" : "mr-auto",
         widthClass,
-        "p-0 shadow-[var(--shadow-modal)] animate-fade-in"
+        "p-0 shadow-[var(--shadow-modal)] border-l border-border/40",
+        side === "right" ? "animate-slide-in-right" : "animate-slide-in-left"
       )}
-      style={{ backgroundColor: "#ffffff" }}
+      style={{ backgroundColor: "rgb(var(--surface))" }}
       onClick={(e) => {
         if (e.target === dialogRef.current) onClose()
       }}
