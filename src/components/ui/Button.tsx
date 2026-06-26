@@ -8,6 +8,7 @@ export type ButtonVariant =
   | "secondary"
   | "ghost"
   | "outline"
+  | "outline-danger"
   | "danger"
   | "success"
 
@@ -28,19 +29,24 @@ const baseClasses =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg " +
   "disabled:opacity-50 disabled:pointer-events-none"
 
+const variantTextColor: Record<ButtonVariant, string> = {
+  primary: "var(--fg-on-accent)",
+  secondary: "var(--fg)",
+  ghost: "var(--fg-muted)",
+  outline: "var(--fg)",
+  "outline-danger": "var(--danger-fg)",
+  danger: "var(--fg)",
+  success: "#ffffff",
+}
+
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-fg-on-accent hover:bg-primary-hover shadow-sm",
-  secondary:
-    "bg-surface-sunken/80 text-fg hover:bg-surface-sunken",
-  ghost:
-    "bg-transparent text-fg-muted hover:bg-surface-sunken hover:text-fg",
-  outline:
-    "bg-surface/80 text-fg border border-border/60 hover:bg-surface-sunken",
-  danger:
-    "bg-danger text-white hover:bg-danger/90 shadow-sm",
-  success:
-    "bg-success text-white hover:bg-success/90 shadow-sm",
+  primary: "bg-primary hover:bg-primary-hover shadow-sm",
+  secondary: "bg-surface-sunken/80 hover:bg-surface-sunken",
+  ghost: "bg-transparent hover:bg-surface-sunken",
+  outline: "bg-surface/80 border border-border/60 hover:bg-surface-sunken",
+  "outline-danger": "border border-danger bg-danger/10 hover:bg-danger/20",
+  danger: "bg-danger border border-danger hover:bg-danger/90 shadow-sm",
+  success: "hover:bg-success/90 shadow-sm",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -77,6 +83,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           fullWidth && "w-full",
           className
         )}
+        style={{ color: variantTextColor[variant], ...props.style }}
         disabled={disabled || isLoading}
         {...props}
       >
@@ -85,7 +92,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : LeftIcon ? (
           <LeftIcon className="h-4 w-4" aria-hidden />
         ) : null}
-        <span>{children as ReactNode}</span>
+        <span style={{ color: variantTextColor[variant] }}>{children as ReactNode}</span>
         {!isLoading && RightIcon ? (
           <RightIcon className="h-4 w-4" aria-hidden />
         ) : null}

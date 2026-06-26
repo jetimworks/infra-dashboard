@@ -10,12 +10,10 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react"
-import { useInstances } from "../../queries/instances"
-import { useAdminProjects } from "../../queries/admin"
+import { useAdminInstances, useAdminProjects } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Input } from "../../components/ui/Input"
 import { SegmentedControl } from "../../components/ui/SegmentedControl"
-import { AdminTabs } from "../../components/layout/AdminTabs"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
@@ -49,21 +47,20 @@ const filterOptions: { value: Filter; label: string }[] = [
 export function AdminInstancesListPage() {
   const [filter, setFilter] = useState<Filter>("ALL")
   const [search, setSearch] = useState("")
-  const instancesQ = useInstances(
-    filter === "ALL" ? undefined : { type: filter }
-  )
+  const instancesQ = useAdminInstances()
   const projectsQ = useAdminProjects()
 
   const instances = useMemo(() => {
     const all = instancesQ.data ?? []
-    if (!search.trim()) return all
+    const filtered = filter === "ALL" ? all : all.filter((i) => i.type === filter)
+    if (!search.trim()) return filtered
     const term = search.toLowerCase()
-    return all.filter(
+    return filtered.filter(
       (i) =>
         i.name.toLowerCase().includes(term) ||
         (i.host ?? "").toLowerCase().includes(term)
     )
-  }, [instancesQ.data, search])
+  }, [instancesQ.data, search, filter])
 
   if (instancesQ.isLoading) return <LoadingPage label="Loading instances…" />
   if (instancesQ.isError) {
@@ -83,8 +80,6 @@ export function AdminInstancesListPage() {
 
   return (
     <div className="space-y-6">
-      <AdminTabs />
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
@@ -151,7 +146,7 @@ export function AdminInstancesListPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-2">
                         <Link
-                          to={`/instances/${instance.id}`}
+                          to={`/admin/instances/${instance.id}/edit`}
                           className="text-sm font-semibold text-fg hover:underline"
                         >
                           {instance.name}

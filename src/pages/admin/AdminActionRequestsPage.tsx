@@ -6,7 +6,6 @@ import {
 } from "lucide-react"
 import { useAdminActionRequests } from "../../queries/action-requests"
 import { Card } from "../../components/ui/Card"
-import { AdminTabs } from "../../components/layout/AdminTabs"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { EmptyState } from "../../components/ui/EmptyState"
@@ -60,8 +59,6 @@ export function AdminActionRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <AdminTabs />
-
       <div>
         <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
           Action Requests

@@ -1,11 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
 import { AppShell } from "./components/layout/AppShell"
-import { RequireAdmin } from "./components/feedback/RequireAdmin"
+import { AdminRoute } from "./components/auth/AdminRoute"
+import { AdminShell } from "./components/layout/AdminShell"
 
 import { LoginPage } from "./pages/Login"
 import { RegisterPage } from "./pages/Register"
@@ -26,9 +27,12 @@ import { NotFoundPage } from "./pages/NotFoundPage"
 import { ActionRequestsPage } from "./pages/ActionRequestsPage"
 import { ActionRequestDetailPage } from "./pages/ActionRequestDetailPage"
 
-import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage"
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage"
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage"
 import { AdminProjectsPage } from "./pages/admin/AdminProjectsPage"
+import { AdminProjectDetailPage } from "./pages/admin/AdminProjectDetailPage"
+import { AdminUserDetailPage } from "./pages/admin/AdminUserDetailPage"
+import { AdminActivityPage } from "./pages/admin/AdminActivityPage"
 import { AdminInstancesListPage } from "./pages/admin/AdminInstancesListPage"
 import { AdminInstanceCreatePage } from "./pages/admin/AdminInstanceCreatePage"
 import { AdminInstanceEditPage } from "./pages/admin/AdminInstanceEditPage"
@@ -92,53 +96,56 @@ export default function App() {
                 <Route path="/change-password" element={<ChangePasswordPage />} />
                 <Route path="/action-requests" element={<ActionRequestsPage />} />
                 <Route path="/action-requests/:id" element={<ActionRequestDetailPage />} />
+              </Route>
 
-                {/* Admin (gated). Renders inside the same AppShell as
-                    every other page — admin uses in-page tabs for
-                    sub-navigation instead of a separate header strip. */}
-                <Route
-                  path="/admin"
-                  element={<RequireAdmin><Outlet /></RequireAdmin>}
-                >
-                  <Route index element={<AdminOverviewPage />} />
-                  <Route path="users" element={<AdminUsersPage />} />
-                  <Route path="projects" element={<AdminProjectsPage />} />
+              {/* Admin routes — rendered in AdminShell, guarded by AdminRoute */}
+              <Route element={<AdminRoute />}>
+                <Route element={<AdminShell />}>
+                  <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+                  <Route path="/admin/projects" element={<AdminProjectsPage />} />
+                  <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
                   <Route
-                    path="instances"
+                    path="/admin/instances"
                     element={<AdminInstancesListPage />}
                   />
                   <Route
-                    path="instances/new"
+                    path="/admin/instances/new"
                     element={<AdminInstanceCreatePage />}
                   />
                   <Route
-                    path="instances/:id/edit"
+                    path="/admin/instances/:id/edit"
                     element={<AdminInstanceEditPage />}
                   />
                   <Route
-                    path="instances/:id/ssh-key"
+                    path="/admin/instances/:id/ssh-key"
                     element={<AdminInstanceSshKeyPage />}
                   />
                   <Route
-                    path="instances/:id/system-action"
+                    path="/admin/instances/:id/system-action"
                     element={<AdminInstanceSystemActionPage />}
                   />
                   <Route
-                    path="security-audits"
+                    path="/admin/security-audits"
                     element={<AdminSecurityAuditsPage />}
                   />
                   <Route
-                    path="action-requests"
+                    path="/admin/action-requests"
                     element={<AdminActionRequestsPage />}
                   />
                   <Route
-                    path="action-requests/:id"
+                    path="/admin/action-requests/:id"
                     element={<AdminActionRequestDetailPage />}
                   />
+                  <Route
+                    path="/admin/activity"
+                    element={<AdminActivityPage />}
+                  />
                 </Route>
-
-                <Route path="*" element={<NotFoundPage />} />
               </Route>
+
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
         </ThemeProvider>

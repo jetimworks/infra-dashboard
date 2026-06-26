@@ -1,0 +1,117 @@
+import { NavLink, useLocation } from "react-router-dom"
+import {
+  Activity,
+  ArrowLeft,
+  ClipboardList,
+  Cloud,
+  HelpCircle,
+  LayoutDashboard,
+  Server,
+  ShieldCheck,
+  Users,
+  type LucideIcon,
+} from "lucide-react"
+import { cn } from "../../lib/utils"
+import { ThemeToggle } from "../theme/ThemeToggle"
+
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+}
+
+const navItems: NavItem[] = [
+  { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/projects", label: "Projects", icon: Cloud },
+  { to: "/admin/instances", label: "Instances", icon: Server },
+  { to: "/admin/security-audits", label: "Security audits", icon: ShieldCheck },
+  { to: "/admin/action-requests", label: "Action Requests", icon: ClipboardList },
+  { to: "/admin/activity", label: "Activity", icon: Activity },
+]
+
+export function AdminSidebar({ className }: { className?: string }) {
+  const location = useLocation()
+
+  return (
+    <aside
+      className={cn(
+        "hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 lg:left-0",
+        "border-r border-border/40 bg-surface",
+        className
+      )}
+    >
+      <div className="flex h-16 items-center gap-2.5 px-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-fg-on-accent">
+          <ShieldCheck className="h-4 w-4" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-fg">Admin</p>
+          <p className="text-[0.6875rem] text-fg-subtle">Dashboard</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = item.end
+              ? location.pathname === item.to
+              : location.pathname.startsWith(item.to)
+            return (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  className={cn(
+                    "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                    isActive
+                      ? "bg-accent-soft text-accent shadow-[var(--shadow-card)] border-l-2 border-l-accent"
+                      : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                  )}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {item.label}
+                </NavLink>
+              </li>
+            )
+          })}
+        </ul>
+
+        <div className="mt-6 pt-4">
+          <NavLink
+            to="/dashboard"
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+              location.pathname.startsWith("/dashboard")
+                ? "bg-primary-soft text-primary shadow-[var(--shadow-card)] border-l-2 border-l-primary"
+                : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
+            )}
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Back to user dashboard
+          </NavLink>
+        </div>
+      </nav>
+
+      <div className="border-t border-border/40 px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <a
+            href="mailto:support@jetimworks.com"
+            className="flex items-center gap-2 text-xs text-fg-muted hover:text-fg"
+          >
+            <HelpCircle className="h-3.5 w-3.5" aria-hidden />
+            Get help
+          </a>
+          <ThemeToggle />
+        </div>
+        <p className="mt-3 text-[0.6875rem] text-fg-subtle">
+          Infra Dashboard · Admin · v0.1.0
+        </p>
+      </div>
+    </aside>
+  )
+}
+
+AdminSidebar.displayName = "AdminSidebar"

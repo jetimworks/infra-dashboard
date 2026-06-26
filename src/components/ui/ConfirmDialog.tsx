@@ -68,7 +68,11 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="w-full max-w-md rounded-xl bg-surface p-0 shadow-[var(--shadow-modal)] backdrop:bg-fg/40 animate-scale-in"
+      className="w-full max-w-md rounded-xl p-0 shadow-[var(--shadow-modal)] backdrop:bg-fg/40 animate-scale-in"
+      style={{
+        backgroundColor: "rgb(var(--surface))",
+        margin: "auto",
+      }}
       onClick={(e) => {
         // Click on backdrop (outside the dialog box) closes it.
         if (e.target === dialogRef.current) onClose()

@@ -249,7 +249,7 @@ export function AdminInstanceEditPage() {
               </p>
             </div>
             <Button
-              variant="danger"
+              variant="outline-danger"
               size="sm"
               leftIcon={Trash2}
               onClick={() => setDeleteOpen(true)}

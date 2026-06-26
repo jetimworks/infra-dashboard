@@ -8,7 +8,6 @@ import {
   LifeBuoy,
   Settings,
   ShieldCheck,
-  Users,
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "../../lib/utils"
@@ -81,23 +80,6 @@ export function Sidebar({ className }: { className?: string }) {
               )
             })}
         </ul>
-
-        {isStaff ? (
-          <div className="mt-6 pt-4">
-            <NavLink
-              to="/admin"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
-                location.pathname.startsWith("/admin")
-                  ? "bg-accent-soft text-accent shadow-[var(--shadow-card)] border-l-2 border-l-accent"
-                  : "text-accent hover:bg-accent-soft hover:text-accent"
-              )}
-            >
-              <Users className="h-4 w-4" aria-hidden />
-              Switch to admin
-            </NavLink>
-          </div>
-        ) : null}
       </nav>
 
       <div className="border-t border-border/40 px-4 py-3">

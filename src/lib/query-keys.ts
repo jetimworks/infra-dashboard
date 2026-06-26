@@ -41,6 +41,10 @@ export const qk = {
   actionRequest: (id: string) => ["actionRequests", id] as const,
 
   adminUsers: () => ["admin", "users"] as const,
+  adminUser: (id: string) => ["admin", "users", id] as const,
+  adminProject: (id: string) => ["admin", "projects", id] as const,
+  adminInstances: () => ["admin", "instances"] as const,
+  adminActions: (filters?: object) => ["admin", "actions", filters ?? {}] as const,
   adminActionRequests: () => ["admin", "actionRequests"] as const,
   adminActionRequest: (id: string) => ["admin", "actionRequests", id] as const,
 }

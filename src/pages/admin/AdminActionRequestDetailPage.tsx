@@ -10,7 +10,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAdminActionRequest, useUpdateActionRequest, useAddActionRequestMessage } from "../../queries/action-requests"
-import { AdminTabs } from "../../components/layout/AdminTabs"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
@@ -89,8 +88,6 @@ export function AdminActionRequestDetailPage() {
 
   return (
     <div className="space-y-6">
-      <AdminTabs />
-
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
         <Link to="/admin/action-requests" className="hover:text-fg flex items-center gap-1">

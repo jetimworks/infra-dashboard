@@ -11,22 +11,19 @@ import {
   Users,
   Zap,
 } from "lucide-react"
-import { useInstances } from "../../queries/instances"
-import { useActions } from "../../queries/actions"
-import { useAdminUsers, useAdminProjects } from "../../queries/admin"
+import { useAdminUsers, useAdminProjects, useAdminInstances, useAdminActions } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
-import { AdminTabs } from "../../components/layout/AdminTabs"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { formatRelative } from "../../lib/utils"
 import type { InstanceType } from "../../api/types"
 
-export function AdminOverviewPage() {
+export function AdminDashboardPage() {
   const usersQ = useAdminUsers()
   const projectsQ = useAdminProjects()
-  const instancesQ = useInstances()
-  const actionsQ = useActions({ limit: 50 })
+  const instancesQ = useAdminInstances()
+  const actionsQ = useAdminActions({ limit: 50 })
 
   const isLoading =
     usersQ.isLoading || projectsQ.isLoading || instancesQ.isLoading
@@ -79,8 +76,6 @@ export function AdminOverviewPage() {
 
   return (
     <div className="space-y-6">
-      <AdminTabs />
-
       <div>
         <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
           Admin overview
@@ -115,7 +110,7 @@ export function AdminOverviewPage() {
           label="Failed (24h)"
           value={stats.failedLast24h}
           tone={stats.failedLast24h > 0 ? "danger" : "neutral"}
-          to="/activity"
+          to="/admin/activity"
         />
       </div>
 
@@ -150,7 +145,7 @@ export function AdminOverviewPage() {
           <CardHeader>
             <CardTitle>Recent activity</CardTitle>
             <Link
-              to="/activity"
+              to="/admin/activity"
               className="text-sm font-medium text-primary hover:underline"
             >
               See all
@@ -174,7 +169,7 @@ export function AdminOverviewPage() {
                     <p className="text-xs text-fg-muted">
                       {formatRelative(a.started_at)} ·{" "}
                       <Link
-                        to={`/instances/${a.instance_id}`}
+                        to={`/admin/instances/${a.instance_id}/edit`}
                         className="text-primary hover:underline"
                       >
                         view instance

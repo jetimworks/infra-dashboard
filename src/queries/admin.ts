@@ -4,7 +4,11 @@ import { adminApi } from "../api/admin"
 import { projectsApi } from "../api/projects"
 import { normalizeError } from "../api/errors"
 import { qk } from "../lib/query-keys"
-import type { AdminCreateUserInput, AdminUpdateUserInput } from "../api/types"
+import type {
+  AdminCreateUserInput,
+  AdminUpdateUserInput,
+  ActionListParams,
+} from "../api/types"
 
 export function useAdminUsers() {
   return useQuery({
@@ -19,6 +23,22 @@ export function useAdminProjects() {
     queryKey: qk.adminProjects(),
     queryFn: () => projectsApi.listAdmin(),
     staleTime: 60_000,
+  })
+}
+
+export function useAdminInstances() {
+  return useQuery({
+    queryKey: qk.adminInstances(),
+    queryFn: () => adminApi.listInstances(),
+    staleTime: 30_000,
+  })
+}
+
+export function useAdminActions(filters?: ActionListParams) {
+  return useQuery({
+    queryKey: qk.adminActions(filters),
+    queryFn: () => adminApi.listActions(filters),
+    staleTime: 30_000,
   })
 }
 
@@ -45,6 +65,20 @@ export function useUpdateUser() {
       qc.invalidateQueries({ queryKey: qk.adminUsers() })
       qc.invalidateQueries({ queryKey: qk.me() })
       toast.success("User updated")
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message)
+    },
+  })
+}
+
+export function useDeleteUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => adminApi.deleteUser(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.adminUsers() })
+      toast.success("User deleted")
     },
     onError: (err) => {
       toast.error(normalizeError(err).message)

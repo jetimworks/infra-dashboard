@@ -71,9 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user", JSON.stringify(userData))
       setUser(userData)
 
-      // Redirect based on onboarding stage
+      // Redirect based on onboarding stage and staff status
       if (userData.onboarding_stage === "CHANGE_PASSWORD") {
         navigate("/change-password", { replace: true })
+      } else if (userData.is_staff) {
+        navigate("/admin", { replace: true })
       } else {
         navigate("/dashboard", { replace: true })
       }
