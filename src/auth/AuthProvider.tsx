@@ -28,6 +28,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const refreshToken = localStorage.getItem("rt")
     const storedUser = localStorage.getItem("user")
+    const isImpersonating = localStorage.getItem("impersonating") === "true"
+
+    // Restore impersonated session — no refresh token needed
+    if (isImpersonating && storedUser) {
+      const impersonatingToken = localStorage.getItem("impersonating_token")
+      if (impersonatingToken) {
+        setAccessToken(impersonatingToken)
+        setUser(JSON.parse(storedUser))
+        setIsLoading(false)
+        return
+      }
+    }
 
     if (!refreshToken || !storedUser) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -95,9 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     const accessToken = getAccessToken()
     const refreshToken = localStorage.getItem("rt")
+    const isImpersonating = localStorage.getItem("impersonating") === "true"
 
     // Fire-and-forget logout call
-    if (accessToken && refreshToken) {
+    if (accessToken && refreshToken && !isImpersonating) {
       authApi.logout(accessToken, refreshToken).catch(() => {
         // Swallow errors - logout should not block
       })
@@ -106,6 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear storage regardless
     localStorage.removeItem("rt")
     localStorage.removeItem("user")
+    localStorage.removeItem("impersonating")
+    localStorage.removeItem("impersonating_token")
     setAccessToken(null)
     setUser(null)
 
@@ -114,9 +129,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const impersonate = useCallback(
     (accessToken: string, userData: User) => {
-      // Set access token in memory (no localStorage — this is a temporary session)
+      // Persist so the session survives page refresh
       setAccessToken(accessToken)
-      // Set user in state (no localStorage persistence)
+      localStorage.setItem("impersonating_token", accessToken)
+      localStorage.setItem("user", JSON.stringify(userData))
+      localStorage.setItem("impersonating", "true")
       setUser(userData)
       // Navigate to dashboard as the impersonated user
       navigate("/dashboard", { replace: true })
