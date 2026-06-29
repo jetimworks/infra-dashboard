@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { useInstance } from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
+import { useBackups } from "../queries/backups"
 import { useSecurityCheck } from "../queries/security"
 import { useInstanceActions } from "../queries/actions"
 import { useActionRequests } from "../queries/action-requests"
@@ -28,6 +29,7 @@ import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
 import { StatusPill } from "../components/ui/StatusPill"
 import { MetricTile } from "../components/data/MetricTile"
+import { BackupItem } from "../components/data/BackupItem"
 import { SecurityFindingItem } from "../components/data/SecurityFindingItem"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
@@ -295,7 +297,7 @@ export function InstanceDetailPage() {
             onViewSecurity={() => setTab("security")}
           />
         ) : tab === "metrics" ? (
-          <MetricsTab instanceId={id!} type={instance.type} />
+          <MetricsTab instanceId={id!} />
         ) : tab === "security" ? (
           <SecurityTab
             security={securityQ.data}
@@ -455,27 +457,60 @@ function OverviewTab({
 
 function MetricsTab({
   instanceId,
-  type,
 }: {
   instanceId: string
-  type: InstanceType
 }) {
+  const metricsQ = useInstanceMetricsLatest(instanceId)
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Performance</CardTitle>
+    <div className="space-y-4">
+      <div className="flex items-center justify-end">
         <Link
           to={`/instances/${instanceId}/metrics`}
-          className="text-sm font-medium text-primary hover:underline"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
         >
           Open full charts
         </Link>
-      </CardHeader>
-      <p className="px-4 py-6 text-center text-sm text-fg-muted">
-        Charts for this {typeLabel[type].toLowerCase()} will appear on the
-        metrics page.
-      </p>
-    </Card>
+      </div>
+
+      <Link
+        to={`/instances/${instanceId}/metrics`}
+        className="block text-sm font-medium text-primary hover:underline"
+      >
+        Go to metrics page →
+      </Link>
+
+      {metricsQ.isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricTile loading label="Loading" value="—" />
+          <MetricTile loading label="Loading" value="—" />
+          <MetricTile loading label="Loading" value="—" />
+          <MetricTile loading label="Loading" value="—" />
+        </div>
+      ) : !metricsQ.data || Object.keys(metricsQ.data).length === 0 ? (
+        <Card>
+          <p className="px-4 py-6 text-center text-sm text-fg-muted">
+            No metrics have been collected yet.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Object.values(metricsQ.data).slice(0, 4).map((m) => {
+            const info = metricHelp(m.metric_name)
+            return (
+              <MetricTile
+                key={m.metric_name}
+                label={info.label}
+                value={formatMetricValue(m.metric_name, m.value)}
+                unit={info.unit}
+                help={info.help}
+                status={m.success ? "ok" : "danger"}
+              />
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -584,22 +619,57 @@ function BackupsTab({
   instanceId: string
   instanceType: InstanceType
 }) {
+  const backupsQ = useBackups(instanceId)
+  const backups = backupsQ.data?.data ?? []
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Backups</CardTitle>
+    <div className="space-y-4">
+      <div className="flex items-center justify-end">
         <Link
           to={`/instances/${instanceId}/backups`}
-          className="text-sm font-medium text-primary hover:underline"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
         >
           Open backups
         </Link>
-      </CardHeader>
-      <p className="px-4 py-6 text-center text-sm text-fg-muted">
-        All your {typeLabel[instanceType].toLowerCase()} backups live on the
-        backups page.
-      </p>
-    </Card>
+      </div>
+
+      <Link
+        to={`/instances/${instanceId}/backups`}
+        className="block text-sm font-medium text-primary hover:underline"
+      >
+        Go to backups page →
+      </Link>
+
+      {backupsQ.isLoading ? (
+        <Card>
+          <p className="px-4 py-6 text-center text-sm text-fg-muted">
+            Loading backups…
+          </p>
+        </Card>
+      ) : backupsQ.isError ? (
+        <Card>
+          <p className="px-4 py-6 text-center text-sm text-fg-muted">
+            Couldn't load backups.
+          </p>
+        </Card>
+      ) : backups.length === 0 ? (
+        <Card>
+          <p className="px-4 py-6 text-center text-sm text-fg-muted">
+            No backups yet. Go to the backups page to create one.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {backups.slice(0, 5).map((backup) => (
+            <BackupItem
+              key={backup.action_id}
+              backup={backup}
+              instanceType={instanceType}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
