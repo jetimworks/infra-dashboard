@@ -77,7 +77,7 @@ export function DashboardPage() {
   const instancesQ = useInstances()
   const actionsQ = useActions({ limit: 5 })
 
-  const allInstances = instancesQ.data ?? []
+  const allInstances = useMemo(() => instancesQ.data ?? [], [instancesQ.data])
   const instances = useMemo(
     () =>
       selectedProjectId

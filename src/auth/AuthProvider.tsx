@@ -31,19 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isImpersonating = localStorage.getItem("impersonating") === "true"
 
     // Restore impersonated session — no refresh token needed
+    // User is already hydrated from localStorage via initial state, just restore the token
     if (isImpersonating && storedUser) {
       const impersonatingToken = localStorage.getItem("impersonating_token")
       if (impersonatingToken) {
         setAccessToken(impersonatingToken)
-        setUser(JSON.parse(storedUser))
-        setIsLoading(false)
+        // Defer to avoid cascading render - user state already hydrated
+        queueMicrotask(() => setIsLoading(false))
         return
       }
     }
 
     if (!refreshToken || !storedUser) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsLoading(false)
+      // Defer to avoid cascading render
+      queueMicrotask(() => setIsLoading(false))
       return
     }
 

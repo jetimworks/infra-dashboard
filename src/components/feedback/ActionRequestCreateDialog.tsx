@@ -41,7 +41,6 @@ export function ActionRequestCreateDialog({
   const wasOpen = useRef(false)
 
   // Sync state when dialog opens with new prefill values
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (open && !wasOpen.current) {
       setTitle(initialTitle ?? "")

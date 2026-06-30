@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import {
@@ -181,6 +181,8 @@ export function AdminInstanceCreatePage() {
   const remoteForm = useForm<RemoteForm>({
     resolver: zodResolver(remoteSchema),
   })
+
+  const parentIdValue = useWatch({ control: localForm.control, name: "parent_id" })
 
   if (projectsQ.isLoading) return <LoadingPage label="Loading projects…" />
   if (projectsQ.isError) {
@@ -549,7 +551,7 @@ export function AdminInstanceCreatePage() {
                 hint="The server to provision this service on."
               >
                 <ParentServerSelect
-                  value={localForm.watch("parent_id") ?? ""}
+                  value={parentIdValue ?? ""}
                   onChange={(id) =>
                     localForm.setValue("parent_id", id, {
                       shouldValidate: true,
