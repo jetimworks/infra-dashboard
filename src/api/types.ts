@@ -20,6 +20,7 @@ export type ActionType =
   | "SECURITY_PATCH"
   | "SSL_RENEW"
   | "RESTORE"
+  | "DEPLOY_APP"
   | string
 export type ActionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
 export type SecurityFindingStatus = "ok" | "warning" | "action_required"
@@ -212,6 +213,20 @@ export interface SystemActionResponse {
   message: string
   stdout: string
   stderr: string
+}
+
+/**
+ * Outcome reported by /root/deploy.sh via its RESULT: marker. The HTTP call
+ * itself always succeeds (200 OK when the request reaches the handler); this
+ * field discriminates what the script actually did.
+ */
+export type DeployAppStatus = "SUCCESS" | "FAIL" | "UNKNOWN"
+
+export interface DeployAppResponse {
+  action_id: string
+  status: DeployAppStatus
+  reason: string
+  output: string
 }
 
 export interface SshKeyUploadInput {

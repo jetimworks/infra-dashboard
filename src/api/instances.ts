@@ -3,6 +3,7 @@ import type {
   CreateInstanceInput,
   CreateLocalServiceInput,
   CreateRemoteServiceInput,
+  DeployAppResponse,
   Instance,
   InstanceType,
   SshKeyResponse,
@@ -44,6 +45,11 @@ export const instancesApi = {
       `/instances/${id}/system-action`,
       body
     ),
+
+  // Runs /root/deploy.sh on the VPS. Synchronous: the response IS the final
+  // outcome — no polling. Empty body; script path is hardcoded by the backend.
+  deployApp: (id: string) =>
+    apiPost<DeployAppResponse>(`/instances/${id}/deploy-app`),
 
   createLocalRedis: (id: string, body: CreateLocalServiceInput) =>
     apiPost<Instance, CreateLocalServiceInput>(
