@@ -22,6 +22,7 @@ import { InstanceDetailPage } from "./pages/InstanceDetailPage"
 import { InstanceMetricsPage } from "./pages/InstanceMetricsPage"
 import { InstanceSecurityPage } from "./pages/InstanceSecurityPage"
 import { InstanceBackupsPage } from "./pages/InstanceBackupsPage"
+import { InstanceDeployPage } from "./pages/InstanceDeployPage"
 import { ActivityPage } from "./pages/ActivityPage"
 import { AccountPage } from "./pages/AccountPage"
 import { SupportPage } from "./pages/SupportPage"
@@ -109,6 +110,10 @@ function AnimatedRoutes() {
             <Route
               path="/instances/:id/backups"
               element={<PageWrapper><InstanceBackupsPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/deploy"
+              element={<PageWrapper><InstanceDeployPage /></PageWrapper>}
             />
             <Route path="/activity" element={<PageWrapper><ActivityPage /></PageWrapper>} />
             <Route path="/account" element={<PageWrapper><AccountPage /></PageWrapper>} />

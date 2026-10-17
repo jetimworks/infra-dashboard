@@ -10,6 +10,7 @@ import {
   LineChart,
   type LucideIcon,
   Plus,
+  Rocket,
   Server,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -779,6 +780,7 @@ function SettingsTab({
 }: {
   instance: import("../api/types").Instance
 }) {
+  const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const configRecord = instance.config as Record<string, unknown>
   const sizeBytes =
@@ -788,6 +790,27 @@ function SettingsTab({
 
   return (
     <div className="space-y-4">
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Deploy</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Run <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code> on this server and see the output inline.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={Rocket}
+              onClick={() => navigate(`/instances/${instance.id}/deploy`)}
+            >
+              Open deploy page
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Details</CardTitle>
