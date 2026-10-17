@@ -34,11 +34,20 @@ const typeAccent: Record<string, string> = {
 export interface ActionTimelineItemProps {
   action: Action
   showInstance?: boolean
+  /**
+   * Render the script output from `action.metadata.output` as a small
+   * monospace block below the row. Off by default so the global /activity
+   * feed and the per-instance Activity tab stay compact; the deploy page
+   * opts in because operators want to glance at the stdout of the last
+   * few runs without opening the result panel.
+   */
+  showOutput?: boolean
 }
 
 export function ActionTimelineItem({
   action,
   showInstance,
+  showOutput,
 }: ActionTimelineItemProps) {
   const Icon = typeIcon[action.action_type] ?? History
   const label = typeLabel[action.action_type] ?? action.action_type
@@ -48,6 +57,13 @@ export function ActionTimelineItem({
       ? (new Date(action.completed_at).getTime() -
           new Date(action.started_at).getTime()) /
         1000
+      : null
+  // `metadata` is a free-form record; only `output` is rendered inline.
+  // Treat anything non-string as missing so we don't render "[object Object]".
+  const metadataOutput =
+    typeof action.metadata?.output === "string" &&
+    action.metadata.output.length > 0
+      ? action.metadata.output
       : null
 
   return (
@@ -87,6 +103,11 @@ export function ActionTimelineItem({
         </div>
         {action.error_message ? (
           <p className="mt-1 text-xs text-danger-fg">{action.error_message}</p>
+        ) : null}
+        {showOutput && metadataOutput ? (
+          <pre className="mt-2 max-h-32 overflow-auto rounded bg-surface-sunken px-2 py-1.5 font-mono text-[11px] leading-snug text-fg-muted whitespace-pre-wrap break-words">
+            {metadataOutput}
+          </pre>
         ) : null}
       </div>
     </motion.div>

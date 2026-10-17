@@ -286,12 +286,12 @@ export function InstanceDeployPage() {
 
           {/* Trigger card */}
           <Card>
-            <CardHeader>
+            <div className="space-y-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
                   <Rocket className="h-5 w-5" aria-hidden />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <CardTitle>Run a deploy</CardTitle>
                   <p className="mt-1 text-sm text-fg-muted">
                     We'll SSH in as <span className="font-mono">root</span>, execute the script, capture stdout, and report the outcome here. The script path is fixed at{" "}
@@ -301,7 +301,8 @@ export function InstanceDeployPage() {
               </div>
               <Button
                 variant="primary"
-                size="md"
+                size="lg"
+                fullWidth
                 leftIcon={deployApp.isPending ? undefined : Rocket}
                 isLoading={deployApp.isPending}
                 disabled={deployApp.isPending}
@@ -309,7 +310,7 @@ export function InstanceDeployPage() {
               >
                 Deploy now
               </Button>
-            </CardHeader>
+            </div>
           </Card>
 
           {/* Running state — visible while the synchronous call is in flight */}
@@ -379,7 +380,7 @@ export function InstanceDeployPage() {
             ) : (
               <div className="space-y-2">
                 {deploys.slice(0, 10).map((a) => (
-                  <ActionTimelineItem key={a.id} action={a} />
+                  <ActionTimelineItem key={a.id} action={a} showOutput />
                 ))}
               </div>
             )}
