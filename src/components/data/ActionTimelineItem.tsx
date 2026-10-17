@@ -1,4 +1,4 @@
-import { Archive, ShieldCheck, RefreshCw, History } from "lucide-react"
+import { Archive, Rocket, ShieldCheck, RefreshCw, History } from "lucide-react"
 import { type LucideIcon } from "lucide-react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
@@ -12,6 +12,7 @@ const typeIcon: Record<string, LucideIcon> = {
   SECURITY_PATCH: ShieldCheck,
   SSL_RENEW: RefreshCw,
   RESTORE: Archive,
+  DEPLOY_APP: Rocket,
 }
 
 const typeLabel: Record<string, string> = {
@@ -19,6 +20,7 @@ const typeLabel: Record<string, string> = {
   SECURITY_PATCH: "Security patch",
   SSL_RENEW: "SSL renewal",
   RESTORE: "Restore",
+  DEPLOY_APP: "App deploy",
 }
 
 const typeAccent: Record<string, string> = {
@@ -26,6 +28,7 @@ const typeAccent: Record<string, string> = {
   SECURITY_PATCH: "bg-success-soft text-success-fg",
   SSL_RENEW: "bg-info-soft text-info-fg",
   RESTORE: "bg-accent-soft text-accent-soft-fg",
+  DEPLOY_APP: "bg-accent-soft text-accent-soft-fg",
 }
 
 export interface ActionTimelineItemProps {
