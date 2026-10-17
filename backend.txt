@@ -1,0 +1,287 @@
+# Backend integration: `POST /instances/{id}/deploy-app`
+
+The frontend is wired up. The deploy page at `/instances/{id}/deploy` calls
+`POST /instances/{id}/deploy-app`, then asks
+`GET /instances/{id}/actions?action_type=DEPLOY_APP&limit=10` to render the
+"Recent deploys" feed. If that second call returns nothing, the page shows
+"No deploys yet for this server" — which is exactly the symptom in the
+screenshot.
+
+This file is the contract the backend needs to satisfy so deploys show up
+in the activity feed and per-instance timeline. The frontend already
+renders `DEPLOY_APP` rows correctly (icon, label, accent) once they exist
+in the `actions` table with the right shape.
+
+---
+
+## 1. The trigger endpoint (already exists)
+
+```
+POST /instances/{id}/deploy-app
+Auth: standard JWT
+Body: empty
+```
+
+Behavior: SSH into the VPS as root, run `/root/deploy.sh`, capture stdout
++ stderr, parse the script's `RESULT:` / `REASON:` markers, and return
+the parsed outcome inline. Synchronous — must complete before responding.
+Hard timeout around 60s.
+
+### Response shape (200 OK)
+
+```json
+{
+  "action_id": "f4e2a8b1-...",
+  "status": "SUCCESS",
+  "reason": "Build succeeded, service restarted cleanly",
+  "output": "==== running /root/deploy.sh ====\n...\nRESULT: SUCCESS\nREASON: Build succeeded\n"
+}
+```
+
+Field-by-field:
+
+| Field       | Type                                            | Notes                                                   |
+|-------------|-------------------------------------------------|---------------------------------------------------------|
+| `action_id` | string (UUID)                                   | The audit row id; client uses it for "Copy ID"          |
+| `status`    | `"SUCCESS" \| "FAIL" \| "UNKNOWN"`              | Parsed from the script's `RESULT:` line                 |
+| `reason`    | string                                          | Parsed from the script's `REASON:` line; may be empty   |
+| `output`    | string                                          | Raw captured stdout+stderr; may be long, may be empty   |
+
+### Error cases (all return JSON, no 500-on-unparseable)
+
+| HTTP | `detail` (or `message`)                                                                                  | When                                                                            |
+|------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| 400  | `instance not found`                                                                                      | `{id}` doesn't exist                                                            |
+| 400  | `invalid id`                                                                                              | `{id}` is not a UUID                                                            |
+| 400  | `deploy-app is only supported on VPS instances`                                                           | Instance type is REDIS / RDS / STORAGE                                          |
+| 401  | (refresh-flow)                                                                                            | JWT expired, refresh failed                                                     |
+| 403  | `access denied`                                                                                           | Caller is not allowed to deploy this instance                                   |
+| 500  | `deploy.sh not found at /root/deploy.sh on instance <uuid>`                                               | Script missing — provisioning defect, not a user error                          |
+| 500  | (anything else from the SSH run)                                                                          | Network/SSH errors get normalized server-side before returning                  |
+
+The `500 "deploy.sh not found at…"` case is special: the frontend maps it
+to an "Open an action request" CTA. **Keep that exact prefix string** so
+the frontend's substring check still works.
+
+---
+
+## 2. What to write to the `actions` table
+
+Every successful or failed deploy (HTTP 200) MUST also persist one row to
+the `actions` table so it shows up in:
+
+- The per-instance activity tab on `/instances/{id}`
+- The global `/activity` feed
+- The "Recent deploys" panel on the deploy page itself
+
+### Action row shape (matches existing schema for BACKUP / SECURITY_PATCH / SSL_RENEW / RESTORE)
+
+```json
+{
+  "id": "f4e2a8b1-...",                   // same value as response.action_id
+  "instance_id": "9b1c...",               // the VPS id from the URL
+  "action_type": "DEPLOY_APP",            // NEW enum value; add it to the ActionType enum
+  "status": "SUCCESS",                    // see mapping table below
+  "started_at": "2026-10-17T14:23:01Z",   // ISO-8601, just before SSH dial
+  "completed_at": "2026-10-17T14:23:47Z", // ISO-8601, just after the script exits
+  "error_message": null,                  // see mapping table below
+  "metadata": {
+    "trigger": "user",                    // "user" for now (no cron/auto path yet)
+    "output": "==== running /root/deploy.sh ====\n...\nRESULT: SUCCESS\nREASON: ...\n",
+    "reason": "Build succeeded, service restarted cleanly",
+    "deploy_status": "SUCCESS",           // raw DeployAppStatus preserved
+    "user_agent": "infra-dashboard-web/0.1",
+    "request_ip": "10.0.0.42"
+  },
+  "created_at": "2026-10-17T14:23:01Z",
+  "updated_at": "2026-10-17T14:23:47Z"
+}
+```
+
+### `metadata` payload — required keys
+
+The frontend doesn't read `metadata` directly today, but the support team
+will need it for postmortems. Persist it for every deploy.
+
+- `output` — the raw captured stdout+stderr. **Keep the full text, not a
+  truncated summary.** Some deploys print 200KB+ of build output; that's
+  fine, the column should accept TEXT.
+- `reason` — the parsed `REASON:` line (may be empty string).
+- `deploy_status` — the raw `DeployAppStatus` value (`SUCCESS` / `FAIL` /
+  `UNKNOWN`). This is distinct from `status` (which is the audit enum) so
+  operators can tell "the script said FAIL" from "we couldn't even tell
+  if it ran."
+- `trigger` — for now always `"user"`. Leave the field in place for the
+  eventual cron / CI path.
+
+### Status mapping (response.status → action.status)
+
+The audit enum is `PENDING | RUNNING | SUCCESS | FAILED`. The deploy
+response enum is `SUCCESS | FAIL | UNKNOWN`. They do not line up
+directly. **Map like this:**
+
+| `DeployAppStatus` | `ActionStatus` | `error_message`        |
+|-------------------|----------------|------------------------|
+| `SUCCESS`         | `SUCCESS`      | `null`                 |
+| `FAIL`            | `FAILED`       | `reason` (or `null`)   |
+| `UNKNOWN`         | `FAILED`       | `reason` (or `null`)   |
+
+Reason for collapsing UNKNOWN into FAILED on the audit side: the rest of
+the system only counts SUCCESS vs. anything-else. Treating UNKNOWN as
+failure matches the operator's mental model — "I don't know what
+happened" is a failure to confirm success, and they need to investigate.
+
+The raw UNKNOWN state is preserved in `metadata.deploy_status` so the
+frontend's amber "Couldn't tell whether it worked" banner and the
+audit row's FAILED pill can coexist correctly.
+
+### Lifecycle for a synchronous endpoint
+
+Because the call is synchronous, the row goes in with `status="SUCCESS"`
+or `status="FAILED"` directly — no `PENDING` / `RUNNING` transitions are
+visible to the client. Two reasonable implementations:
+
+**Option A (recommended): single insert after the run completes**
+```sql
+INSERT INTO actions (id, instance_id, action_type, status, started_at,
+                     completed_at, error_message, metadata, created_at,
+                     updated_at)
+VALUES (?, ?, 'DEPLOY_APP', ?, ?, ?, ?, ?::jsonb, NOW(), NOW());
+```
+Set `started_at` to the moment you dialed SSH, `completed_at` to the
+moment the script exited. Difference is the "took N seconds" number the
+UI shows.
+
+**Option B: insert PENDING, update at the end.** Only worth it if you
+have other code paths that want to observe in-flight deploys (e.g. a
+status page). Not needed for the current frontend.
+
+If the SSH dial or auth fails before the script even runs, you still
+create the audit row — with `status="FAILED"`, `error_message=reason`,
+`metadata.deploy_status="UNKNOWN"`. The "no recent deploys" symptom
+users are seeing today is consistent with this row not being written at
+all on failure paths, which makes the timeline lie about whether a
+deploy was attempted.
+
+---
+
+## 3. The list endpoint (already exists, just needs the filter to work)
+
+```
+GET /instances/{id}/actions?action_type=DEPLOY_APP&limit=10
+Auth: standard JWT
+```
+
+Returns:
+```json
+{
+  "data": [ { /* Action row as above */ } ],
+  "total": 42,
+  "limit": 10,
+  "offset": 0
+}
+```
+
+The endpoint already exists and supports `action_type` as a filter. The
+only thing to verify is that `"DEPLOY_APP"` is accepted as a valid
+`action_type` value by the filter — i.e. that the SQL `WHERE` clause
+compares against the enum value, not just the human-readable label.
+
+Also supported (used elsewhere in the app): `status`, `started_from`,
+`started_to`, `limit`, `offset`. No changes needed to the route — the
+frontend already calls it correctly.
+
+### Global listing
+
+`GET /actions?action_type=DEPLOY_APP&limit=50` powers the
+`/activity` page. Same filter contract.
+
+---
+
+## 4. The exact frontend contract — for reference
+
+So you can sanity-check the response you're writing. From
+`src/api/types.ts`:
+
+```ts
+export type ActionType =
+  | "BACKUP"
+  | "SECURITY_PATCH"
+  | "SSL_RENEW"
+  | "RESTORE"
+  | "DEPLOY_APP"
+  | string
+
+export type ActionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
+
+export interface Action {
+  id: string
+  instance_id: string
+  action_type: ActionType
+  status: ActionStatus
+  started_at: string
+  completed_at: string | null
+  error_message: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+```
+
+The frontend uses `action.id`, `action.status` (SUCCESS / FAILED only —
+treats anything else as "other"), `action.started_at`, `action.completed_at`,
+and `action.error_message`. Everything in `metadata` is support-only and
+the frontend ignores it.
+
+`action_type` must be the literal string `"DEPLOY_APP"` — uppercase,
+underscore-separated, no spaces.
+
+---
+
+## 5. Migration / enum update checklist
+
+1. Add `"DEPLOY_APP"` to the `action_type` enum (Postgres / SQLAlchemy /
+   whatever the project uses). It's a new value, no destructive change.
+2. Confirm the `actions` row insert path used by other deploy-style
+   actions (e.g. RESTORE, SECURITY_PATCH) is reused for DEPLOY_APP.
+   Don't fork the write path; share the same serializer.
+3. Confirm the list endpoint's `action_type` filter passes the string
+   straight through to the DB without case-folding or slugifying.
+4. Confirm `metadata` is stored as JSONB (or equivalent) and the keys
+   listed in §2 are written verbatim.
+5. Confirm an audit row is written on EVERY response — including 500s
+   for `deploy.sh not found`, SSH dial failures, and auth failures.
+   The only case where no row is written should be 4xx where the
+   request never reached the SSH layer (invalid id, access denied,
+   non-VPS). For 5xx SSH/script failures: write the row.
+
+---
+
+## 6. How to verify it's working
+
+After shipping the change:
+
+```bash
+# 1. Trigger a deploy against a known-good VPS
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  https://<host>/instances/<vps-id>/deploy-app
+
+# 2. List recent deploys for that instance
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://<host>/instances/<vps-id>/actions?action_type=DEPLOY_APP&limit=10"
+
+# 3. Confirm the returned row matches the shape in §2
+#    - action_type = "DEPLOY_APP"
+#    - status = "SUCCESS" or "FAILED"
+#    - completed_at is set
+#    - metadata.output contains the raw script output
+#    - id == the action_id returned by step 1
+```
+
+Then in the UI: navigate to `/instances/<vps-id>/deploy`. The "Recent
+deploys" panel should no longer be empty; the per-instance Activity
+tab should show the row with a rocket icon and teal accent; the global
+`/activity` page should list it under "App deploy".
+
+The "No deploys yet for this server" empty state disappears as soon as
+the first row is written — there is no frontend change needed.
