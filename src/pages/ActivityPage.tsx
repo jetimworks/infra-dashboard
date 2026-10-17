@@ -90,7 +90,7 @@ export function ActivityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Activity
         </h1>
         <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -178,11 +178,11 @@ export function ActivityPage() {
       )}
 
       {totalPages > 1 ? (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-fg-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="whitespace-nowrap text-sm text-fg-muted">
             Page {page + 1} of {totalPages}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"

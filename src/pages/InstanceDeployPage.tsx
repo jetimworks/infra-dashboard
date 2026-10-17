@@ -243,8 +243,8 @@ export function InstanceDeployPage() {
       </nav>
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Deploy application
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -392,7 +392,7 @@ export function InstanceDeployPage() {
               <CardHeader>
                 <CardTitle>Deploy stats</CardTitle>
               </CardHeader>
-              <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
                 <Stat label="Total" value={String(completedDeploys.length)} />
                 <Stat
                   label="Succeeded"

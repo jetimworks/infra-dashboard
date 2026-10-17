@@ -57,18 +57,18 @@ export function AdminUserDetailPage() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary text-lg font-semibold">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary text-lg font-semibold">
             {user.first_name?.[0]}{user.last_name?.[0]}
           </div>
-          <div>
-            <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+          <div className="min-w-0">
+            <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
               {user.first_name} {user.last_name}
             </h1>
-            <p className="text-[0.9375rem] text-fg-muted">{user.email}</p>
+            <p className="truncate text-[0.9375rem] text-fg-muted">{user.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <Button variant="outline" size="sm" leftIcon={Pencil} onClick={() => setEditOpen(true)}>
             Edit user
           </Button>
@@ -109,7 +109,7 @@ export function AdminUserDetailPage() {
         <CardHeader>
           <CardTitle>Details</CardTitle>
         </CardHeader>
-        <div className="grid grid-cols-2 gap-6 px-5 pb-5 text-sm">
+        <div className="grid grid-cols-1 gap-6 px-5 pb-5 text-sm sm:grid-cols-2">
           <DetailItem label="Email" value={user.email} />
           <DetailItem label="Phone" value={user.phone ?? "—"} />
           <DetailItem label="Joined" value={formatDate(user.created_at)} />
@@ -285,7 +285,7 @@ function EditUserDrawer({
           </div>
         ) : null}
 
-        <dl className="grid grid-cols-2 gap-4 text-sm">
+        <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs text-fg-muted">Email</dt>
             <dd className="font-medium text-fg">{user.email}</dd>

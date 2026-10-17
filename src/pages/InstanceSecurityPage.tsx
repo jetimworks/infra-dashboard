@@ -87,8 +87,8 @@ export function InstanceSecurityPage() {
       </nav>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Security check
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">

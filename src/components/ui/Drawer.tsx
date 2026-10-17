@@ -45,7 +45,9 @@ export function Drawer({
     <dialog
       ref={dialogRef}
       className={cn(
-        "m-0 h-screen max-h-screen",
+        // Respect iPhone safe-areas on top and bottom so the close
+        // affordance and footer never sit under the notch.
+        "m-0 h-full max-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]",
         side === "right" ? "ml-auto" : "mr-auto",
         widthClass,
         "p-0 shadow-[var(--shadow-modal)] border-l border-border/40",
@@ -57,9 +59,9 @@ export function Drawer({
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-border/50 px-6 py-4">
-          <div>
-            <h2 className="text-[1.25rem] font-semibold text-fg">{title}</h2>
+        <div className="flex items-start justify-between gap-4 border-b border-border/50 px-5 py-4 sm:px-6">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[1.125rem] font-semibold text-fg sm:text-[1.25rem]">{title}</h2>
             {description ? (
               <p className="mt-1 text-sm text-fg-muted">{description}</p>
             ) : null}
@@ -73,9 +75,9 @@ export function Drawer({
             <X className="h-4 w-4" aria-hidden />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
         {footer ? (
-          <div className="border-t border-border/50 px-6 py-4">{footer}</div>
+          <div className="border-t border-border/50 px-5 py-4 sm:px-6">{footer}</div>
         ) : null}
       </div>
     </dialog>

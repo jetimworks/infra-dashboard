@@ -87,8 +87,8 @@ export function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Users
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -114,64 +114,71 @@ export function AdminUsersPage() {
         </Card>
       ) : (
         <Card padding="sm">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-xs font-medium uppercase tracking-wider text-fg-muted">
-                <th className="px-3 py-3">Name</th>
-                <th className="px-3 py-3">Email</th>
-                <th className="px-3 py-3">Phone</th>
-                <th className="px-3 py-3">Status</th>
-                <th className="px-3 py-3">Role</th>
-                <th className="px-3 py-3">Joined</th>
-                <th className="px-3 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-subtle">
-              {users.map((u) => (
-                <tr key={u.id} className="text-sm">
-                  <td className="px-3 py-3 font-medium text-fg">
-                    {u.first_name} {u.last_name}
-                  </td>
-                  <td className="px-3 py-3 text-fg-muted">{u.email}</td>
-                  <td className="px-3 py-3 text-fg-muted">{u.phone ?? "—"}</td>
-                  <td className="px-3 py-3">
-                    <StatusPill status={u.status} size="sm" />
-                  </td>
-                  <td className="px-3 py-3">
-                    {u.is_staff ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
-                        <Shield className="h-3 w-3" aria-hidden />
-                        Staff
-                      </span>
-                    ) : (
-                      <span className="text-fg-muted">Customer</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-3 text-fg-muted">
-                    {formatDate(u.created_at)}
-                  </td>
-                  <td className="px-3 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onCosplay(u.email)}
-                      isLoading={impersonatingId === u.email}
-                    >
-                      Impersonate
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditing(u)}
-                      className="ml-2"
-                    >
-                      Edit
-                    </Button>
-                  </td>
+          {/* Horizontal scroll gutter so the table never pushes the
+              surrounding card wider than the viewport on phones. */}
+          <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+            <table className="w-full min-w-[640px] table-auto">
+              <thead>
+                <tr className="text-left text-xs font-medium uppercase tracking-wider text-fg-muted">
+                  <th className="px-3 py-3">Name</th>
+                  <th className="px-3 py-3">Email</th>
+                  <th className="px-3 py-3">Phone</th>
+                  <th className="px-3 py-3">Status</th>
+                  <th className="px-3 py-3">Role</th>
+                  <th className="px-3 py-3 whitespace-nowrap">Joined</th>
+                  <th className="px-3 py-3 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-subtle">
+                {users.map((u) => (
+                  <tr key={u.id} className="text-sm">
+                    <td className="px-3 py-3 font-medium text-fg whitespace-nowrap">
+                      {u.first_name} {u.last_name}
+                    </td>
+                    <td className="px-3 py-3 text-fg-muted">{u.email}</td>
+                    <td className="px-3 py-3 text-fg-muted whitespace-nowrap">
+                      {u.phone ?? "—"}
+                    </td>
+                    <td className="px-3 py-3">
+                      <StatusPill status={u.status} size="sm" />
+                    </td>
+                    <td className="px-3 py-3">
+                      {u.is_staff ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
+                          <Shield className="h-3 w-3" aria-hidden />
+                          Staff
+                        </span>
+                      ) : (
+                        <span className="text-fg-muted">Customer</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-fg-muted whitespace-nowrap">
+                      {formatDate(u.created_at)}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-shrink-0 flex-col items-stretch gap-1 sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onCosplay(u.email)}
+                          isLoading={impersonatingId === u.email}
+                        >
+                          Impersonate
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditing(u)}
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 
@@ -303,7 +310,7 @@ function EditUserForm({
         </div>
       ) : null}
 
-      <dl className="grid grid-cols-2 gap-4 text-sm">
+      <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-xs text-fg-muted">Name</dt>
           <dd className="font-medium text-fg">

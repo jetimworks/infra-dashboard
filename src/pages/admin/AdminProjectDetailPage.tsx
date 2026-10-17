@@ -149,8 +149,8 @@ export function AdminProjectDetailPage() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             {project.name}
           </h1>
           {project.description ? (
@@ -162,7 +162,7 @@ export function AdminProjectDetailPage() {
             Created {formatDate(project.created_at)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <Button variant="outline" size="sm" leftIcon={Pencil} onClick={openEdit}>
             Edit project
           </Button>

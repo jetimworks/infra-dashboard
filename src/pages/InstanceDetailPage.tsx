@@ -253,20 +253,20 @@ export function InstanceDetailPage() {
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
+          <div className="flex min-w-0 items-start gap-3 sm:gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Icon className="h-6 w-6" aria-hidden />
             </div>
-            <div>
-              <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
                 {instance.name}
               </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-fg-muted">
-                <span>{typeLabel[instance.type]}</span>
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-fg-muted">
+                <span className="whitespace-nowrap">{typeLabel[instance.type]}</span>
                 {instance.host ? (
                   <>
                     <span aria-hidden>·</span>
-                    <span className="font-mono">{instance.host}</span>
+                    <span className="min-w-0 flex-1 truncate font-mono">{instance.host}</span>
                   </>
                 ) : null}
                 {!instance.is_active ? (

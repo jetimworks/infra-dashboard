@@ -9,13 +9,15 @@ export function Table({
   children: ReactNode
 }) {
   return (
+    // overflow-x-auto (not overflow-hidden) so wide tables become a
+    // swipeable strip on mobile instead of silently clipping.
     <div
       className={cn(
-        "overflow-hidden rounded-lg bg-surface shadow-[var(--shadow-card)]",
+        "overflow-x-auto rounded-lg bg-surface shadow-[var(--shadow-card)]",
         className
       )}
     >
-      <table className="w-full">{children}</table>
+      <table className="w-full min-w-full table-auto">{children}</table>
     </div>
   )
 }

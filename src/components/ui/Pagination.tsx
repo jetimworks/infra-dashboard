@@ -21,15 +21,15 @@ export function Pagination({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-4 text-sm text-fg-muted",
+        "flex flex-wrap items-center justify-between gap-3 text-sm text-fg-muted",
         className
       )}
     >
-      <p>
+      <p className="whitespace-nowrap">
         Page <span className="font-medium text-fg">{page}</span> of{" "}
         <span className="font-medium text-fg">{totalPages}</span>
       </p>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="sm"

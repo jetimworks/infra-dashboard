@@ -156,20 +156,24 @@ export function InstanceMetricsPage() {
       </nav>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Performance
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
             How this {instance.type === "VPS" ? "server" : instance.type === "REDIS" ? "cache" : instance.type === "RDS" ? "database" : "storage"} has been doing.
           </p>
         </div>
-        <SegmentedControl
-          ariaLabel="Time range"
-          value={range}
-          onChange={setRange}
-          options={rangeOptions}
-        />
+        {/* Horizontal-scroll gutter so the segmented control stays
+            swipable on narrow viewports. */}
+        <div className="-mx-4 max-w-full overflow-x-auto px-4 sm:mx-0 sm:max-w-none sm:px-0">
+          <SegmentedControl
+            ariaLabel="Time range"
+            value={range}
+            onChange={setRange}
+            options={rangeOptions}
+          />
+        </div>
       </div>
 
       {metrics.length === 0 ? (

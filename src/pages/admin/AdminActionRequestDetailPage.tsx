@@ -100,13 +100,13 @@ export function AdminActionRequestDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           {/* Header Card */}
           <Card>
             <div className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight">
+                  <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
                     {ar.title}
                   </h1>
                   <div className="mt-2 flex flex-wrap items-center gap-3">

@@ -75,14 +75,14 @@ export function Sidebar({ className }: { className?: string }) {
                     to={item.to}
                     end={item.end}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                      "group relative flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150",
                       isActive
                         ? "bg-primary-soft text-primary"
                         : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
                     )}
                   >
-                    <Icon className="h-4 w-4" aria-hidden />
-                    {item.label}
+                    <Icon className="h-4 w-4 flex-shrink-0" aria-hidden />
+                    <span className="truncate">{item.label}</span>
                   </NavLink>
                 </li>
               )
@@ -94,7 +94,7 @@ export function Sidebar({ className }: { className?: string }) {
         <div className="flex items-center justify-between gap-2">
           <a
             href="mailto:support@jetimworks.com"
-            className="flex items-center gap-2 text-xs text-fg-muted hover:text-fg"
+            className="flex min-h-9 items-center gap-2 text-xs text-fg-muted hover:text-fg"
           >
             <HelpCircle className="h-3.5 w-3.5" aria-hidden />
             Get help

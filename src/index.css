@@ -76,6 +76,10 @@
   /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Extra-tight breakpoint for small phones (iPhone SE / 12 mini). Real
+     viewport widths live below the default sm: 640px floor. */
+  --breakpoint-xs: 30rem;
 }
 
 :root {
@@ -478,4 +482,50 @@ dialog::backdrop {
   .nav-rail {
     box-shadow: none !important;
   }
+}
+
+/* ------------------------------------------------------------------
+   Mobile primitives
+------------------------------------------------------------------ */
+
+/* 44pt-class tap target floor. Apply via class="touch-target" to any
+   interactive surface that should meet iOS HIG / Material guidance. */
+@utility touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+/* Hide the native scrollbar while preserving scroll. Used for tabs and
+   other horizontally scrollable strips on mobile. */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Fade the leading and trailing edges of a horizontally scrollable
+   container to hint that content continues off-screen. Apply via
+   class="scroll-fade-x" and pair with overflow-x-auto. */
+@utility scroll-fade-x {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 1.25rem,
+    black calc(100% - 1.25rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 1.25rem,
+    black calc(100% - 1.25rem),
+    transparent 100%
+  );
+}
+
+/* Suppress rubber-band / pull-to-refresh on the mobile drawer scrim. */
+.app-scroll-lock {
+  overscroll-behavior: contain;
+  touch-action: none;
 }

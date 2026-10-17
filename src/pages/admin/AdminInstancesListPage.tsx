@@ -81,8 +81,8 @@ export function AdminInstancesListPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Instances
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -99,12 +99,16 @@ export function AdminInstancesListPage() {
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <SegmentedControl
-          ariaLabel="Filter by type"
-          value={filter}
-          onChange={setFilter}
-          options={filterOptions}
-        />
+        {/* Scrollable gutter keeps the type filter swipeable on
+            narrow phones while letting it sit inline on wider viewports. */}
+        <div className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
+          <SegmentedControl
+            ariaLabel="Filter by type"
+            value={filter}
+            onChange={setFilter}
+            options={filterOptions}
+          />
+        </div>
         <div className="lg:w-72">
           <Input
             type="search"

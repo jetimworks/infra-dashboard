@@ -72,7 +72,7 @@ export function AdminActivityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Activity
         </h1>
         <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -80,14 +80,18 @@ export function AdminActivityPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <SegmentedControl
-          ariaLabel="Filter by status"
-          value={statusFilter}
-          onChange={setStatusFilter}
-          options={statusOptions}
-        />
-        <span className="text-sm text-fg-muted">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Scrollable gutter keeps the status filter swipeable on
+            narrow phones while letting it sit inline on wider viewports. */}
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:overflow-visible sm:px-0">
+          <SegmentedControl
+            ariaLabel="Filter by status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={statusOptions}
+          />
+        </div>
+        <span className="whitespace-nowrap text-sm text-fg-muted">
           {filteredActions.length} action{filteredActions.length === 1 ? "" : "s"}
         </span>
       </div>

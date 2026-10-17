@@ -128,7 +128,7 @@ export function DashboardPage() {
           {greeting()}
           {firstName ? `, ${firstName}` : ""}
         </p>
-        <h1 className="mt-1 text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="mt-1 text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Your infrastructure
         </h1>
       </div>

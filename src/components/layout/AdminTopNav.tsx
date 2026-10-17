@@ -15,19 +15,19 @@ export function AdminTopNav({ onOpenMobileSidebar }: AdminTopNavProps) {
     [location.pathname]
   )
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border/50 bg-surface/90 px-6 backdrop-blur-md md:px-10">
-      <div className="flex min-w-0 items-center gap-3">
+    <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 sm:gap-3 md:gap-4 border-b border-border/50 bg-surface/90 px-4 py-2 backdrop-blur-md sm:px-6 sm:py-0 md:px-10">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={onOpenMobileSidebar}
-          className="rounded-md p-2 text-fg hover:bg-surface-sunken hover:text-fg ring-1 ring-border/40 lg:hidden"
+          className="touch-target inline-flex items-center justify-center rounded-md p-2 text-fg hover:bg-surface-sunken hover:text-fg ring-1 ring-border/40 lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" aria-hidden />
         </button>
-        <Breadcrumb items={items} />
+        <Breadcrumb items={items} compact />
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-shrink-0 items-center gap-2">
         <UserMenu />
       </div>
     </header>

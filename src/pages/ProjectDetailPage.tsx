@@ -96,8 +96,8 @@ export function ProjectDetailPage() {
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
           <Cloud className="h-6 w-6" aria-hidden />
         </div>
-        <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             {project.name}
           </h1>
           {project.description ? (
@@ -345,12 +345,12 @@ function DetailRow({
   mono?: boolean
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-xs font-medium text-fg-muted">{label}</dt>
       <dd
         className={
           mono
-            ? "mt-0.5 font-mono text-sm text-fg"
+            ? "mt-0.5 break-all font-mono text-sm text-fg"
             : "mt-0.5 text-sm text-fg"
         }
       >

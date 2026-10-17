@@ -42,7 +42,7 @@ export function ProjectsListPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Your projects
         </h1>
         <p className="mt-1 text-[0.9375rem] text-fg-muted">

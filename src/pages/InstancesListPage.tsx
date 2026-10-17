@@ -114,7 +114,7 @@ export function InstancesListPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Your infrastructure
         </h1>
         <p className="mt-1 text-[0.9375rem] text-fg-muted">
@@ -134,15 +134,20 @@ export function InstancesListPage() {
       ) : (
         <>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <SegmentedControl
-              ariaLabel="Filter by type"
-              value={activeFilter}
-              onChange={handleFilterChange}
-              options={filterOptions.map((o) => ({
-                ...o,
-                label: `${o.label} · ${counts[o.value]}`,
-              }))}
-            />
+            {/* Scrollable gutter keeps the type filter swipeable on
+                narrow phones while letting it sit inline on wider
+                viewports. */}
+            <div className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
+              <SegmentedControl
+                ariaLabel="Filter by type"
+                value={activeFilter}
+                onChange={handleFilterChange}
+                options={filterOptions.map((o) => ({
+                  ...o,
+                  label: `${o.label} · ${counts[o.value]}`,
+                }))}
+              />
+            </div>
             <div className="lg:w-72">
               <Input
                 type="search"
