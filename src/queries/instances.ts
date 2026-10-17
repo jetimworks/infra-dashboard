@@ -189,3 +189,20 @@ export function useSystemAction() {
     },
   })
 }
+
+/**
+ * Synchronous deploy on a VPS. The response IS the final outcome — no polling.
+ * The page handles UX inline (status banner, output block, error mapping);
+ * we intentionally do not toast on error so the page can render rich context.
+ */
+export function useDeployApp() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => instancesApi.deployApp(id),
+    onSuccess: (_data, id) => {
+      // The audit row lands in /instances/{id}/actions; refresh it so the
+      // activity feed + recent-deploys list pick up the new entry immediately.
+      qc.invalidateQueries({ queryKey: qk.instanceActions(id) })
+    },
+  })
+}
