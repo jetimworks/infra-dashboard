@@ -63,6 +63,13 @@ export function AdminInstanceSshKeyPage() {
 
   const instance = instanceQ.data
   const sshKey = downloadQ.data?.ssh_key ?? ""
+  // `hasKey` is the data signal for "there is an existing key." We use it for
+  // copy and warning state — the page's only path to add the first key is the
+  // same as the replace path, so the controls should read correctly in both
+  // cases. `downloadQ.isError` was the wrong signal (it means "the request
+  // failed", not "there is no key") and is no longer used for the primary
+  // button's disabled state.
+  const hasKey = Boolean(sshKey)
 
   const handleCopy = async () => {
     if (!sshKey) return
@@ -127,9 +134,8 @@ export function AdminInstanceSshKeyPage() {
             size="sm"
             leftIcon={Upload}
             onClick={() => setUploadOpen(true)}
-            disabled={downloadQ.isError}
           >
-            Replace key
+            {hasKey ? "Replace key" : "Add key"}
           </Button>
         </CardHeader>
 
@@ -141,7 +147,7 @@ export function AdminInstanceSshKeyPage() {
           <div className="rounded-md border border-warning-soft bg-warning-soft/40 p-4 text-sm text-fg">
             <p className="font-medium text-warning-fg">No key on file yet</p>
             <p className="mt-1 text-fg-muted">
-              Click "Replace key" to add the first public key for this server.
+              Click "Add key" to add the first public key for this server.
             </p>
           </div>
         ) : sshKey ? (
@@ -214,8 +220,8 @@ export function AdminInstanceSshKeyPage() {
           <li className="flex gap-2">
             <span className="font-mono text-fg-subtle">3.</span>
             <span>
-              Paste it into the panel on the right. We replace the existing key
-              and you can log in with the matching private key.
+              Paste it into the panel on the right. We save it as the public key
+              for this server and you can log in with the matching private key.
             </span>
           </li>
         </ul>
@@ -224,17 +230,23 @@ export function AdminInstanceSshKeyPage() {
       <Drawer
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
-        title="Replace SSH public key"
-        description="The previous public key will be replaced. Anyone using it will lose access."
+        title={hasKey ? "Replace SSH public key" : "Add SSH public key"}
+        description={
+          hasKey
+            ? "The previous public key will be replaced. Anyone using it will lose access."
+            : "We'll save this as the public key for this server. You'll be able to log in with the matching private key."
+        }
       >
         <form onSubmit={handleSubmit(onUpload)} className="space-y-4">
-          <div className="rounded-md border border-warning-soft bg-warning-soft/40 p-3 text-sm text-fg">
-            <p className="font-medium text-warning-fg">Heads up</p>
-            <p className="mt-1 text-fg-muted">
-              Make sure your new private key is already installed locally before
-              you save. Otherwise you may lock yourself out.
-            </p>
-          </div>
+          {hasKey ? (
+            <div className="rounded-md border border-warning-soft bg-warning-soft/40 p-3 text-sm text-fg">
+              <p className="font-medium text-warning-fg">Heads up</p>
+              <p className="mt-1 text-fg-muted">
+                Make sure your new private key is already installed locally before
+                you save. Otherwise you may lock yourself out.
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-1.5">
             <label
               htmlFor="upload-ssh-key"
@@ -273,7 +285,7 @@ export function AdminInstanceSshKeyPage() {
               variant="primary"
               isLoading={isSubmitting || upload.isPending}
             >
-              Replace key
+              {hasKey ? "Replace key" : "Add key"}
             </Button>
           </div>
         </form>
