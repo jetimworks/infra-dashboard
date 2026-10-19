@@ -31,6 +31,9 @@ export const qk = {
   instanceSshKey: (id: string) => ["instances", id, "ssh-key"] as const,
   instanceActions: (id: string, filters?: object) =>
     ["instances", id, "actions", filters ?? {}] as const,
+  instanceNginxLogs: (id: string) => ["instances", id, "nginx-logs"] as const,
+  instanceNginxLog: (id: string, filename: string, lines: number) =>
+    ["instances", id, "nginx-logs", "content", { filename, lines }] as const,
 
   actions: (filters?: object) =>
     ["actions", filters ?? {}] as const,

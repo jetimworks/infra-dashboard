@@ -12,7 +12,9 @@ import {
   LineChart,
   type LucideIcon,
   Plus,
+  Power,
   Rocket,
+  ScrollText,
   Server,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -836,6 +838,56 @@ function SettingsTab({
               onClick={() => navigate(`/instances/${instance.id}/deploy`)}
             >
               Open deploy page
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>App control</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Start, stop, restart, or check the status of the
+                {" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">goweb</code>
+                {" "}
+                service running on this server.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={Power}
+              onClick={() => navigate(`/instances/${instance.id}/app-control`)}
+            >
+              Open app control
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Nginx logs</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Browse the files in
+                {" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/var/log/nginx/</code>
+                {" "}
+                and tail the most recent lines. Rotated <code className="font-mono text-[0.8125rem]">.gz</code> files are listed but can't be read in v1.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={ScrollText}
+              onClick={() => navigate(`/instances/${instance.id}/nginx-logs`)}
+            >
+              Open log viewer
             </Button>
           </CardHeader>
         </Card>

@@ -1,11 +1,15 @@
 import { apiDelete, apiGet, apiPost, apiPut } from "./client"
 import type {
+  AppControlInput,
+  AppControlResponse,
   CreateInstanceInput,
   CreateLocalServiceInput,
   CreateRemoteServiceInput,
   DeployAppResponse,
   Instance,
   InstanceType,
+  NginxLogContentResponse,
+  NginxLogListResponse,
   SshKeyResponse,
   SshKeyUploadInput,
   SystemActionInput,
@@ -54,6 +58,30 @@ export const instancesApi = {
     apiPost<DeployAppResponse>(`/instances/${id}/deploy-app`, undefined, {
       timeout: 90_000,
     }),
+
+  // Runs `sudo systemctl <action> goweb` on the VPS. Synchronous, VPS-only.
+  // Service name is hardcoded server-side — clients can only pick the verb.
+  // Same 90s timeout policy as deployApp; backend caps the SSH leg at ~60s.
+  appControl: (id: string, body: AppControlInput) =>
+    apiPost<AppControlResponse, AppControlInput>(
+      `/instances/${id}/app-control`,
+      body,
+      { timeout: 90_000 }
+    ),
+
+  // Read-only: lists /var/log/nginx/. No audit row written.
+  listNginxLogs: (id: string) =>
+    apiGet<NginxLogListResponse>(`/instances/${id}/nginx-logs`),
+
+  // Read-only: tails a single nginx log file. `lines` is optional; the
+  // backend defaults to 100 and caps at 10000 (with `truncated: true`).
+  // Filename is URL-encoded to keep path-traversal / shell metachars out
+  // even though the backend re-validates with a strict regex.
+  getNginxLog: (id: string, filename: string, lines?: number) =>
+    apiGet<NginxLogContentResponse>(
+      `/instances/${id}/nginx-logs/${encodeURIComponent(filename)}`,
+      { lines }
+    ),
 
   createLocalRedis: (id: string, body: CreateLocalServiceInput) =>
     apiPost<Instance, CreateLocalServiceInput>(

@@ -4,6 +4,7 @@ import { instancesApi } from "../api/instances"
 import { normalizeError } from "../api/errors"
 import { qk } from "../lib/query-keys"
 import type {
+  AppControlInput,
   CreateInstanceInput,
   CreateLocalServiceInput,
   CreateRemoteServiceInput,
@@ -204,5 +205,62 @@ export function useDeployApp() {
       // activity feed + recent-deploys list pick up the new entry immediately.
       qc.invalidateQueries({ queryKey: qk.instanceActions(id) })
     },
+  })
+}
+
+/**
+ * Synchronous app-control action (start / stop / restart / status) on the
+ * goweb systemd service of a VPS. Same shape as useDeployApp: 200 OK IS the
+ * outcome, no polling. Pages render rich context inline — no toast on error.
+ */
+export function useAppControl() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: AppControlInput }) =>
+      instancesApi.appControl(id, body),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceActions(vars.id) })
+    },
+  })
+}
+
+/**
+ * Snapshot list of files in /var/log/nginx/ on a VPS. No polling driven by
+ * this hook — the page either drives polling itself (for the tail) or lets
+ * the user hit a refresh button (for the file list). 30s staleTime so
+ * round-trip navigation doesn't re-fetch.
+ */
+export function useNginxLogList(id: string | undefined) {
+  return useQuery({
+    queryKey: id
+      ? qk.instanceNginxLogs(id)
+      : ["instances", id, "nginx-logs", "noop"],
+    queryFn: () => instancesApi.listNginxLogs(id as string),
+    enabled: Boolean(id),
+    staleTime: 30_000,
+  })
+}
+
+/**
+ * Tail snapshot for a single nginx log file. The page drives 5s polling
+ * itself via a setInterval (with pause/visibility gating) so this hook
+ * stays dumb. We leave `staleTime: 0` so the page's refetch always fires
+ * regardless of when it last succeeded. `.gz` files are excluded so we
+ * never try to render raw gzip bytes as text.
+ */
+export function useNginxLogContent(
+  id: string | undefined,
+  filename: string | undefined,
+  lines: number
+) {
+  return useQuery({
+    queryKey:
+      id && filename
+        ? qk.instanceNginxLog(id, filename, lines)
+        : ["instances", id, "nginx-logs", "content", "noop"],
+    queryFn: () =>
+      instancesApi.getNginxLog(id as string, filename as string, lines),
+    enabled: Boolean(id && filename && !filename.endsWith(".gz")),
+    staleTime: 0,
   })
 }

@@ -21,6 +21,7 @@ export type ActionType =
   | "SSL_RENEW"
   | "RESTORE"
   | "DEPLOY_APP"
+  | "APP_CONTROL"
   | string
 export type ActionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
 export type SecurityFindingStatus = "ok" | "warning" | "action_required"
@@ -236,6 +237,45 @@ export interface DeployAppResponse {
   status: DeployAppStatus
   reason: string
   output: string
+}
+
+// ── App Control (POST /instances/{id}/app-control) ─────────────────────
+// Synchronous: the response IS the final outcome. The 4-way status enum
+// combines verb outcomes (start/stop/restart → SUCCESS / UNKNOWN) with the
+// state-reporting verb (status → ACTIVE / INACTIVE / UNKNOWN).
+export type AppControlAction = "start" | "stop" | "restart" | "status"
+export type AppControlStatus = "ACTIVE" | "INACTIVE" | "SUCCESS" | "UNKNOWN"
+
+export interface AppControlInput {
+  action: AppControlAction
+}
+
+export interface AppControlResponse {
+  action_id: string
+  status: AppControlStatus
+  message: string
+  output: string
+}
+
+// ── Nginx logs (GET /instances/{id}/nginx-logs[/{filename}]) ────────────
+// Read-only. The list endpoint returns an enveloped array under `data`;
+// per backend docs, the tail endpoint's `lines` is clamped server-side at
+// 10000 (with `truncated: true` when capped).
+export interface NginxLogFile {
+  name: string
+  size_bytes: number
+  modified: string
+}
+
+export interface NginxLogListResponse {
+  data: NginxLogFile[]
+}
+
+export interface NginxLogContentResponse {
+  filename: string
+  lines: number
+  truncated: boolean
+  content: string
 }
 
 export interface SshKeyUploadInput {
