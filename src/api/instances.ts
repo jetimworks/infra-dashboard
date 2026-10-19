@@ -48,8 +48,12 @@ export const instancesApi = {
 
   // Runs /root/deploy.sh on the VPS. Synchronous: the response IS the final
   // outcome — no polling. Empty body; script path is hardcoded by the backend.
+  // The 90s axios timeout gives the backend's 60s server-side cap plus a grace
+  // window so the UI errors out instead of hanging if the SSH leg stalls.
   deployApp: (id: string) =>
-    apiPost<DeployAppResponse>(`/instances/${id}/deploy-app`),
+    apiPost<DeployAppResponse>(`/instances/${id}/deploy-app`, undefined, {
+      timeout: 90_000,
+    }),
 
   createLocalRedis: (id: string, body: CreateLocalServiceInput) =>
     apiPost<Instance, CreateLocalServiceInput>(

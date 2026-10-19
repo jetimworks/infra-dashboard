@@ -1,4 +1,8 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios"
+import axios, {
+  type AxiosError,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:9876"
 
@@ -126,42 +130,49 @@ export default apiClient
 
 export async function apiGet<T>(
   url: string,
-  params?: object
+  params?: object,
+  config?: AxiosRequestConfig
 ): Promise<T> {
   const snakeParams = params
     ? Object.fromEntries(
         Object.entries(params).map(([k, v]) => [k.replace(/([A-Z])/g, "_$1").toLowerCase(), v])
       )
     : undefined
-  const res = await apiClient.get<T>(url, { params: snakeParams })
+  const res = await apiClient.get<T>(url, { params: snakeParams, ...config })
   return res.data
 }
 
 export async function apiPost<T, B = unknown>(
   url: string,
-  body?: B
+  body?: B,
+  config?: AxiosRequestConfig
 ): Promise<T> {
-  const res = await apiClient.post<T>(url, body)
+  const res = await apiClient.post<T>(url, body, config)
   return res.data
 }
 
 export async function apiPut<T, B = unknown>(
   url: string,
-  body?: B
+  body?: B,
+  config?: AxiosRequestConfig
 ): Promise<T> {
-  const res = await apiClient.put<T>(url, body)
+  const res = await apiClient.put<T>(url, body, config)
   return res.data
 }
 
 export async function apiPatch<T, B = unknown>(
   url: string,
-  body?: B
+  body?: B,
+  config?: AxiosRequestConfig
 ): Promise<T> {
-  const res = await apiClient.patch<T>(url, body)
+  const res = await apiClient.patch<T>(url, body, config)
   return res.data
 }
 
-export async function apiDelete<T>(url: string): Promise<T> {
-  const res = await apiClient.delete<T>(url)
+export async function apiDelete<T>(
+  url: string,
+  config?: AxiosRequestConfig
+): Promise<T> {
+  const res = await apiClient.delete<T>(url, config)
   return res.data
 }
