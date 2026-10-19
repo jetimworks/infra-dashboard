@@ -145,7 +145,7 @@ export function InstanceNginxLogsPage() {
   if (instance.type !== "VPS") {
     return (
       <div className="space-y-6">
-        <Breadcrumb name={instance.name} />
+        <Breadcrumb id={instance.id} name={instance.name} />
         <Card>
           <EmptyState
             icon={Server}
@@ -169,7 +169,7 @@ export function InstanceNginxLogsPage() {
       animate="enter"
       variants={reduceMotion ? reducedVariants : pageVariants}
     >
-      <Breadcrumb name={instance.name} />
+      <Breadcrumb id={instance.id} name={instance.name} />
 
       <header>
         <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
@@ -227,14 +227,14 @@ export function InstanceNginxLogsPage() {
   )
 }
 
-function Breadcrumb({ name }: { name: string }) {
+function Breadcrumb({ id, name }: { id: string; name: string }) {
   return (
     <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
       <Link to="/instances" className="hover:text-fg">
         Infrastructure
       </Link>
       <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <Link to={`/instances/${name}`} className="hover:text-fg">
+      <Link to={`/instances/${id}`} className="hover:text-fg">
         {name}
       </Link>
       <ChevronRight className="h-3.5 w-3.5" aria-hidden />
