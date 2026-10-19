@@ -149,6 +149,10 @@ export interface Instance {
   port: number | null
   username: string | null
   domain: string | null
+  // VPS only — null for REDIS/RDS/STORAGE. Required at VPS creation; may be
+  // cleared to "" on edit (the backend treats JSON null and "" the same way).
+  github_repo: string | null
+  github_branch: string | null
   config: InstanceConfig
   is_active: boolean
   is_local: boolean
@@ -167,6 +171,9 @@ export interface CreateInstanceInput {
   password?: string | null
   ssh_key?: string | null
   domain?: string | null
+  // VPS-only; the backend silently drops these for non-VPS types.
+  github_repo?: string | null
+  github_branch?: string | null
   config?: InstanceConfig
   is_active?: boolean
   is_local?: boolean
@@ -180,6 +187,8 @@ export interface UpdateInstanceInput {
   username?: string | null
   password?: string | null
   domain?: string | null
+  github_repo?: string | null
+  github_branch?: string | null
   config?: InstanceConfig
   is_active?: boolean
 }

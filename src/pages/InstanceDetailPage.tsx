@@ -4,8 +4,10 @@ import {
   Activity,
   ChevronRight,
   ClipboardList,
+  Code2,
   Database,
   Folder,
+  GitBranch,
   HardDriveDownload,
   LineChart,
   type LucideIcon,
@@ -267,6 +269,34 @@ export function InstanceDetailPage() {
                   <>
                     <span aria-hidden>·</span>
                     <span className="min-w-0 flex-1 truncate font-mono">{instance.host}</span>
+                  </>
+                ) : null}
+                {instance.type === "VPS" && instance.github_repo ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <a
+                      href={`https://github.com/${instance.github_repo}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex min-w-0 items-center gap-1 truncate hover:text-fg hover:underline"
+                    >
+                      <Code2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="truncate">{instance.github_repo}</span>
+                    </a>
+                  </>
+                ) : null}
+                {instance.type === "VPS" && instance.github_repo && instance.github_branch ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <a
+                      href={`https://github.com/${instance.github_repo}/tree/${instance.github_branch}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 hover:text-fg hover:underline"
+                    >
+                      <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="font-mono">{instance.github_branch}</span>
+                    </a>
                   </>
                 ) : null}
                 {!instance.is_active ? (
@@ -834,6 +864,38 @@ function SettingsTab({
           {instance.username ? (
             <DetailRow label="Username" value={instance.username} mono />
           ) : null}
+          {instance.type === "VPS" && instance.github_repo ? (
+            <DetailRow
+              label="GitHub repo"
+              value={
+                <a
+                  href={`https://github.com/${instance.github_repo}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:underline"
+                >
+                  {instance.github_repo}
+                </a>
+              }
+              mono
+            />
+          ) : null}
+          {instance.type === "VPS" && instance.github_branch ? (
+            <DetailRow
+              label="Branch"
+              value={
+                <a
+                  href={`https://github.com/${instance.github_repo ?? ""}/tree/${instance.github_branch}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:underline"
+                >
+                  {instance.github_branch}
+                </a>
+              }
+              mono
+            />
+          ) : null}
           <DetailRow
             label="Created"
             value={formatRelative(instance.created_at)}
@@ -898,7 +960,7 @@ function DetailRow({
   mono = false,
 }: {
   label: string
-  value: string
+  value: React.ReactNode
   mono?: boolean
 }) {
   return (

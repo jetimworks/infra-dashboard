@@ -84,6 +84,11 @@ const vpsSchema = baseSchema.extend({
   username: z.string().optional(),
   ssh_key: z.string().optional(),
   domain: z.string().optional(),
+  // VPS-only repository metadata. Backend rejects the request with 400 when
+  // either is missing, so they're required here. The placeholder shows the
+  // owner/repo + branch shape operators typically enter.
+  github_repo: z.string().min(1, "GitHub repo is required"),
+  github_branch: z.string().min(1, "GitHub branch is required"),
 })
 
 // Local: requires parent VPS, optional host, config fields
@@ -211,6 +216,8 @@ export function AdminInstanceCreatePage() {
         username: data.username || undefined,
         ssh_key: data.ssh_key || undefined,
         domain: data.domain || undefined,
+        github_repo: data.github_repo,
+        github_branch: data.github_branch,
       })
       navigate(`/admin/instances/${created.id}/edit`)
     } catch (err) {
@@ -502,7 +509,40 @@ export function AdminInstanceCreatePage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>3. SSH key (optional)</CardTitle>
+              <CardTitle>3. Repository</CardTitle>
+            </CardHeader>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field
+                label="GitHub repo"
+                htmlFor="ci-github-repo"
+                required
+                error={vpsForm.formState.errors.github_repo?.message}
+                hint="owner/repo slug, e.g. jetimworks/api"
+              >
+                <Input
+                  id="ci-github-repo"
+                  placeholder="jetimworks/api"
+                  {...vpsForm.register("github_repo")}
+                />
+              </Field>
+              <Field
+                label="Branch"
+                htmlFor="ci-github-branch"
+                required
+                error={vpsForm.formState.errors.github_branch?.message}
+                hint="The branch this server tracks."
+              >
+                <Input
+                  id="ci-github-branch"
+                  placeholder="main"
+                  {...vpsForm.register("github_branch")}
+                />
+              </Field>
+            </div>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>4. SSH key (optional)</CardTitle>
             </CardHeader>
             <Field
               label="Public key"

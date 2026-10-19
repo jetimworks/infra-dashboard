@@ -25,6 +25,10 @@ const editSchema = z.object({
   port: z.string().optional(),
   username: z.string().optional(),
   domain: z.string().optional(),
+  // VPS-only repository metadata. Optional on edit so untouched rows are
+  // omitted from the PUT body (the backend treats omitted keys as no-op).
+  github_repo: z.string().optional(),
+  github_branch: z.string().optional(),
 })
 type EditForm = z.infer<typeof editSchema>
 
@@ -55,6 +59,8 @@ export function AdminInstanceEditPage() {
         port: instanceQ.data.port != null ? String(instanceQ.data.port) : "",
         username: instanceQ.data.username ?? "",
         domain: instanceQ.data.domain ?? "",
+        github_repo: instanceQ.data.github_repo ?? "",
+        github_branch: instanceQ.data.github_branch ?? "",
       })
     }
   }, [instanceQ.data, reset])
@@ -86,6 +92,8 @@ export function AdminInstanceEditPage() {
           port: portNum != null && !Number.isNaN(portNum) ? portNum : null,
           username: data.username || null,
           domain: data.domain || null,
+          github_repo: data.github_repo || null,
+          github_branch: data.github_branch || null,
         },
       })
       reset(data)
@@ -190,6 +198,36 @@ export function AdminInstanceEditPage() {
             </Field>
             <Field label="Domain" htmlFor="ie-domain">
               <Input id="ie-domain" {...register("domain")} />
+            </Field>
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Repository</CardTitle>
+          </CardHeader>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field
+              label="GitHub repo"
+              htmlFor="ie-github-repo"
+              hint="owner/repo slug, e.g. jetimworks/api"
+            >
+              <Input
+                id="ie-github-repo"
+                placeholder="jetimworks/api"
+                {...register("github_repo")}
+              />
+            </Field>
+            <Field
+              label="Branch"
+              htmlFor="ie-github-branch"
+              hint="The branch this server tracks."
+            >
+              <Input
+                id="ie-github-branch"
+                placeholder="main"
+                {...register("github_branch")}
+              />
             </Field>
           </div>
         </Card>
