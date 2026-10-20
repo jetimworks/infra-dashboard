@@ -52,21 +52,21 @@ export const instancesApi = {
 
   // Runs /root/deploy.sh on the VPS. Synchronous: the response IS the final
   // outcome — no polling. Empty body; script path is hardcoded by the backend.
-  // The 90s axios timeout gives the backend's 60s server-side cap plus a grace
+  // The 180s axios timeout gives the backend's 120s server-side cap plus a grace
   // window so the UI errors out instead of hanging if the SSH leg stalls.
   deployApp: (id: string) =>
     apiPost<DeployAppResponse>(`/instances/${id}/deploy-app`, undefined, {
-      timeout: 90_000,
+      timeout: 180_000,
     }),
 
   // Runs `sudo systemctl <action> goweb` on the VPS. Synchronous, VPS-only.
   // Service name is hardcoded server-side — clients can only pick the verb.
-  // Same 90s timeout policy as deployApp; backend caps the SSH leg at ~60s.
+  // Same 180s timeout policy as deployApp; backend caps the SSH leg at ~120s.
   appControl: (id: string, body: AppControlInput) =>
     apiPost<AppControlResponse, AppControlInput>(
       `/instances/${id}/app-control`,
       body,
-      { timeout: 90_000 }
+      { timeout: 180_000 }
     ),
 
   // Read-only: lists /var/log/nginx/. No audit row written.
