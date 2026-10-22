@@ -115,6 +115,27 @@ export function useUpdateInstance() {
   })
 }
 
+/**
+ * Sets the SSH root password on an instance. Deliberately does NOT invalidate
+ * any query: the backend never returns the password, so nothing in the cached
+ * instance payload changes when it is set.
+ *
+ * The backend treats an empty password as "leave unchanged", so callers must
+ * not invoke this with a blank value.
+ */
+export function useUpdateInstancePassword() {
+  return useMutation({
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      instancesApi.update(id, { password }),
+    onSuccess: () => {
+      toast.success("Password updated")
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message)
+    },
+  })
+}
+
 export function useDeactivateInstance() {
   const qc = useQueryClient()
   return useMutation({

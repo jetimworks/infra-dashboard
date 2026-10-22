@@ -150,8 +150,9 @@ export interface Instance {
   port: number | null
   username: string | null
   domain: string | null
-  // VPS only — null for REDIS/RDS/STORAGE. Required at VPS creation; may be
-  // cleared to "" on edit (the backend treats JSON null and "" the same way).
+  // VPS only — null for REDIS/RDS/STORAGE. Required at VPS creation. On edit,
+  // "" writes an empty string but JSON null is a no-op, so send null to leave
+  // the stored value alone.
   github_repo: string | null
   github_branch: string | null
   config: InstanceConfig

@@ -6,7 +6,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from "react"
-import type { LucideIcon } from "lucide-react"
+import { Eye, EyeOff, type LucideIcon } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -14,11 +14,26 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string
   leftIcon?: LucideIcon
   rightIcon?: LucideIcon
+  /**
+   * Interactive control rendered at the right edge of the field, e.g. a
+   * reveal toggle. Unlike leftIcon/rightIcon — which are decorative and
+   * pointer-events-none — this one is clickable, and the field reserves
+   * padding for it automatically. Keep it to one control-sized child.
+   */
+  endAdornment?: ReactNode
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, error, hint, leftIcon: LeftIcon, rightIcon: RightIcon, ...props },
+    {
+      className,
+      error,
+      hint,
+      leftIcon: LeftIcon,
+      rightIcon: RightIcon,
+      endAdornment,
+      ...props
+    },
     ref
   ) => {
     const [shouldShake, setShouldShake] = useState(false)
@@ -53,7 +68,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "focus:outline-none focus:ring-4",
               "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
               LeftIcon && "pl-10",
-              RightIcon && "pr-10",
+              (RightIcon || endAdornment) && "pr-10",
               error
                 ? "border-danger/60 focus:border-danger focus:ring-danger/15"
                 : "border-border/60 focus:border-primary/70 focus:ring-primary/15",
@@ -69,6 +84,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-subtle"
               aria-hidden
             />
+          ) : null}
+          {endAdornment ? (
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+              {endAdornment}
+            </div>
           ) : null}
         </div>
         {(hint || error) && (
@@ -87,6 +107,52 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 )
 Input.displayName = "Input"
+
+export type PasswordInputProps = Omit<InputProps, "type" | "endAdornment">
+
+/**
+ * A masked field with a show/hide toggle. Use it wherever a secret is typed
+ * so a mistyped character can be caught before it's submitted — a password
+ * cannot be read back afterwards to verify it.
+ *
+ * The toggle is `type="button"` so it never submits a surrounding form, and
+ * carries `aria-pressed` so screen readers announce the current mode.
+ */
+export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
+  ({ ...props }, ref) => {
+    const [revealed, setRevealed] = useState(false)
+
+    return (
+      <Input
+        ref={ref}
+        type={revealed ? "text" : "password"}
+        autoComplete="new-password"
+        {...props}
+        endAdornment={
+          <button
+            type="button"
+            onClick={() => setRevealed((wasRevealed) => !wasRevealed)}
+            aria-label={revealed ? "Hide password" : "Show password"}
+            aria-pressed={revealed}
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-md",
+              "text-fg-subtle transition-colors",
+              "hover:bg-surface-sunken hover:text-fg",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            )}
+          >
+            {revealed ? (
+              <EyeOff className="h-4 w-4" aria-hidden />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden />
+            )}
+          </button>
+        }
+      />
+    )
+  }
+)
+PasswordInput.displayName = "PasswordInput"
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

@@ -22,7 +22,7 @@ import {
 } from "../../queries/instances"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
-import { Input, Field, Textarea } from "../../components/ui/Input"
+import { Input, Field, Textarea, PasswordInput } from "../../components/ui/Input"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { normalizeError } from "../../api/errors"
@@ -82,6 +82,7 @@ const vpsSchema = baseSchema.extend({
   host: z.string().min(1, "Host is required"),
   port: z.string().optional(),
   username: z.string().optional(),
+  password: z.string().optional(),
   ssh_key: z.string().optional(),
   domain: z.string().optional(),
   // VPS-only repository metadata. Backend rejects the request with 400 when
@@ -214,6 +215,7 @@ export function AdminInstanceCreatePage() {
         host: data.host,
         port: portNum != null && !Number.isNaN(portNum) ? portNum : undefined,
         username: data.username || undefined,
+        password: data.password || undefined,
         ssh_key: data.ssh_key || undefined,
         domain: data.domain || undefined,
         github_repo: data.github_repo,
@@ -503,6 +505,17 @@ export function AdminInstanceCreatePage() {
                   id="ci-domain"
                   placeholder="example.com"
                   {...vpsForm.register("domain")}
+                />
+              </Field>
+              <Field
+                label="Root password"
+                htmlFor="ci-password"
+                hint="Optional if you use an SSH key."
+              >
+                <PasswordInput
+                  id="ci-password"
+                  placeholder="••••••••"
+                  {...vpsForm.register("password")}
                 />
               </Field>
             </div>

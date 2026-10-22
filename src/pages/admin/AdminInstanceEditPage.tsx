@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Save, Trash2, Key, Terminal } from "lucide-react"
 import { useForm } from "react-hook-form"
@@ -7,12 +7,13 @@ import { z } from "zod"
 import {
   useInstance,
   useUpdateInstance,
+  useUpdateInstancePassword,
   useDeactivateInstance,
   useDeleteInstance,
 } from "../../queries/instances"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
-import { Input, Field } from "../../components/ui/Input"
+import { Input, Field, PasswordInput } from "../../components/ui/Input"
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { StatusPill } from "../../components/ui/StatusPill"
@@ -37,10 +38,17 @@ export function AdminInstanceEditPage() {
   const navigate = useNavigate()
   const instanceQ = useInstance(id)
   const updateInstance = useUpdateInstance()
+  const updatePassword = useUpdateInstancePassword()
   const deactivate = useDeactivateInstance()
   const remove = useDeleteInstance()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  // The password control is deliberately outside the main form: it has its own
+  // submit so a password can never ride along with an unrelated edit. The key
+  // lets us remount PasswordInput after a save, which clears the field and
+  // drops the reveal back to masked.
+  const [password, setPassword] = useState("")
+  const [passwordFieldKey, setPasswordFieldKey] = useState(0)
 
   const {
     register,
@@ -99,6 +107,20 @@ export function AdminInstanceEditPage() {
       reset(data)
     } catch (err) {
       setErrorMsg(normalizeError(err).message)
+    }
+  }
+
+  const handlePasswordSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!id || !password) return
+    try {
+      await updatePassword.mutateAsync({ id, password })
+      // Never leave a plaintext secret sitting in a live input, and fall back
+      // to masked so the next value isn't readable over a shoulder.
+      setPassword("")
+      setPasswordFieldKey((key) => key + 1)
+    } catch {
+      // toast handled by the mutation's onError
     }
   }
 
@@ -253,6 +275,49 @@ export function AdminInstanceEditPage() {
           </Button>
         </div>
       </form>
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Access</CardTitle>
+          </CardHeader>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <Field
+              label="Root password"
+              htmlFor="ie-password"
+              hint="Used for checks, backups, deploys and security audits. Leave blank to keep the current password — we never show it once saved."
+            >
+              <PasswordInput
+                key={passwordFieldKey}
+                id="ie-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+              />
+            </Field>
+            {password ? (
+              <p className="rounded-md border border-warning-soft bg-warning-soft/40 p-3 text-sm text-fg">
+                <span className="font-medium text-warning-fg">Heads up.</span>{" "}
+                <span className="text-fg-muted">
+                  This replaces the stored password immediately. If it&apos;s
+                  wrong, checks, backups and deploys will quietly stop
+                  authenticating.
+                </span>
+              </p>
+            ) : null}
+            <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={updatePassword.isPending}
+                disabled={!password || updatePassword.isPending}
+              >
+                Update password
+              </Button>
+            </div>
+          </form>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
