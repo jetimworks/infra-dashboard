@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom"
 import {
   Activity,
+  ArrowRight,
   ClipboardList,
   Cloud,
   HelpCircle,
@@ -88,6 +89,26 @@ export function Sidebar({ className }: { className?: string }) {
               )
             })}
         </ul>
+
+        {/* Shell switch. Mirrors the "Back to user dashboard" link at the
+            foot of AdminSidebar, so staff can move between the two shells
+            from either direction. */}
+        {isStaff ? (
+          <div className="mt-6 pt-4">
+            <NavLink
+              to="/admin"
+              className={cn(
+                "relative flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+                location.pathname.startsWith("/admin")
+                  ? "bg-primary-soft text-primary"
+                  : "text-fg-muted hover:bg-surface-sunken hover:text-fg"
+              )}
+            >
+              <ArrowRight className="h-4 w-4 flex-shrink-0" aria-hidden />
+              Enter Admin
+            </NavLink>
+          </div>
+        ) : null}
       </nav>
 
       <div className="border-t border-border/40 px-4 py-3">
