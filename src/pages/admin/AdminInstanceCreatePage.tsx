@@ -26,6 +26,7 @@ import { Input, Field, Textarea, PasswordInput } from "../../components/ui/Input
 import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { normalizeError } from "../../api/errors"
+import { DEFAULT_SERVICE_NAME, isValidServiceName, SERVICE_NAME_ERROR } from "../../lib/service-name"
 import type { Instance, InstanceType } from "../../api/types"
 
 function ParentServerSelect({
@@ -90,6 +91,12 @@ const vpsSchema = baseSchema.extend({
   // owner/repo + branch shape operators typically enter.
   github_repo: z.string().min(1, "GitHub repo is required"),
   github_branch: z.string().min(1, "GitHub branch is required"),
+  // The systemd unit app-control acts on. Optional — "" is passed through as
+  // undefined, which the backend stores as NULL and later resolves to
+  // "goweb". Only a non-empty value has to satisfy the charset.
+  service_name: z
+    .string()
+    .refine((v) => v === "" || isValidServiceName(v), SERVICE_NAME_ERROR),
 })
 
 // Local: requires parent VPS, optional host, config fields
@@ -220,6 +227,9 @@ export function AdminInstanceCreatePage() {
         domain: data.domain || undefined,
         github_repo: data.github_repo,
         github_branch: data.github_branch,
+        // Blank means "no opinion" here: omitting the key stores NULL, which
+        // is what leaves the goweb fallback in place.
+        service_name: data.service_name || undefined,
       })
       navigate(`/admin/instances/${created.id}/edit`)
     } catch (err) {
@@ -522,7 +532,7 @@ export function AdminInstanceCreatePage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>3. Repository</CardTitle>
+              <CardTitle>3. Repository &amp; service</CardTitle>
             </CardHeader>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field
@@ -549,6 +559,20 @@ export function AdminInstanceCreatePage() {
                   id="ci-github-branch"
                   placeholder="main"
                   {...vpsForm.register("github_branch")}
+                />
+              </Field>
+              <Field
+                label="Service name"
+                htmlFor="ci-service-name"
+                error={vpsForm.formState.errors.service_name?.message}
+                hint={`The systemd unit app control starts, stops and restarts. Leave blank to use ${DEFAULT_SERVICE_NAME}.`}
+              >
+                <Input
+                  id="ci-service-name"
+                  placeholder={DEFAULT_SERVICE_NAME}
+                  autoComplete="off"
+                  spellCheck={false}
+                  {...vpsForm.register("service_name")}
                 />
               </Field>
             </div>

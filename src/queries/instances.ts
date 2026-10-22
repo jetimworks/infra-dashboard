@@ -230,9 +230,10 @@ export function useDeployApp() {
 }
 
 /**
- * Synchronous app-control action (start / stop / restart / status) on the
- * goweb systemd service of a VPS. Same shape as useDeployApp: 200 OK IS the
- * outcome, no polling. Pages render rich context inline — no toast on error.
+ * Synchronous app-control action (start / stop / restart / status) on a VPS's
+ * systemd service — the instance's service_name, defaulting to "goweb". Same
+ * shape as useDeployApp: 200 OK IS the outcome, no polling. Pages render rich
+ * context inline — no toast on error.
  */
 export function useAppControl() {
   const qc = useQueryClient()

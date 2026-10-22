@@ -40,6 +40,7 @@ import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { formatBytes, formatRelative } from "../lib/utils"
+import { DEFAULT_SERVICE_NAME, resolveServiceName } from "../lib/service-name"
 import type {
   InstanceType,
   SecurityOverallStatus,
@@ -851,7 +852,9 @@ function SettingsTab({
               <p className="mt-1 text-sm text-fg-muted">
                 Start, stop, restart, or check the status of the
                 {" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">goweb</code>
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                  {resolveServiceName(instance)}
+                </code>
                 {" "}
                 service running on this server.
               </p>
@@ -944,6 +947,23 @@ function SettingsTab({
                 >
                   {instance.github_branch}
                 </a>
+              }
+              mono
+            />
+          ) : null}
+          {instance.type === "VPS" ? (
+            <DetailRow
+              label="Service"
+              value={
+                <>
+                  {instance.service_name ?? DEFAULT_SERVICE_NAME}
+                  {instance.service_name ? null : (
+                    <span className="font-sans text-fg-muted">
+                      {" "}
+                      (default)
+                    </span>
+                  )}
+                </>
               }
               mono
             />

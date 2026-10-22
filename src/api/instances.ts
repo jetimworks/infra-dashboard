@@ -59,8 +59,9 @@ export const instancesApi = {
       timeout: 180_000,
     }),
 
-  // Runs `sudo systemctl <action> goweb` on the VPS. Synchronous, VPS-only.
-  // Service name is hardcoded server-side — clients can only pick the verb.
+  // Runs `sudo systemctl <action> <service>` on the VPS. Synchronous, VPS-only.
+  // Which unit that is comes from the instance's service_name column; clients
+  // can only pick the verb.
   // Same 180s timeout policy as deployApp; backend caps the SSH leg at ~120s.
   appControl: (id: string, body: AppControlInput) =>
     apiPost<AppControlResponse, AppControlInput>(

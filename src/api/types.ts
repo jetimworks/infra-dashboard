@@ -155,6 +155,11 @@ export interface Instance {
   // the stored value alone.
   github_repo: string | null
   github_branch: string | null
+  // VPS only — the systemd unit app-control acts on. The API returns the raw
+  // stored value, so null means "unset" and is resolved to "goweb" by
+  // resolveServiceName() in lib/service-name.ts. Note this inverts the rule
+  // above: on the request side "" is what clears the column, not null.
+  service_name: string | null
   config: InstanceConfig
   is_active: boolean
   is_local: boolean
@@ -176,6 +181,11 @@ export interface CreateInstanceInput {
   // VPS-only; the backend silently drops these for non-VPS types.
   github_repo?: string | null
   github_branch?: string | null
+  // Typed `string`, not `string | null`, unlike its siblings: omitting it (or
+  // leaving it "") stores NULL, which is what makes the backend fall back to
+  // "goweb". A JSON null here would be rejected by the compiler on purpose —
+  // it reads as a harmless "leave alone" and silently does the opposite.
+  service_name?: string
   config?: InstanceConfig
   is_active?: boolean
   is_local?: boolean
@@ -191,6 +201,9 @@ export interface UpdateInstanceInput {
   domain?: string | null
   github_repo?: string | null
   github_branch?: string | null
+  // See CreateInstanceInput.service_name — "" clears the column to NULL,
+  // null is not a legal value here.
+  service_name?: string
   config?: InstanceConfig
   is_active?: boolean
 }

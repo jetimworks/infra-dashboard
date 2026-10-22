@@ -34,6 +34,7 @@ import { useAppControl, useInstance } from "../queries/instances"
 import { useInstanceActions } from "../queries/actions"
 import { normalizeError } from "../api/errors"
 import { cn, formatRelative, formatDuration } from "../lib/utils"
+import { resolveServiceName } from "../lib/service-name"
 import { pageVariants, reducedVariants } from "../lib/motion"
 import type {
   Action,
@@ -54,46 +55,58 @@ const typeLabel: Record<InstanceType, string> = {
  * Per-verb guidance shown under the segmented selector. Operators want the
  * "what will this actually do" sentence right next to the verb — a separate
  * page or tooltip is one click too many in an incident.
+ *
+ * Takes the instance's service name because the sentence names the unit.
  */
-const verbHelp: Record<AppControlAction, string> = {
-  status: "Reads goweb's current state without changing anything. Safe to run anytime.",
-  start: "Begins running goweb. Use this if the service has been stopped.",
-  stop: "Halts the service. Anything depending on goweb will lose access until you start it again.",
-  restart: "Stops then starts goweb. Brief downtime while the service reloads, then a fresh process.",
+const verbHelp: Record<AppControlAction, (service: string) => string> = {
+  status: (service) =>
+    `Reads ${service}'s current state without changing anything. Safe to run anytime.`,
+  start: (service) =>
+    `Begins running ${service}. Use this if the service has been stopped.`,
+  stop: (service) =>
+    `Halts the service. Anything depending on ${service} will lose access until you start it again.`,
+  restart: (service) =>
+    `Stops then starts ${service}. Brief downtime while the service reloads, then a fresh process.`,
 }
 
 /** User-facing headline for each response status. */
 const bannerStyle: Record<
   AppControlStatus,
-  { bg: string; fg: string; ring: string; Icon: LucideIcon; headline: string }
+  {
+    bg: string
+    fg: string
+    ring: string
+    Icon: LucideIcon
+    headline: (service: string) => string
+  }
 > = {
   ACTIVE: {
     bg: "bg-success-soft",
     fg: "text-success-fg",
     ring: "ring-success/25",
     Icon: CheckCircle2,
-    headline: "goweb is running",
+    headline: (service) => `${service} is running`,
   },
   INACTIVE: {
     bg: "bg-warning-soft",
     fg: "text-warning-fg",
     ring: "ring-warning/30",
     Icon: AlertTriangle,
-    headline: "goweb is stopped",
+    headline: (service) => `${service} is stopped`,
   },
   SUCCESS: {
     bg: "bg-success-soft",
     fg: "text-success-fg",
     ring: "ring-success/25",
     Icon: CheckCircle2,
-    headline: "Action completed",
+    headline: () => "Action completed",
   },
   UNKNOWN: {
     bg: "bg-danger-soft",
     fg: "text-danger-fg",
     ring: "ring-danger/25",
     Icon: XCircle,
-    headline: "Couldn't tell whether it worked",
+    headline: () => "Couldn't tell whether it worked",
   },
 }
 
@@ -206,6 +219,11 @@ export function InstanceAppControlPage() {
   }
   const instance = instanceQ.data
   const isVps = instance.type === "VPS"
+  // The unit this server actually runs. Everything below that mentions the
+  // service by name reads this, so the copy follows the instance instead of
+  // assuming goweb. The backend resolves the same way for a non-VPS, where
+  // the value is meaningless but the name never gets displayed anyway.
+  const serviceName = resolveServiceName(instance)
 
   const run = async () => {
     if (!id) return
@@ -243,24 +261,21 @@ export function InstanceAppControlPage() {
   const confirmCopy = {
     status: null,
     start: {
-      title: "Start goweb?",
-      description:
-        "This will start the goweb service on the server. The action takes a moment and is easy to revert.",
+      title: `Start ${serviceName}?`,
+      description: `This will start the ${serviceName} service on the server. The action takes a moment and is easy to revert.`,
       confirmLabel: "Yes, start",
       checkbox: false,
     },
     stop: {
-      title: "Stop goweb?",
-      description:
-        "This halts the goweb service. Anything depending on it (web traffic, jobs, health checks) will lose access until you start it again.",
+      title: `Stop ${serviceName}?`,
+      description: `This halts the ${serviceName} service. Anything depending on it (web traffic, jobs, health checks) will lose access until you start it again.`,
       confirmLabel: "Yes, stop",
       checkbox: true,
       checkboxLabel: "I understand the service will stop",
     },
     restart: {
-      title: "Restart goweb?",
-      description:
-        "This stops then starts the goweb service. There will be a few seconds of downtime while the service reloads.",
+      title: `Restart ${serviceName}?`,
+      description: `This stops then starts the ${serviceName} service. There will be a few seconds of downtime while the service reloads.`,
       confirmLabel: "Yes, restart",
       checkbox: true,
       checkboxLabel: "I understand the service will reload",
@@ -294,9 +309,9 @@ export function InstanceAppControlPage() {
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
             Start, stop, restart, or check the status of the{" "}
             <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
-              goweb
+              {serviceName}
             </code>{" "}
-            service running on this server. The service name is fixed.
+            service running on this server.
           </p>
         </div>
         {lastAction ? (
@@ -314,7 +329,7 @@ export function InstanceAppControlPage() {
           <EmptyState
             icon={Server}
             title="App control is only available on servers"
-            description={`This is a ${typeLabel[instance.type].toLowerCase()} resource — there's no goweb service running on it.`}
+            description={`This is a ${typeLabel[instance.type].toLowerCase()} resource — app control needs a server to SSH into.`}
             action={{
               label: "Back to overview",
               onClick: () => window.history.back(),
@@ -339,7 +354,7 @@ export function InstanceAppControlPage() {
                     SSHes in as{" "}
                     <span className="font-mono">root</span> and runs{" "}
                     <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
-                      systemctl {"<action>"} goweb
+                      systemctl {"<action>"} {serviceName}
                     </code>
                     . The full output is captured below.
                   </p>
@@ -363,7 +378,7 @@ export function InstanceAppControlPage() {
                   className="mt-3 text-sm text-fg-muted"
                   aria-live="polite"
                 >
-                  {verbHelp[verb]}
+                  {verbHelp[verb](serviceName)}
                 </p>
               </div>
 
@@ -397,7 +412,7 @@ export function InstanceAppControlPage() {
                   <p className="text-sm font-semibold text-fg">
                     Running{" "}
                     <code className="font-mono">
-                      systemctl {verb} goweb
+                      systemctl {verb} {serviceName}
                     </code>{" "}
                     on {instance.host ?? instance.name}
                   </p>
@@ -419,6 +434,7 @@ export function InstanceAppControlPage() {
             <ResultPanel
               result={result}
               verb={verb}
+              serviceName={serviceName}
               onAgain={() => {
                 setResult(null)
                 setErrorMsg(null)
@@ -455,7 +471,7 @@ export function InstanceAppControlPage() {
                 <EmptyState
                   icon={Power}
                   title="No app-control actions yet"
-                  description="The last ten actions on goweb will appear here."
+                  description={`The last ten actions on ${serviceName} will appear here.`}
                 />
               </Card>
             ) : (
@@ -479,12 +495,14 @@ export function InstanceAppControlPage() {
               <li className="flex gap-2">
                 <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
                 <span>
-                  The service name{" "}
+                  This page drives the{" "}
                   <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
-                    goweb
+                    {serviceName}
                   </code>{" "}
-                  is hardcoded server-side. To control other services on this
-                  VPS, open an action request.
+                  service. Change which unit it targets from the
+                  {" "}
+                  <span className="font-medium text-fg">Service name</span>{" "}
+                  field in this server&apos;s settings.
                 </span>
               </li>
               <li className="flex gap-2">
@@ -534,12 +552,14 @@ export function InstanceAppControlPage() {
 function ResultPanel({
   result,
   verb,
+  serviceName,
   onAgain,
   outputRef,
   reduceMotion,
 }: {
   result: AppControlResponse
   verb: AppControlAction
+  serviceName: string
   onAgain: () => void
   outputRef: React.RefObject<HTMLPreElement | null>
   reduceMotion: boolean
@@ -564,7 +584,7 @@ function ResultPanel({
             <p className="mt-1 text-sm text-fg-muted">
               Captured just now from{" "}
               <code className="font-mono">
-                systemctl {verb} goweb
+                systemctl {verb} {serviceName}
               </code>
               .
             </p>
@@ -594,7 +614,9 @@ function ResultPanel({
             <banner.Icon className="h-5 w-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">{banner.headline}</p>
+            <p className="text-sm font-semibold">
+              {banner.headline(serviceName)}
+            </p>
             {result.message ? (
               <p className="mt-1 text-sm opacity-90">{result.message}</p>
             ) : null}

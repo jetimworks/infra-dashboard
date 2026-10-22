@@ -19,6 +19,7 @@ import { ErrorState } from "../../components/ui/ErrorState"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog"
 import { normalizeError } from "../../api/errors"
+import { DEFAULT_SERVICE_NAME, isValidServiceName, SERVICE_NAME_ERROR } from "../../lib/service-name"
 
 const editSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -30,6 +31,18 @@ const editSchema = z.object({
   // omitted from the PUT body (the backend treats omitted keys as no-op).
   github_repo: z.string().optional(),
   github_branch: z.string().optional(),
+  // Unlike its siblings above, "" is NOT a no-op here — it is the only value
+  // that resets the column back to NULL. So "" has to survive validation.
+  // Optional because the field only renders for VPS: an unregistered field is
+  // absent from the submitted values entirely, and a bare z.string() would
+  // then reject every non-VPS instance with "Required".
+  service_name: z
+    .string()
+    .optional()
+    .refine(
+      (v) => v === undefined || v === "" || isValidServiceName(v),
+      SERVICE_NAME_ERROR
+    ),
 })
 type EditForm = z.infer<typeof editSchema>
 
@@ -69,6 +82,8 @@ export function AdminInstanceEditPage() {
         domain: instanceQ.data.domain ?? "",
         github_repo: instanceQ.data.github_repo ?? "",
         github_branch: instanceQ.data.github_branch ?? "",
+        // NULL hydrates as an empty box, so "clear it" is reachable by hand.
+        service_name: instanceQ.data.service_name ?? "",
       })
     }
   }, [instanceQ.data, reset])
@@ -102,6 +117,15 @@ export function AdminInstanceEditPage() {
           domain: data.domain || null,
           github_repo: data.github_repo || null,
           github_branch: data.github_branch || null,
+          // Deliberately "" and not null. Every field above sends null when
+          // blank and the backend reads that as "leave alone" — for
+          // service_name it's the reverse: "" is the documented signal to
+          // write NULL, and null would be swallowed. Changing this line to
+          // `|| null` silently breaks the reset-to-default control.
+          // Omitted entirely for non-VPS, which have no unit to name.
+          ...(instance.type === "VPS"
+            ? { service_name: data.service_name || "" }
+            : {}),
         },
       })
       reset(data)
@@ -226,7 +250,7 @@ export function AdminInstanceEditPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Repository</CardTitle>
+            <CardTitle>Repository &amp; service</CardTitle>
           </CardHeader>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
@@ -251,6 +275,22 @@ export function AdminInstanceEditPage() {
                 {...register("github_branch")}
               />
             </Field>
+            {instance.type === "VPS" ? (
+              <Field
+                label="Service name"
+                htmlFor="ie-service-name"
+                error={errors.service_name?.message}
+                hint={`The systemd unit app control starts, stops and restarts. Clear this to go back to the ${DEFAULT_SERVICE_NAME} default.`}
+              >
+                <Input
+                  id="ie-service-name"
+                  placeholder={DEFAULT_SERVICE_NAME}
+                  autoComplete="off"
+                  spellCheck={false}
+                  {...register("service_name")}
+                />
+              </Field>
+            ) : null}
           </div>
         </Card>
 
