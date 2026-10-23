@@ -49,6 +49,31 @@ export function useCreateInstance() {
   })
 }
 
+export function useUpdateInstance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateInstanceInput }) =>
+      instancesApi.update(id, body),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["instances"] })
+      qc.invalidateQueries({ queryKey: qk.instance(vars.id) })
+      toast.success("Server updated")
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message)
+    },
+  })
+}
+
+/**
+ * Local (containerised) services. Deliberately does NOT accept REMOTE_RDS:
+ * a remote database is dialled directly over TCP and has no parent VPS, so
+ * there is no create-<type> endpoint to send it to. Typing the parameter as
+ * LocalServiceType makes that a build error rather than a runtime fall-through
+ * into the storage branch below.
+ */
+export type LocalServiceType = Exclude<InstanceType, "VPS" | "REMOTE_RDS">
+
 export function useCreateLocalService() {
   const qc = useQueryClient()
   return useMutation({
@@ -57,7 +82,7 @@ export function useCreateLocalService() {
       parentId,
       body,
     }: {
-      type: Exclude<InstanceType, "VPS">
+      type: LocalServiceType
       parentId: string
       body: CreateLocalServiceInput
     }) => {
@@ -75,6 +100,15 @@ export function useCreateLocalService() {
   })
 }
 
+/**
+ * Remotely-hosted services. REMOTE_RDS goes through the same POST /instances
+ * as the other remote types — the endpoint is the same, only the `type` in
+ * the body differs — but it gets its own arm so the storage branch can never
+ * swallow it. That fall-through was silent: it created a STORAGE row and
+ * toasted "Service added".
+ */
+export type RemoteServiceType = Exclude<InstanceType, "VPS">
+
 export function useCreateRemoteService() {
   const qc = useQueryClient()
   return useMutation({
@@ -82,19 +116,22 @@ export function useCreateRemoteService() {
       type,
       body,
     }: {
-      type: Exclude<InstanceType, "VPS">
+      type: RemoteServiceType
       body: CreateRemoteServiceInput
     }) => {
-      // `type` belongs in the POST /instances body — it is how the backend
-      // decides what to create — but it was only ever passed as this hook's
-      // dispatch variable, so every remote service was created without it and
-      // rejected: "type failed the required check". All three helpers below are
-      // the identical apiPost("/instances", body), which is why nothing local
-      // flagged the gap. Injecting it here rather than asking the caller makes
-      // the dispatch value and the wire payload the same thing by construction.
+      // `type` is part of the POST /instances body — the endpoint derives the
+      // row's type from it and rejects the request outright without one
+      // ("type failed the required check"). It is injected HERE rather than
+      // asked of the caller because it is the same value this hook dispatches
+      // on, and all four helpers below are the identical apiPost("/instances",
+      // body). Leaving the two to be set independently is how the field went
+      // missing in the first place: the caller set the dispatch variable, the
+      // body had no type, every request 400'd, and nothing in the UI pointed
+      // at the gap because the type was visibly selected the whole time.
       const payload = { ...body, type }
       if (type === "REDIS") return instancesApi.createRemoteRedis(payload)
       if (type === "RDS") return instancesApi.createRemoteRds(payload)
+      if (type === "REMOTE_RDS") return instancesApi.createRemoteRemoteRds(payload)
       return instancesApi.createRemoteStorage(payload)
     },
     onSuccess: () => {
@@ -107,19 +144,50 @@ export function useCreateRemoteService() {
   })
 }
 
-export function useUpdateInstance() {
+/**
+ * Probes a REMOTE_RDS database.
+ *
+ * HTTP 200 IS NOT the outcome here — `connected` is. The page has to branch on
+ * the body, so this hook deliberately does nothing with the result: no toast on
+ * success and none on error, because a toast saying "Connection failed" is
+ * both redundant with and worse than the verdict panel the page renders.
+ *
+ * onSuccess is invalidation-only, and it runs on EVERY resolved 200 including
+ * `connected: false` — the backend writes an audit row either way, so the
+ * activity feed needs refreshing for both outcomes. Nothing unconditional
+ * belongs here.
+ */
+export function useTestDbConnection() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateInstanceInput }) =>
-      instancesApi.update(id, body),
+    mutationFn: ({ id, database }: { id: string; database?: string }) =>
+      instancesApi.testDbConnection(id, database),
     onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ["instances"] })
-      qc.invalidateQueries({ queryKey: qk.instance(vars.id) })
-      toast.success("Server updated")
+      qc.invalidateQueries({ queryKey: qk.instanceActions(vars.id) })
     },
-    onError: (err) => {
-      toast.error(normalizeError(err).message)
-    },
+  })
+}
+
+/**
+ * Browses the PostgreSQL catalog of a REMOTE_RDS instance.
+ *
+ * retry: false is load-bearing, not a default. The global client retries any
+ * non-4xx twice, and this endpoint's failure modes are 502 and 504 — so
+ * without it a single click on an unreachable host fires three upstream
+ * catalog queries and shows three errors.
+ */
+export function useInstanceDbSchemas(
+  id: string | undefined,
+  database: string | undefined
+) {
+  return useQuery({
+    queryKey: id
+      ? qk.instanceDbSchemas(id, database)
+      : ["instances", id, "db-schemas", "noop"],
+    queryFn: () => instancesApi.listDbSchemas(id as string, database),
+    enabled: Boolean(id),
+    retry: false,
+    staleTime: 30_000,
   })
 }
 

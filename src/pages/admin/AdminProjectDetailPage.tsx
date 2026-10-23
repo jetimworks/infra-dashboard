@@ -31,12 +31,14 @@ import type { InstanceType } from "../../api/types"
 const typeIcon: Record<InstanceType, typeof Server> = {
   VPS: Server,
   RDS: Database,
+  REMOTE_RDS: Database,
   REDIS: Zap,
   STORAGE: Folder,
 }
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }

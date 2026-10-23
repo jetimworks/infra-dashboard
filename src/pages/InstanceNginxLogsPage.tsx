@@ -31,6 +31,7 @@ import type { InstanceType, NginxLogFile } from "../api/types"
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }

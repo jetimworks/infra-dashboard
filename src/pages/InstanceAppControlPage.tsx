@@ -47,6 +47,7 @@ import type {
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }

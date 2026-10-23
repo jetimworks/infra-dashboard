@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { ChevronRight, Download } from "lucide-react"
+import { Activity, ChevronRight, Download } from "lucide-react"
 import { useInstance } from "../queries/instances"
 import { useInstanceMetricsHistory } from "../queries/metrics"
 import { Card } from "../components/ui/Card"
@@ -19,6 +19,7 @@ import { SegmentedControl } from "../components/ui/SegmentedControl"
 import { ChartContainer } from "../components/data/ChartContainer"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
+import { EmptyState } from "../components/ui/EmptyState"
 import { cn } from "../lib/utils"
 import { formatDate } from "../lib/utils"
 import type { InstanceType, InstanceMetric } from "../api/types"
@@ -109,6 +110,14 @@ const metricCatalog: Record<
       help: "Whether the database connection is working.",
     },
   ],
+  // REMOTE_RDS gets an explicitly empty list rather than a chart. The poller
+  // asks for Redis, RDS and STORAGE only
+  // (infra-backend/internal/services/metrics/poller.go:128-145) and reaches a
+  // container over its parent VPS's SSH — which is exactly what a remote
+  // database has no part in. Listing a chart here would promise a series that
+  // can never have a point in it, so the page says it has none instead. When
+  // the poller learns to dial a REMOTE_RDS, this is the entry to fill in.
+  REMOTE_RDS: [],
   STORAGE: [
     {
       key: "used",
@@ -161,26 +170,48 @@ export function InstanceMetricsPage() {
             Performance
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
-            How this {instance.type === "VPS" ? "server" : instance.type === "REDIS" ? "cache" : instance.type === "RDS" ? "database" : "storage"} has been doing.
+            {/* Only claim a track record when there is one. For a REMOTE_RDS
+                the card below says we collect none, and leading with "how this
+                database has been doing" would contradict it three lines down. */}
+            {metrics.length > 0 ? (
+              <>
+                How this{" "}
+                {instance.type === "VPS"
+                  ? "server"
+                  : instance.type === "REDIS"
+                    ? "cache"
+                    : instance.type === "RDS" || instance.type === "REMOTE_RDS"
+                      ? "database"
+                      : "storage"}{" "}
+                has been doing.
+              </>
+            ) : null}
           </p>
         </div>
         {/* Horizontal-scroll gutter so the segmented control stays
-            swipable on narrow viewports. */}
-        <div className="-mx-4 max-w-full overflow-x-auto px-4 sm:mx-0 sm:max-w-none sm:px-0">
-          <SegmentedControl
-            ariaLabel="Time range"
-            value={range}
-            onChange={setRange}
-            options={rangeOptions}
-          />
-        </div>
+            swipable on narrow viewports. Hidden along with the rest of the
+            metrics UI when there is nothing to put a range on — a time filter
+            over an empty page is a control that does nothing. */}
+        {metrics.length > 0 ? (
+          <div className="-mx-4 max-w-full overflow-x-auto px-4 sm:mx-0 sm:max-w-none sm:px-0">
+            <SegmentedControl
+              ariaLabel="Time range"
+              value={range}
+              onChange={setRange}
+              options={rangeOptions}
+            />
+          </div>
+        ) : null}
       </div>
 
       {metrics.length === 0 ? (
         <Card>
-          <p className="px-4 py-6 text-center text-sm text-fg-muted">
-            No metrics are configured for this resource type yet.
-          </p>
+          <EmptyState
+            icon={Activity}
+            tone="info"
+            title="No metrics for this database"
+            description="We collect metrics by reaching into a resource's own host. A remote database is hosted by its provider, so there is nothing for us to poll — your provider's dashboard is where its numbers live."
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

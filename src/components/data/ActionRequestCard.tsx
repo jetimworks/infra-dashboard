@@ -20,6 +20,7 @@ const statusConfig: Record<
 const instanceTypeIcon: Record<InstanceType, typeof Server> = {
   VPS: Server,
   RDS: Database,
+  REMOTE_RDS: Database,
   REDIS: Server,
   STORAGE: Folder,
 }

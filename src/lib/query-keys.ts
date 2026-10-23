@@ -34,6 +34,11 @@ export const qk = {
   instanceNginxLogs: (id: string) => ["instances", id, "nginx-logs"] as const,
   instanceNginxLog: (id: string, filename: string, lines: number) =>
     ["instances", id, "nginx-logs", "content", { filename, lines }] as const,
+  // `database` is part of the key, not decoration: ?database= changes the
+  // response entirely, so without it two database choices on the schema
+  // browser would collide in the cache and the second would render the first.
+  instanceDbSchemas: (id: string, database?: string) =>
+    ["instances", id, "db-schemas", { database: database ?? "" }] as const,
 
   actions: (filters?: object) =>
     ["actions", filters ?? {}] as const,

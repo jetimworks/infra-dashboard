@@ -17,19 +17,38 @@ import { LoadingPage } from "../components/ui/LoadingState"
 import { EmptyState } from "../components/ui/EmptyState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { InstanceCard } from "../components/data/InstanceCard"
-import type { InstanceType } from "../api/types"
+import {
+  INSTANCE_BUCKETS,
+  bucketForType,
+  instanceMatchesBucket,
+  isInstanceType,
+  type InstanceBucket,
+} from "../lib/instance-types"
 
-type Filter = "ALL" | InstanceType
+// The chip is a bucket, not a raw type, so "Databases" can show RDS and
+// REMOTE_RDS together — see lib/instance-types.ts for why they share one.
+type Filter = "ALL" | InstanceBucket
 
 const filterOptions: { value: Filter; label: string; icon?: LucideIcon }[] = [
   { value: "ALL", label: "All" },
-  { value: "VPS", label: "Servers", icon: Server },
-  { value: "RDS", label: "Databases", icon: Database },
-  { value: "REDIS", label: "Caches", icon: Zap },
+  { value: "SERVERS", label: "Servers", icon: Server },
+  { value: "DATABASES", label: "Databases", icon: Database },
+  { value: "CACHES", label: "Caches", icon: Zap },
   { value: "STORAGE", label: "Storage", icon: Folder },
 ]
 
-const validFilters: Filter[] = ["ALL", "VPS", "RDS", "REDIS", "STORAGE"]
+/**
+ * ?type= accepts either a bucket ("DATABASES") or a raw instance type
+ * ("RDS", "REMOTE_RDS"). The raw form still works because the param has
+ * always carried the API's type value, and a link like ?type=REMOTE_RDS
+ * should land on Databases rather than silently fall back to All.
+ */
+function filterFromTypeParam(param: string): Filter {
+  const asBucket = INSTANCE_BUCKETS.find((b) => b.value === param)
+  if (asBucket) return asBucket.value
+  if (isInstanceType(param)) return bucketForType(param)
+  return "ALL"
+}
 
 export function InstancesListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -42,10 +61,7 @@ export function InstancesListPage() {
 
   // Derive filter from URL directly — don't try to sync state during render
   const typeParam = searchParams.get("type")
-  const filterFromUrl: Filter =
-    typeParam && validFilters.includes(typeParam as Filter)
-      ? (typeParam as Filter)
-      : "ALL"
+  const filterFromUrl: Filter = typeParam ? filterFromTypeParam(typeParam) : "ALL"
 
   // Use URL filter when available, otherwise use state
   const activeFilter = searchParams.has("type") ? filterFromUrl : filter
@@ -81,7 +97,8 @@ export function InstancesListPage() {
     const all = instancesQ.data ?? []
     const term = search.trim().toLowerCase()
     return all.filter((i) => {
-      const matchesType = activeFilter === "ALL" || i.type === activeFilter
+      const matchesType =
+        activeFilter === "ALL" || instanceMatchesBucket(i.type, activeFilter)
       const matchesSearch =
         !term ||
         i.name.toLowerCase().includes(term) ||
@@ -105,10 +122,10 @@ export function InstancesListPage() {
   const all = instancesQ.data ?? []
   const counts: Record<Filter, number> = {
     ALL: all.length,
-    VPS: all.filter((i) => i.type === "VPS").length,
-    RDS: all.filter((i) => i.type === "RDS").length,
-    REDIS: all.filter((i) => i.type === "REDIS").length,
-    STORAGE: all.filter((i) => i.type === "STORAGE").length,
+    SERVERS: all.filter((i) => instanceMatchesBucket(i.type, "SERVERS")).length,
+    DATABASES: all.filter((i) => instanceMatchesBucket(i.type, "DATABASES")).length,
+    CACHES: all.filter((i) => instanceMatchesBucket(i.type, "CACHES")).length,
+    STORAGE: all.filter((i) => instanceMatchesBucket(i.type, "STORAGE")).length,
   }
 
   return (
@@ -167,7 +184,11 @@ export function InstancesListPage() {
                   ? `No matches for "${search}".`
                   : activeFilter === "ALL"
                     ? "No resources yet."
-                    : `No ${activeFilter === "VPS" ? "servers" : activeFilter === "RDS" ? "databases" : activeFilter === "REDIS" ? "caches" : "storage"} in this project.`}
+                    : // Derived from the chip's own label rather than a chain of
+                      // comparisons: the old ternary had no arm for a new
+                      // bucket and fell through to "storage", which is how a
+                      // silently-wrong empty state happens.
+                      `No ${INSTANCE_BUCKETS.find((b) => b.value === activeFilter)?.label.toLowerCase() ?? "resources"} in this project.`}
               </p>
             </Card>
           ) : (

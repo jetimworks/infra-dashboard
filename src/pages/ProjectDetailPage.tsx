@@ -25,17 +25,10 @@ import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { formatRelative, formatDate } from "../lib/utils"
-import type { Instance, InstanceType } from "../api/types"
+import { INSTANCE_BUCKETS, instanceMatchesBucket } from "../lib/instance-types"
+import type { Instance } from "../api/types"
 
 type TabValue = "servers" | "activity" | "settings" | "action-requests"
-
-const instanceTypeOrder: InstanceType[] = ["VPS", "RDS", "REDIS", "STORAGE"]
-const instanceTypeLabel: Record<InstanceType, string> = {
-  VPS: "Servers",
-  RDS: "Databases",
-  REDIS: "Caches",
-  STORAGE: "Storage",
-}
 
 const tabItems: { value: TabValue; label: string; icon: LucideIcon }[] = [
   { value: "servers", label: "Servers", icon: Server },
@@ -140,18 +133,20 @@ function ServersTab({ instances }: { instances: Instance[] }) {
     )
   }
 
-  const grouped = instanceTypeOrder
-    .map((type) => ({
-      type,
-      label: instanceTypeLabel[type],
-      items: instances.filter((i) => i.type === type),
-    }))
-    .filter((g) => g.items.length > 0)
+  // Grouping is driven by INSTANCE_BUCKETS, defined in lib/instance-types.ts
+  // together with the rule that RDS and REMOTE_RDS share one "Databases"
+  // heading. This used to iterate a local InstanceType[], so a type missing
+  // from it was assigned to no group and never rendered at all — a silent
+  // drop the compiler could not have caught.
+  const grouped = INSTANCE_BUCKETS.map((bucket) => ({
+    label: bucket.label,
+    items: instances.filter((i) => instanceMatchesBucket(i.type, bucket.value)),
+  })).filter((g) => g.items.length > 0)
 
   return (
     <div className="space-y-6">
       {grouped.map((group) => (
-        <section key={group.type}>
+        <section key={group.label}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-fg-muted">
             {group.label} · {group.items.length}
           </h2>

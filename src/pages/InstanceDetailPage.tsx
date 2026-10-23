@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import {
   Activity,
+  CheckCircle2,
   ChevronRight,
   ClipboardList,
   Code2,
@@ -11,6 +12,7 @@ import {
   HardDriveDownload,
   LineChart,
   type LucideIcon,
+  ListTree,
   Plus,
   Power,
   Rocket,
@@ -18,9 +20,10 @@ import {
   Server,
   Settings as SettingsIcon,
   ShieldCheck,
+  XCircle,
   Zap,
 } from "lucide-react"
-import { useInstance } from "../queries/instances"
+import { useInstance, useTestDbConnection } from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
 import { useBackups } from "../queries/backups"
 import { useSecurityCheck } from "../queries/security"
@@ -39,10 +42,20 @@ import { SecurityFindingItem } from "../components/data/SecurityFindingItem"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
-import { formatBytes, formatRelative } from "../lib/utils"
+import { normalizeError } from "../api/errors"
+import { formatBytes, formatRelative, cn } from "../lib/utils"
 import { DEFAULT_SERVICE_NAME, resolveServiceName } from "../lib/service-name"
+import {
+  dbErrorGuidance,
+  DEFAULT_DB_PORT,
+  DEFAULT_DB_SSL_MODE,
+  readRemoteDbConfig,
+} from "../lib/remote-db"
 import type {
+  DbTestConnectionResponse,
+  Instance,
   InstanceType,
+  SecurityCheck,
   SecurityOverallStatus,
   InstanceMetric,
 } from "../api/types"
@@ -59,12 +72,14 @@ type TabValue =
 const typeIcon: Record<InstanceType, LucideIcon> = {
   VPS: Server,
   RDS: Database,
+  REMOTE_RDS: Database,
   REDIS: Zap,
   STORAGE: Folder,
 }
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }
@@ -73,6 +88,28 @@ const overallStatusLabel: Record<SecurityOverallStatus, string> = {
   safe: "Looking good",
   needs_attention: "Needs a look",
   action_required: "Action needed",
+}
+
+/**
+ * "safe" does not always mean "we ran a check and it passed".
+ *
+ * The backend hard-codes `safe` plus one `ok` finding titled "Security checks
+ * don't apply to this service" for REDIS, STORAGE and REMOTE_RDS
+ * (infra-backend/internal/services/security_check/service.go:92), and never
+ * sets last_checked_at on those paths — nothing ran. The converse also holds,
+ * which is what makes the timestamp safe to key on: for VPS and RDS every
+ * finding builder returns skipFinding (status action_required) when the audit
+ * is missing, and rollupStatus only returns `safe` when no finding is
+ * `warning` or `action_required`. So `safe` there is only ever reachable with
+ * an audit present, and that audit's timestamp is set.
+ *
+ * So the missing timestamp is the honest signal: `safe` with no check time
+ * means nobody looked. Rendering the normal green all-clear here would
+ * report an unaudited resource as verified — worse than saying nothing,
+ * because an all-clear is a claim.
+ */
+function isUninspected(security: SecurityCheck): boolean {
+  return security.overall_status === "safe" && !security.last_checked_at
 }
 
 const METRIC_HELP: Record<string, { label: string; unit: string; help: string }> = {
@@ -456,22 +493,33 @@ function OverviewTab({
           <Card>
             {(() => {
               const displayStatus = security.overall_status
+              const uninspected = isUninspected(security)
               return (
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <StatusPill
-                        status={displayStatus}
-                        label={overallStatusLabel[displayStatus]}
-                        size="md"
-                      />
+                      {uninspected ? (
+                        <StatusPill
+                          status="not_checked"
+                          label="Not checked"
+                          size="md"
+                        />
+                      ) : (
+                        <StatusPill
+                          status={displayStatus}
+                          label={overallStatusLabel[displayStatus]}
+                          size="md"
+                        />
+                      )}
                     </div>
                     <p className="mt-2 text-[0.9375rem] text-fg-muted">
-                      {displayStatus === "safe"
-                        ? "We didn't find anything that needs your attention."
-                        : displayStatus === "needs_attention"
-                          ? "A few things could use a look. Nothing urgent."
-                          : "There are issues that need your attention."}
+                      {uninspected
+                        ? "Nothing was inspected. This resource is managed outside the platform, so there isn't a check for us to run."
+                        : displayStatus === "safe"
+                          ? "We didn't find anything that needs your attention."
+                          : displayStatus === "needs_attention"
+                            ? "A few things could use a look. Nothing urgent."
+                            : "There are issues that need your attention."}
                     </p>
                   </div>
                   {security.last_checked_at ? (
@@ -588,15 +636,19 @@ function SecurityTab({
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <StatusPill
-              status={security.overall_status}
-              label={overallStatusLabel[security.overall_status]}
-              size="md"
-            />
+            {isUninspected(security) ? (
+              <StatusPill status="not_checked" label="Not checked" size="md" />
+            ) : (
+              <StatusPill
+                status={security.overall_status}
+                label={overallStatusLabel[security.overall_status]}
+                size="md"
+              />
+            )}
             <p className="mt-3 text-[0.9375rem] text-fg-muted">
-              {security.findings.length} finding
-              {security.findings.length === 1 ? "" : "s"} for this{" "}
-              {typeLabel[instanceType].toLowerCase()}.
+              {isUninspected(security)
+                ? "Nothing was inspected. There's no security check for a resource we manage from outside the platform."
+                : `${security.findings.length} finding${security.findings.length === 1 ? "" : "s"} for this ${typeLabel[instanceType].toLowerCase()}.`}
             </p>
           </div>
           {security.last_checked_at ? (
@@ -816,6 +868,7 @@ function SettingsTab({
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const configRecord = instance.config as Record<string, unknown>
+  const remoteDb = readRemoteDbConfig(instance.config)
   const sizeBytes =
     typeof configRecord?.size_bytes === "number"
       ? configRecord.size_bytes
@@ -896,6 +949,10 @@ function SettingsTab({
         </Card>
       ) : null}
 
+      {instance.type === "REMOTE_RDS" ? (
+        <RemoteDatabaseCard instance={instance} />
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Details</CardTitle>
@@ -968,6 +1025,17 @@ function SettingsTab({
               mono
             />
           ) : null}
+          {/* A REMOTE_RDS's config is fully understood now — four keys the
+              backend writes and nothing else — so it gets typed rows instead
+              of a JSON blob. Host, port and user are deliberately not
+              repeated: they render above from the columns they were mirrored
+              onto. */}
+          {instance.type === "REMOTE_RDS" ? (
+            <>
+              <DetailRow label="Database" value={remoteDb.database} mono />
+              <DetailRow label="TLS mode" value={remoteDb.sslMode} mono />
+            </>
+          ) : null}
           <DetailRow
             label="Created"
             value={formatRelative(instance.created_at)}
@@ -977,7 +1045,8 @@ function SettingsTab({
             value={formatRelative(instance.updated_at)}
           />
           {instance.config &&
-          Object.keys(instance.config).length > 0 ? (
+          Object.keys(instance.config).length > 0 &&
+          instance.type !== "REMOTE_RDS" ? (
             <div className="sm:col-span-2">
               <dt className="text-xs font-medium text-fg-muted">
                 Configuration
@@ -1023,6 +1092,164 @@ function SettingsTab({
         instanceId={instance.id}
       />
     </div>
+  )
+}
+
+/**
+ * The REMOTE_RDS Settings card: where we dial, and the two read-only probes
+ * the registered credential unlocks.
+ *
+ * `testDbConnection` returns HTTP 200 whether or not the dial succeeded — the
+ * verdict is the boolean `connected`, and a refusal is a *resolved* promise,
+ * not a rejection. So both outcomes render in the same panel, differentiated
+ * by the body field, and the catch block is reserved for transport and auth
+ * failures (a 400 for a non-REMOTE_RDS, a 401, the network dropping). That
+ * split is the whole reason this is a component with its own state rather
+ * than a toast on the mutation: a toast cannot distinguish "the database
+ * said no" from "we never got to ask".
+ */
+function RemoteDatabaseCard({ instance }: { instance: Instance }) {
+  const navigate = useNavigate()
+  const testConnection = useTestDbConnection()
+  const [result, setResult] = useState<DbTestConnectionResponse | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const db = readRemoteDbConfig(instance.config)
+  // The column is authoritative and config.db_port is the canonicalised copy
+  // of it; falling through the rest of the way means a row written before the
+  // port was mirrored still renders the port we actually dial.
+  const port = instance.port ?? db.port ?? DEFAULT_DB_PORT
+  const endpoint = `${instance.host ?? "—"}:${port}`
+
+  const run = async () => {
+    setErrorMsg(null)
+    setResult(null)
+    try {
+      // No ?database= override: the point of this button is to exercise the
+      // settings the instance is actually configured with, so overriding it
+      // here would test something nobody else would connect as.
+      setResult(await testConnection.mutateAsync({ id: instance.id }))
+    } catch (err) {
+      setErrorMsg(
+        normalizeError(err).message || "We couldn't run the connection test."
+      )
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Database</CardTitle>
+          <p className="mt-1 text-sm text-fg-muted">
+            This database is hosted by its provider — we hold no shell on it.
+            We connect directly, using the credentials on this instance.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={ListTree}
+            onClick={() => navigate(`/instances/${instance.id}/schemas`)}
+          >
+            Browse schema
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={Activity}
+            onClick={run}
+            isLoading={testConnection.isPending}
+          >
+            Test connection
+          </Button>
+        </div>
+      </CardHeader>
+
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+        <DetailRow label="Endpoint" value={endpoint} mono />
+        <DetailRow label="Database" value={db.database || "—"} mono />
+        <DetailRow label="User" value={instance.username ?? "—"} mono />
+        <DetailRow
+          label="TLS mode"
+          value={
+            <>
+              {db.sslMode}
+              {db.sslMode === DEFAULT_DB_SSL_MODE ? null : (
+                <span className="font-sans text-fg-muted"> (custom)</span>
+              )}
+            </>
+          }
+          mono
+        />
+      </dl>
+
+      {errorMsg ? (
+        <div
+          role="alert"
+          className="mt-4 flex items-start gap-3 rounded-md bg-danger-soft p-4 text-sm text-danger-fg ring-1 ring-danger/25 ring-inset"
+        >
+          <XCircle className="h-5 w-5 shrink-0" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">The test didn't run</p>
+            <p className="mt-1 opacity-90">{errorMsg}</p>
+          </div>
+        </div>
+      ) : null}
+
+      {result ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "mt-4 flex items-start gap-3 rounded-md p-4 ring-1 ring-inset",
+            result.connected
+              ? "bg-success-soft text-success-fg ring-success/25"
+              : "bg-danger-soft text-danger-fg ring-danger/25"
+          )}
+        >
+          {result.connected ? (
+            <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
+          ) : (
+            <XCircle className="h-5 w-5 shrink-0" aria-hidden />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">
+              {result.connected
+                ? "Connected"
+                : `Couldn't connect to ${result.database || db.database}`}
+            </p>
+            {result.connected ? (
+              <p className="mt-1 text-sm opacity-90">
+                {result.server_version || "PostgreSQL"} responded in{" "}
+                <span className="font-mono tabular-nums">
+                  {result.latency_ms}ms
+                </span>
+                .
+              </p>
+            ) : (
+              <>
+                {result.error ? (
+                  <p className="mt-1 font-mono text-xs opacity-90">
+                    {result.error_code ? `${result.error_code}: ` : ""}
+                    {result.error}
+                  </p>
+                ) : null}
+                {result.error_code ? (
+                  <p className="mt-2 text-sm opacity-90">
+                    {dbErrorGuidance(result.error_code).text}
+                  </p>
+                ) : null}
+              </>
+            )}
+            <p className="mt-2 text-xs opacity-70">
+              Logged as action{" "}
+              <span className="font-mono">{result.action_id}</span>
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </Card>
   )
 }
 

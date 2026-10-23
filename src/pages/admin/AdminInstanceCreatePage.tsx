@@ -19,6 +19,8 @@ import {
   useCreateLocalService,
   useCreateRemoteService,
   useInstances,
+  type LocalServiceType,
+  type RemoteServiceType,
 } from "../../queries/instances"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
@@ -27,6 +29,16 @@ import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { normalizeError } from "../../api/errors"
 import { DEFAULT_SERVICE_NAME, isValidServiceName, SERVICE_NAME_ERROR } from "../../lib/service-name"
+import {
+  DB_HOST_ERROR,
+  DB_IDENT_ERROR,
+  DB_PORT_ERROR,
+  DB_SSL_MODES,
+  DEFAULT_DB_SSL_MODE,
+  isValidDbHost,
+  isValidDbIdent,
+  isValidDbPort,
+} from "../../lib/remote-db"
 import type { Instance, InstanceType } from "../../api/types"
 
 function ParentServerSelect({
@@ -75,7 +87,9 @@ function ParentServerSelect({
 
 const baseSchema = z.object({
   project_id: z.string().min(1, "Pick a project"),
-  type: z.enum(["VPS", "RDS", "REDIS", "STORAGE"]),
+  // REMOTE_RDS is included but is remote-only: it has no parent VPS, so it
+  // never goes through localSchema or the local/remote chooser.
+  type: z.enum(["VPS", "RDS", "REDIS", "STORAGE", "REMOTE_RDS"]),
   name: z.string().min(1, "Name is required"),
 })
 
@@ -119,25 +133,81 @@ const localSchema = z.object({
 })
 
 // Remote: requires project, host, port; optional config fields
-const remoteSchema = baseSchema.extend({
-  host: z.string().min(1, "Host is required"),
-  port: z.string().optional(),
-  username: z.string().optional(),
-  password: z.string().optional(),
-  domain: z.string().optional(),
-  // Remote RDS config
-  db_port: z.string().optional(),
-  db_name: z.string().optional(),
-  db_user: z.string().optional(),
-  db_password: z.string().optional(),
-  // Remote Redis config
-  memory_mb: z.string().optional(),
-  redis_version: z.string().optional(),
-  // Remote Storage config
-  bucket: z.string().optional(),
-  region: z.string().optional(),
-  provider: z.string().optional(),
-})
+const remoteSchema = baseSchema
+  .extend({
+    host: z.string().min(1, "Host is required"),
+    port: z.string().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
+    domain: z.string().optional(),
+    // Remote RDS config
+    db_port: z.string().optional(),
+    db_name: z.string().optional(),
+    db_user: z.string().optional(),
+    db_password: z.string().optional(),
+    // REMOTE_RDS TLS mode. Only this type has one — a containerised RDS runs
+    // over the loopback bridge, so there is no libpq handshake to configure.
+    db_ssl_mode: z.enum(DB_SSL_MODES).optional(),
+    // Remote Redis config
+    memory_mb: z.string().optional(),
+    redis_version: z.string().optional(),
+    // Remote Storage config
+    bucket: z.string().optional(),
+    region: z.string().optional(),
+    provider: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // REMOTE_RDS is a PostgreSQL server we dial directly over TCP, so it
+    // carries a full credential set rather than a container config. Its rules
+    // are conditional so that REDIS and STORAGE don't inherit a username and
+    // database-name field they have no use for.
+    if (data.type !== "REMOTE_RDS") return
+
+    if (!isValidDbHost(data.host)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["host"],
+        message: DB_HOST_ERROR,
+      })
+    }
+    if (!isValidDbPort(data.port ?? "")) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["port"],
+        message: DB_PORT_ERROR,
+      })
+    }
+
+    const user = data.username?.trim() ?? ""
+    if (!isValidDbIdent(user)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["username"],
+        message: user ? DB_IDENT_ERROR : "Username is required",
+      })
+    }
+
+    if (!data.password) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["password"],
+        message: "Password is required",
+      })
+    }
+
+    const database = data.db_name?.trim() ?? ""
+    if (!isValidDbIdent(database)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["db_name"],
+        // The backend refuses to default this one, and the reason is worth
+        // more to the operator than the charset: connecting to "postgres"
+        // when they meant their application database would report a healthy
+        // connection against the wrong database.
+        message: database ? DB_IDENT_ERROR : "Database name is required",
+      })
+    }
+  })
 
 type VpsForm = z.infer<typeof vpsSchema>
 type LocalForm = z.infer<typeof localSchema>
@@ -159,6 +229,12 @@ const typeOptions: {
     value: "RDS",
     label: "Database",
     description: "A managed relational database.",
+    icon: Database,
+  },
+  {
+    value: "REMOTE_RDS",
+    label: "Remote database",
+    description: "A PostgreSQL server you already have, connected directly.",
     icon: Database,
   },
   {
@@ -184,6 +260,10 @@ export function AdminInstanceCreatePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [type, setType] = useState<InstanceType | "">("")
   const [deployment, setDeployment] = useState<"local" | "remote" | "">("")
+  // REMOTE_RDS is remote-only: picking it skips the local/remote chooser, so
+  // the remote form's credential fields become required and the local form is
+  // unreachable. Read here rather than re-testing `type` at each site.
+  const isRemoteRds = type === "REMOTE_RDS"
 
   const vpsForm = useForm<VpsForm>({
     resolver: zodResolver(vpsSchema),
@@ -255,7 +335,7 @@ export function AdminInstanceCreatePage() {
         if (data.storage_path) config.storage_path = data.storage_path
       }
       const created = await createLocal.mutateAsync({
-        type: data.type as Exclude<InstanceType, "VPS">,
+        type: data.type as LocalServiceType,
         parentId: data.parent_id,
         body: { name: data.name, host: data.host, config, is_local: true },
       })
@@ -277,6 +357,15 @@ export function AdminInstanceCreatePage() {
         if (data.db_user) config.db_user = data.db_user
         if (data.db_password) config.db_password = data.db_password
       }
+      if (data.type === "REMOTE_RDS") {
+        // Only the two values this form collects. db_user and db_port are NOT
+        // sent: the backend derives both from the top-level username and port
+        // columns, and db_password never belongs here at all — it is stripped
+        // from config and encrypted into its own column. Sending them would
+        // only invite the legacy rds_* alias confusion.
+        config.db_name = data.db_name?.trim()
+        config.db_ssl_mode = data.db_ssl_mode || DEFAULT_DB_SSL_MODE
+      }
       if (data.type === "REDIS") {
         if (data.memory_mb) config.memory_mb = Number(data.memory_mb)
         if (data.redis_version) config.version = data.redis_version
@@ -287,7 +376,7 @@ export function AdminInstanceCreatePage() {
         if (data.provider) config.provider = data.provider
       }
       const created = await createRemote.mutateAsync({
-        type: data.type as Exclude<InstanceType, "VPS">,
+        type: data.type as RemoteServiceType,
         body: {
           project_id: data.project_id,
           name: data.name,
@@ -333,7 +422,7 @@ export function AdminInstanceCreatePage() {
         <CardHeader>
           <CardTitle>1. Pick a type</CardTitle>
         </CardHeader>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {typeOptions.map((opt) => {
             const Icon = opt.icon
             const selected = type === opt.value
@@ -343,11 +432,19 @@ export function AdminInstanceCreatePage() {
                 type="button"
                 onClick={() => {
                   setType(opt.value)
-                  setDeployment("")
+                  // REMOTE_RDS is remote-only — it has no parent VPS, so
+                  // step 2 is skipped entirely and the remote form starts at
+                  // step 3. Forcing the deployment here is what keeps the
+                  // local branch unreachable for this type.
+                  setDeployment(opt.value === "REMOTE_RDS" ? "remote" : "")
                   if (opt.value === "VPS") {
                     vpsForm.setValue("type", "VPS")
                   } else {
-                    localForm.setValue("type", opt.value)
+                    // Only the types that can exist locally are written into
+                    // the local form; REMOTE_RDS is not one of them.
+                    if (opt.value !== "REMOTE_RDS") {
+                      localForm.setValue("type", opt.value)
+                    }
                     remoteForm.setValue("type", opt.value)
                   }
                 }}
@@ -378,8 +475,9 @@ export function AdminInstanceCreatePage() {
         </div>
       </Card>
 
-      {/* Step 2: Local vs Remote — only for non-VPS types */}
-      {type && type !== "VPS" ? (
+      {/* Step 2: Local vs Remote — for the types that can be either. REMOTE_RDS
+          is already forced to remote, and VPS has no such choice. */}
+      {type && type !== "VPS" && type !== "REMOTE_RDS" ? (
         <Card>
           <CardHeader>
             <CardTitle>2. Where is this service hosted?</CardTitle>
@@ -817,7 +915,11 @@ export function AdminInstanceCreatePage() {
                   {...remoteForm.register("host")}
                 />
               </Field>
-              <Field label="Port" htmlFor="cr-port">
+              <Field
+                label="Port"
+                htmlFor="cr-port"
+                error={remoteForm.formState.errors.port?.message}
+              >
                 <Input
                   id="cr-port"
                   type="number"
@@ -825,18 +927,28 @@ export function AdminInstanceCreatePage() {
                   {...remoteForm.register("port")}
                 />
               </Field>
-              <Field label="Username" htmlFor="cr-user">
+              <Field
+                label="Username"
+                htmlFor="cr-user"
+                required={isRemoteRds}
+                error={remoteForm.formState.errors.username?.message}
+              >
                 <Input
                   id="cr-user"
                   placeholder="postgres"
                   {...remoteForm.register("username")}
                 />
               </Field>
-              <Field label="Password" htmlFor="cr-password">
-                <Input
+              <Field
+                label="Password"
+                htmlFor="cr-password"
+                required={isRemoteRds}
+                error={remoteForm.formState.errors.password?.message}
+              >
+                <PasswordInput
                   id="cr-password"
-                  type="password"
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   {...remoteForm.register("password")}
                 />
               </Field>
@@ -886,6 +998,52 @@ export function AdminInstanceCreatePage() {
                     placeholder="••••••••"
                     {...remoteForm.register("db_password")}
                   />
+                </Field>
+              </div>
+            </Card>
+          ) : null}
+
+          {/* REMOTE_RDS-specific remote fields. Unlike the containerised RDS
+              card above there is no port, user or password here: those go in
+              the connection card as top-level fields, because a remote
+              database is dialled directly rather than reached through a
+              parent server. */}
+          {isRemoteRds ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>4. Database settings</CardTitle>
+              </CardHeader>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field
+                  label="Database name"
+                  htmlFor="cr-rr-db-name"
+                  required
+                  error={remoteForm.formState.errors.db_name?.message}
+                  hint="The database to connect to. There's deliberately no default — connecting to the wrong one would report a healthy connection."
+                >
+                  <Input
+                    id="cr-rr-db-name"
+                    placeholder="mydb"
+                    {...remoteForm.register("db_name")}
+                  />
+                </Field>
+                <Field
+                  label="TLS mode"
+                  htmlFor="cr-rr-ssl-mode"
+                  hint="How the connection is encrypted. Leave on prefer unless your server requires something specific."
+                >
+                  <select
+                    id="cr-rr-ssl-mode"
+                    defaultValue={DEFAULT_DB_SSL_MODE}
+                    {...remoteForm.register("db_ssl_mode")}
+                    className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    {DB_SSL_MODES.map((mode) => (
+                      <option key={mode} value={mode}>
+                        {mode}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
               </div>
             </Card>

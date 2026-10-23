@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Save, Trash2, Key, Terminal } from "lucide-react"
 import { useForm } from "react-hook-form"
@@ -19,32 +19,96 @@ import { ErrorState } from "../../components/ui/ErrorState"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog"
 import { normalizeError } from "../../api/errors"
+import type { InstanceType } from "../../api/types"
 import { DEFAULT_SERVICE_NAME, isValidServiceName, SERVICE_NAME_ERROR } from "../../lib/service-name"
+import {
+  DB_HOST_ERROR,
+  DB_IDENT_ERROR,
+  DB_PORT_ERROR,
+  DB_SSL_MODES,
+  DEFAULT_DB_SSL_MODE,
+  isValidDbHost,
+  isValidDbIdent,
+  isValidDbPort,
+  readRemoteDbConfig,
+} from "../../lib/remote-db"
 
-const editSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  host: z.string().optional(),
-  port: z.string().optional(),
-  username: z.string().optional(),
-  domain: z.string().optional(),
-  // VPS-only repository metadata. Optional on edit so untouched rows are
-  // omitted from the PUT body (the backend treats omitted keys as no-op).
-  github_repo: z.string().optional(),
-  github_branch: z.string().optional(),
-  // Unlike its siblings above, "" is NOT a no-op here — it is the only value
-  // that resets the column back to NULL. So "" has to survive validation.
-  // Optional because the field only renders for VPS: an unregistered field is
-  // absent from the submitted values entirely, and a bare z.string() would
-  // then reject every non-VPS instance with "Required".
-  service_name: z
-    .string()
-    .optional()
-    .refine(
-      (v) => v === undefined || v === "" || isValidServiceName(v),
-      SERVICE_NAME_ERROR
-    ),
-})
-type EditForm = z.infer<typeof editSchema>
+/**
+ * Built per instance type rather than declared once, because a REMOTE_RDS's
+ * database name is required and every other type has no such field at all.
+ * Making it unconditionally required would break every other edit: an
+ * unregistered field is absent from the submitted values entirely, so a bare
+ * z.string() would reject every non-REMOTE_RDS instance with "Required".
+ */
+function buildEditSchema(instanceType: InstanceType) {
+  return z
+    .object({
+      name: z.string().min(1, "Name is required"),
+      host: z.string().optional(),
+      port: z.string().optional(),
+      username: z.string().optional(),
+      domain: z.string().optional(),
+      // VPS-only repository metadata. Optional on edit so untouched rows are
+      // omitted from the PUT body (the backend treats omitted keys as no-op).
+      github_repo: z.string().optional(),
+      github_branch: z.string().optional(),
+      // Unlike its siblings above, "" is NOT a no-op here — it is the only value
+      // that resets the column back to NULL. So "" has to survive validation.
+      // Optional because the field only renders for VPS: an unregistered field is
+      // absent from the submitted values entirely, and a bare z.string() would
+      // then reject every non-VPS instance with "Required".
+      service_name: z
+        .string()
+        .optional()
+        .refine(
+          (v) => v === undefined || v === "" || isValidServiceName(v),
+          SERVICE_NAME_ERROR
+        ),
+      // REMOTE_RDS connection settings, held in config rather than columns.
+      db_name: z.string().optional(),
+      db_ssl_mode: z.enum(DB_SSL_MODES).optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (instanceType !== "REMOTE_RDS") return
+
+      // Required, and unlike the user there is no sensible default:
+      // connecting to "postgres" when the operator meant their application
+      // database would report a healthy connection against the wrong
+      // database, which is worse than refusing.
+      const database = data.db_name?.trim() ?? ""
+      if (!isValidDbIdent(database)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["db_name"],
+          message: database ? DB_IDENT_ERROR : "Database name is required",
+        })
+      }
+
+      if (data.host !== undefined && !isValidDbHost(data.host)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["host"],
+          message: DB_HOST_ERROR,
+        })
+      }
+      if (!isValidDbPort(data.port ?? "")) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["port"],
+          message: DB_PORT_ERROR,
+        })
+      }
+      if (data.username?.trim() && !isValidDbIdent(data.username.trim())) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["username"],
+          message: DB_IDENT_ERROR,
+        })
+      }
+    })
+}
+
+type EditForm = z.infer<ReturnType<typeof buildEditSchema>>
 
 export function AdminInstanceEditPage() {
   const { id } = useParams<{ id: string }>()
@@ -62,18 +126,34 @@ export function AdminInstanceEditPage() {
   // drops the reveal back to masked.
   const [password, setPassword] = useState("")
   const [passwordFieldKey, setPasswordFieldKey] = useState(0)
+  // A REMOTE_RDS credential is a separate secret from a VPS root password, so
+  // it gets its own state and its own <form> rather than sharing the pair
+  // above — the two cards are mutually exclusive by type, but a shared box
+  // would silently carry one instance's secret into the other's submit.
+  const [dbPassword, setDbPassword] = useState("")
+  const [dbPasswordFieldKey, setDbPasswordFieldKey] = useState(0)
+
+  // Undefined until the instance loads; the resolver is only consulted on
+  // submit, by which point the type is known.
+  const instanceType = instanceQ.data?.type
+  const resolver = useMemo(
+    () => zodResolver(buildEditSchema(instanceType as InstanceType)),
+    [instanceType]
+  )
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isDirty, isSubmitting },
-  } = useForm<EditForm>({
-    resolver: zodResolver(editSchema),
-  })
+  } = useForm<EditForm>({ resolver })
 
   useEffect(() => {
     if (instanceQ.data) {
+      // A REMOTE_RDS row's canonical config is written by the backend as
+      // exactly these four keys, so reading them back is reading the row's
+      // real connection settings rather than guessing at aliases.
+      const db = readRemoteDbConfig(instanceQ.data.config)
       reset({
         name: instanceQ.data.name,
         host: instanceQ.data.host ?? "",
@@ -84,6 +164,8 @@ export function AdminInstanceEditPage() {
         github_branch: instanceQ.data.github_branch ?? "",
         // NULL hydrates as an empty box, so "clear it" is reachable by hand.
         service_name: instanceQ.data.service_name ?? "",
+        db_name: db.database,
+        db_ssl_mode: db.sslMode,
       })
     }
   }, [instanceQ.data, reset])
@@ -126,6 +208,19 @@ export function AdminInstanceEditPage() {
           ...(instance.type === "VPS"
             ? { service_name: data.service_name || "" }
             : {}),
+          // REMOTE_RDS keeps its database name and TLS mode in config. The
+          // backend merges this onto what is stored rather than replacing it,
+          // then re-canonicalises — so db_user and db_port come back from the
+          // host/port/username sent alongside, and db_password is never in
+          // this body at all (it goes through the credential form below).
+          ...(instance.type === "REMOTE_RDS"
+            ? {
+                config: {
+                  db_name: data.db_name?.trim(),
+                  db_ssl_mode: data.db_ssl_mode ?? DEFAULT_DB_SSL_MODE,
+                },
+              }
+            : {}),
         },
       })
       reset(data)
@@ -143,6 +238,23 @@ export function AdminInstanceEditPage() {
       // to masked so the next value isn't readable over a shoulder.
       setPassword("")
       setPasswordFieldKey((key) => key + 1)
+    } catch {
+      // toast handled by the mutation's onError
+    }
+  }
+
+  const handleDbPasswordSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!id || !dbPassword) return
+    try {
+      // Same PUT, same hook, different secret. The backend's REMOTE_RDS update
+      // path treats a supplied password as a replacement and re-encrypts it
+      // into encrypted_password; omitting it entirely leaves the stored
+      // credential untouched, which is why this is a standalone submit rather
+      // than another field on the main form.
+      await updatePassword.mutateAsync({ id, password: dbPassword })
+      setDbPassword("")
+      setDbPasswordFieldKey((key) => key + 1)
     } catch {
       // toast handled by the mutation's onError
     }
@@ -294,6 +406,52 @@ export function AdminInstanceEditPage() {
           </div>
         </Card>
 
+        {instance.type === "REMOTE_RDS" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Database</CardTitle>
+            </CardHeader>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field
+                label="Database name"
+                htmlFor="ie-db-name"
+                required
+                error={errors.db_name?.message}
+                hint="There's deliberately no default — connecting to the wrong database would report a healthy connection."
+              >
+                <Input
+                  id="ie-db-name"
+                  placeholder="mydb"
+                  autoComplete="off"
+                  spellCheck={false}
+                  {...register("db_name")}
+                />
+              </Field>
+              <Field
+                label="TLS mode"
+                htmlFor="ie-db-ssl-mode"
+                hint="How the connection to this database is encrypted."
+              >
+                <select
+                  id="ie-db-ssl-mode"
+                  {...register("db_ssl_mode")}
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {DB_SSL_MODES.map((mode) => (
+                    <option key={mode} value={mode}>
+                      {mode}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <p className="mt-3 text-xs text-fg-muted">
+              Host, port and username above are the coordinates we dial. The
+              password is set separately below.
+            </p>
+          </Card>
+        ) : null}
+
         <Card>
           <CardHeader>
             <CardTitle>Configuration</CardTitle>
@@ -315,6 +473,50 @@ export function AdminInstanceEditPage() {
           </Button>
         </div>
       </form>
+
+      {instance.type === "REMOTE_RDS" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Database credential</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleDbPasswordSubmit} className="space-y-4">
+            <Field
+              label="Database password"
+              htmlFor="ie-db-password"
+              hint="Used to connect to this database and to browse its schema. Leave blank to keep the current password — we never show it once saved."
+            >
+              <PasswordInput
+                key={dbPasswordFieldKey}
+                id="ie-db-password"
+                value={dbPassword}
+                onChange={(event) => setDbPassword(event.target.value)}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </Field>
+            {dbPassword ? (
+              <p className="rounded-md border border-warning-soft bg-warning-soft/40 p-3 text-sm text-fg">
+                <span className="font-medium text-warning-fg">Heads up.</span>{" "}
+                <span className="text-fg-muted">
+                  This replaces the stored password immediately. If it&apos;s
+                  wrong, connection tests and the schema browser will stop
+                  authenticating.
+                </span>
+              </p>
+            ) : null}
+            <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-4">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={updatePassword.isPending}
+                disabled={!dbPassword || updatePassword.isPending}
+              >
+                Update password
+              </Button>
+            </div>
+          </form>
+        </Card>
+      ) : null}
 
       {instance.type === "VPS" ? (
         <Card>

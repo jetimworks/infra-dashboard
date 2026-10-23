@@ -19,29 +19,35 @@ import { LoadingPage } from "../../components/ui/LoadingState"
 import { ErrorState } from "../../components/ui/ErrorState"
 import { EmptyState } from "../../components/ui/EmptyState"
 import { formatRelative } from "../../lib/utils"
+import {
+  INSTANCE_BUCKETS,
+  instanceMatchesBucket,
+  type InstanceBucket,
+} from "../../lib/instance-types"
 import type { InstanceType } from "../../api/types"
 
-type Filter = "ALL" | InstanceType
+// The filter is a bucket, not a raw type, so the "Databases" chip can show
+// RDS and REMOTE_RDS together — see lib/instance-types.ts for why.
+type Filter = "ALL" | InstanceBucket
 
 const typeIcon: Record<InstanceType, LucideIcon> = {
   VPS: Server,
   RDS: Database,
+  REMOTE_RDS: Database,
   REDIS: Zap,
   STORAGE: Folder,
 }
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }
 
 const filterOptions: { value: Filter; label: string }[] = [
   { value: "ALL", label: "All" },
-  { value: "VPS", label: "Servers" },
-  { value: "RDS", label: "Databases" },
-  { value: "REDIS", label: "Caches" },
-  { value: "STORAGE", label: "Storage" },
+  ...INSTANCE_BUCKETS,
 ]
 
 export function AdminInstancesListPage() {
@@ -52,7 +58,10 @@ export function AdminInstancesListPage() {
 
   const instances = useMemo(() => {
     const all = instancesQ.data ?? []
-    const filtered = filter === "ALL" ? all : all.filter((i) => i.type === filter)
+    const filtered =
+      filter === "ALL"
+        ? all
+        : all.filter((i) => instanceMatchesBucket(i.type, filter))
     if (!search.trim()) return filtered
     const term = search.toLowerCase()
     return filtered.filter(

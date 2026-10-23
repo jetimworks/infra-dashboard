@@ -12,7 +12,18 @@
 // Domain enums
 // ──────────────────────────────────────────────────────────────────────────
 
-export type InstanceType = "VPS" | "REDIS" | "RDS" | "STORAGE"
+/**
+ * RDS and REMOTE_RDS are different things and the difference is load-bearing:
+ *
+ *   RDS        — a Postgres container reached THROUGH a parent VPS over SSH.
+ *   REMOTE_RDS — a Postgres server somebody else provisioned, which the
+ *                backend dials directly over TCP with its own credentials.
+ *
+ * `type === "RDS"` filters do not match a REMOTE_RDS row. Wherever the UI
+ * enumerates types, REMOTE_RDS has to be enumerated too or the row silently
+ * disappears — see lib/remote-db.ts for the rest of the contract.
+ */
+export type InstanceType = "VPS" | "REDIS" | "RDS" | "STORAGE" | "REMOTE_RDS"
 export type UserStatus = "active" | "inactive" | "closed"
 export type OnboardingStage = "CHANGE_PASSWORD" | "HOME" | null
 export type ActionType =
@@ -298,6 +309,107 @@ export interface SshKeyUploadInput {
 
 export interface SshKeyResponse {
   ssh_key: string
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Remote database (REMOTE_RDS only)
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Every failure the remote-database layer can classify, mirroring the Code
+ * constants in infra-backend/internal/services/rdb/errors.go. The trailing
+ * `| string` follows the house pattern used by ActionType and FindingCategory:
+ * the backend is free to add a code, and an unrecognised one must render as
+ * itself rather than become undefined.
+ */
+export type DbErrorCode =
+  | "DB_CONFIG_INVALID"
+  | "DB_UNREACHABLE"
+  | "DB_TIMEOUT"
+  | "DB_TLS_FAILED"
+  | "DB_AUTH_FAILED"
+  | "DB_DATABASE_NOT_FOUND"
+  | "DB_SERVER_ERROR"
+  | "DB_QUERY_FAILED"
+  | string
+
+/**
+ * POST /instances/{id}/db/test-connection.
+ *
+ * HTTP 200 EVEN WHEN THE DIAL FAILS. The verdict is `connected`; the status
+ * code only reports whether the request reached the database layer at all.
+ * A client that treats non-2xx as failure will report a healthy database as
+ * broken — so branch on `connected`, never on the response status.
+ *
+ * error_code and error are always present so a client never has to tell an
+ * absent key from an empty one. error_code is "" on success, NOT "OK", so
+ * there is exactly one representation of "no failure".
+ */
+export interface DbTestConnectionResponse {
+  instance_id: string
+  action_id: string
+  connected: boolean
+  database: string
+  /** "" on failure. */
+  server_version: string
+  latency_ms: number
+  error_code: DbErrorCode | ""
+  /** Human-readable; "" on success. */
+  error: string
+}
+
+/**
+ * How pg_class.relkind is labelled for display, from rdb/catalog.go's
+ * relKindLabel. Unlisted codes pass through unchanged in the backend so a
+ * future relkind stays identifiable, hence the `| string`.
+ */
+export type DbRelationKind =
+  | "table"
+  | "partitioned_table"
+  | "view"
+  | "materialized_view"
+  | "foreign_table"
+  | string
+
+export interface DbRelation {
+  name: string
+  kind: DbRelationKind
+  size_bytes: number
+  /**
+   * pg_class.reltuples — the planner's statistics. Free to read, and
+   * explicitly an ESTIMATE, not a count; a real count is a full table scan.
+   * Render it as "≈412" and never as a bare number.
+   */
+  estimated_rows: number
+}
+
+export interface DbSchema {
+  name: string
+  /** Normalised to [] rather than null by the backend — safe to iterate. */
+  tables: DbRelation[]
+}
+
+/**
+ * GET /instances/{id}/db/schemas.
+ *
+ * Unlike the test endpoint this one returns real HTTP errors, because its job
+ * is to return data: a failed lookup is a 502, a timeout a 504. error_code
+ * and error are still carried inside the {"error": "..."} body, formatted
+ * "DB_AUTH_FAILED: <message>".
+ *
+ * `truncated` is true when the response hit the backend's 5000-relation
+ * budget, which is global across all schemas — the tree is then incomplete
+ * and must say so rather than implying it is the whole database.
+ */
+export interface DbSchemasResponse {
+  instance_id: string
+  database: string
+  /** Every connectable database on the server, for the picker. */
+  databases: string[]
+  schemas: DbSchema[]
+  truncated: boolean
+  error_code: DbErrorCode | ""
+  error: string
 }
 
 // ──────────────────────────────────────────────────────────────────────────

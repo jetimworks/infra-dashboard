@@ -41,7 +41,7 @@ export function AdminDashboardPage() {
         acc[i.type] = (acc[i.type] ?? 0) + 1
         return acc
       },
-      { VPS: 0, RDS: 0, REDIS: 0, STORAGE: 0 }
+      { VPS: 0, RDS: 0, REMOTE_RDS: 0, REDIS: 0, STORAGE: 0 }
     )
     return {
       users: (usersQ.data ?? []).length,
@@ -127,10 +127,13 @@ export function AdminDashboardPage() {
           </CardHeader>
           <ul className="space-y-2">
             <TypeRow icon={Server} label="Servers" count={stats.byType.VPS} />
+            {/* RDS and REMOTE_RDS share the Databases row — they are both
+                databases, and a fifth row reading "Remote database" would
+                mostly sit at zero. */}
             <TypeRow
               icon={Database}
               label="Databases"
-              count={stats.byType.RDS}
+              count={stats.byType.RDS + stats.byType.REMOTE_RDS}
             />
             <TypeRow icon={Zap} label="Caches" count={stats.byType.REDIS} />
             <TypeRow

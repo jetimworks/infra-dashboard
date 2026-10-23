@@ -14,6 +14,16 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog"
 import { AsyncActionTracker } from "../components/feedback/AsyncActionTracker"
 import type { BackupListItem, InstanceType } from "../api/types"
 
+// Every sibling sub-page carries its own copy of this map; the raw enum leaking
+// into user-facing text ("This is a REMOTE_RDS server") is what it's for.
+const typeLabel: Record<InstanceType, string> = {
+  VPS: "Server",
+  RDS: "Database",
+  REMOTE_RDS: "Remote database",
+  REDIS: "Cache",
+  STORAGE: "Storage",
+}
+
 export function InstanceBackupsPage() {
   const { id } = useParams<{ id: string }>()
   const instanceQ = useInstance(id)
@@ -41,7 +51,8 @@ export function InstanceBackupsPage() {
     return (
       <div className="space-y-4">
         <p className="text-sm text-fg-muted">
-          Backups are available for databases and caches. This is a {instance.type} server.
+          Backups are available for databases and caches. This is a{" "}
+          {typeLabel[instance.type].toLowerCase()} resource.
         </p>
         <Link to={`/instances/${instance.id}`} className="text-sm font-medium text-primary hover:underline">
           ← Back to {instance.name}

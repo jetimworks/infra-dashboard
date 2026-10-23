@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import {
   ChevronRight,
   Database,
@@ -38,14 +38,34 @@ export function AdminSecurityAuditsPage() {
   const [tab, setTab] = useState<Tab>("VPS")
   const vpsQ = useInstances({ type: "VPS" })
   const rdsQ = useInstances({ type: "RDS" })
+  // REMOTE_RDS is a database, and this tab is labelled "Databases" — so it
+  // belongs in the same list. It needs its own query because useInstances
+  // filters on a single type; without it these rows would be missing here
+  // while appearing everywhere else, which is the exact class of silent gap
+  // the type was widened to close.
+  const remoteRdsQ = useInstances({ type: "REMOTE_RDS" })
   const [selected, setSelected] = useState<Instance | null>(null)
 
-  const instances = (tab === "VPS" ? vpsQ.data : rdsQ.data) ?? []
-  const query = tab === "VPS" ? vpsQ : rdsQ
+  const instances =
+    tab === "VPS"
+      ? (vpsQ.data ?? [])
+      : [...(rdsQ.data ?? []), ...(remoteRdsQ.data ?? [])]
 
-  const isLoading = tab === "VPS" ? vpsQ.isLoading : rdsQ.isLoading
-  const isError = tab === "VPS" ? vpsQ.isError : rdsQ.isError
-  const refetch = tab === "VPS" ? () => vpsQ.refetch() : () => rdsQ.refetch()
+  // Both database queries feed the Databases tab, so its loading and error
+  // states have to account for each. Reading only rdsQ would let a failed
+  // remote-RDS query render an empty list with no error anywhere.
+  const isLoading =
+    tab === "VPS" ? vpsQ.isLoading : rdsQ.isLoading || remoteRdsQ.isLoading
+  const isError = tab === "VPS" ? vpsQ.isError : rdsQ.isError || remoteRdsQ.isError
+  const query = tab === "VPS" ? vpsQ : rdsQ
+  const refetch = () => {
+    if (tab === "VPS") {
+      void vpsQ.refetch()
+      return
+    }
+    void rdsQ.refetch()
+    void remoteRdsQ.refetch()
+  }
 
   if (isLoading) return <LoadingPage label="Loading instances…" />
   if (isError) {
@@ -149,9 +169,16 @@ function AuditDrawer({
   onClose: () => void
 }) {
   const [refreshNonce, setRefreshNonce] = useState(0)
+  const navigate = useNavigate()
   const isVps = instance?.type === "VPS"
+  // A REMOTE_RDS is listed under Databases but has no audit to show: the
+  // backend holds no shell on that host, so there is no VPS audit and no RDS
+  // audit to request. Left to the queries below it would sit permanently idle
+  // and render "Loading audit…" forever — which reads as "we're working on
+  // it" rather than "there is nothing here", so it gets its own branch.
+  const isRemoteRds = instance?.type === "REMOTE_RDS"
   const vpsAudit = useSecurityAudit(isVps ? instance?.id : undefined, refreshNonce > 0)
-  const rdsAudit = useRdsSecurityAudit(!isVps && instance?.type === "RDS" ? instance?.id : undefined, refreshNonce > 0)
+  const rdsAudit = useRdsSecurityAudit(!isVps && !isRemoteRds && instance?.type === "RDS" ? instance?.id : undefined, refreshNonce > 0)
 
   const auditQ = isVps ? vpsAudit : rdsAudit
   const audit = auditQ.data
@@ -174,6 +201,24 @@ function AuditDrawer({
     >
       {instance ? (
         <div className="space-y-5">
+          {isRemoteRds ? (
+            <EmptyState
+              icon={ShieldCheck}
+              tone="info"
+              title="No audit for this database"
+              description="We don't hold a shell on a remote database host, so there's nothing for us to inspect. Run your provider's own security review for it — we do expose a connection test and a schema browser on the instance itself."
+              action={{
+                label: "Open instance settings",
+                onClick: () => {
+                  onClose()
+                  navigate(`/admin/instances/${instance.id}/edit`)
+                },
+                variant: "outline",
+              }}
+            />
+          ) : null}
+          {!isRemoteRds ? (
+            <>
           <div className="flex items-center justify-between">
             <p className="text-sm text-fg-muted">
               {audit?.run_at
@@ -231,6 +276,8 @@ function AuditDrawer({
                   {auditJson}
                 </pre>
               </div>
+            </>
+          ) : null}
             </>
           ) : null}
         </div>

@@ -17,6 +17,7 @@ import type { Instance, InstanceMetricsLatest, InstanceType } from "../../api/ty
 const typeIcon: Record<InstanceType, LucideIcon> = {
   VPS: Server,
   RDS: Database,
+  REMOTE_RDS: Database,
   REDIS: Zap,
   STORAGE: Folder,
 }
@@ -24,6 +25,7 @@ const typeIcon: Record<InstanceType, LucideIcon> = {
 const typeLabel: Record<InstanceType, string> = {
   VPS: "Server",
   RDS: "Database",
+  REMOTE_RDS: "Remote database",
   REDIS: "Cache",
   STORAGE: "Storage",
 }
@@ -31,6 +33,12 @@ const typeLabel: Record<InstanceType, string> = {
 const typeAccent: Record<InstanceType, string> = {
   VPS: "bg-primary-soft text-primary",
   RDS: "bg-info-soft text-info-fg",
+  // accent-soft rather than RDS's info-soft so the two database types stay
+  // tellable apart on a card: they share a filter chip and an icon, and a
+  // different tint is the only thing separating them. It collides with REDIS's
+  // accent instead, which is the cheaper collision — that one still has a
+  // different icon and is not in the same bucket.
+  REMOTE_RDS: "bg-accent-soft text-accent-soft-fg",
   REDIS: "bg-accent-soft text-accent-soft-fg",
   STORAGE: "bg-warning-soft text-warning-fg",
 }
