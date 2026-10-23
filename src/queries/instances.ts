@@ -85,9 +85,17 @@ export function useCreateRemoteService() {
       type: Exclude<InstanceType, "VPS">
       body: CreateRemoteServiceInput
     }) => {
-      if (type === "REDIS") return instancesApi.createRemoteRedis(body)
-      if (type === "RDS") return instancesApi.createRemoteRds(body)
-      return instancesApi.createRemoteStorage(body)
+      // `type` belongs in the POST /instances body — it is how the backend
+      // decides what to create — but it was only ever passed as this hook's
+      // dispatch variable, so every remote service was created without it and
+      // rejected: "type failed the required check". All three helpers below are
+      // the identical apiPost("/instances", body), which is why nothing local
+      // flagged the gap. Injecting it here rather than asking the caller makes
+      // the dispatch value and the wire payload the same thing by construction.
+      const payload = { ...body, type }
+      if (type === "REDIS") return instancesApi.createRemoteRedis(payload)
+      if (type === "RDS") return instancesApi.createRemoteRds(payload)
+      return instancesApi.createRemoteStorage(payload)
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["instances"] })
