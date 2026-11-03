@@ -110,6 +110,30 @@ export const qk = {
   instanceSwapPath: (id: string) => ["instances", id, "swapPath"] as const,
   instanceServices: (id: string) => ["instances", id, "services"] as const,
 
+  // ── VPS files & git ──────────────────────────────────────────────────────
+  instanceAppDirectory: (id: string) =>
+    ["instances", id, "app-directory"] as const,
+  /**
+   * The parent of every file read for one instance.
+   *
+   * A write invalidates this root so the listing, the open file and the .env
+   * all refresh at once — they are all views of the same host.
+   */
+  instanceFilesRoot: (id: string) => ["instances", id, "files"] as const,
+  /**
+   * The path IS part of the key, not decoration: two directories in the
+   * browser are two different responses, and without it the second renders
+   * the first one's entries out of the cache.
+   */
+  instanceFiles: (id: string, path: string) =>
+    [...qk.instanceFilesRoot(id), "list", path] as const,
+  instanceFileContent: (id: string, path: string) =>
+    [...qk.instanceFilesRoot(id), "content", path] as const,
+  instanceEnv: (id: string) => ["instances", id, "files", "env"] as const,
+  instanceGitRoot: (id: string) => ["instances", id, "git"] as const,
+  instanceGitStatus: (id: string) =>
+    [...qk.instanceGitRoot(id), "status"] as const,
+
   // ── Deployments ─────────────────────────────────────────────────────────
   deployments: () => ["deployments"] as const,
   deployment: (id: string) => ["deployments", id] as const,

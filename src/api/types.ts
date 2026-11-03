@@ -38,6 +38,9 @@ export type ActionType =
   | "SWAP_CREATE"
   | "SERVICE_CONTROL"
   | "DEPLOYMENT"
+  | "FILE_EDIT"
+  | "GIT_PULL"
+  | "GIT_PUSH"
   | string
 export type ActionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
 export type SecurityFindingStatus = "ok" | "warning" | "action_required"
@@ -568,6 +571,13 @@ export interface Action {
   completed_at: string | null
   error_message: string | null
   metadata: Record<string, unknown>
+  /**
+   * Real COLUMNS, not metadata — only FILE_EDIT fills them. The activity feed
+   * renders "edited .env" from the row itself rather than parsing the
+   * metadata blob.
+   */
+  file_path?: string | null
+  file_size?: number | null
   created_at: string
   updated_at: string
 }
@@ -1027,4 +1037,112 @@ export interface PlatformHealth {
     redis: string
   }
   uptime_seconds: number
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// VPS files, app directory & git
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Where the application lives on the instance.
+ *
+ * `source` is "config" when the instance configures the directory and
+ * "default" when the platform's fallback applies. A default directory on a
+ * production host usually means the operator never pointed the dashboard at
+ * the right place.
+ */
+export type AppDirectorySource = "config" | "default"
+
+export interface AppDirectory {
+  path: string
+  source: AppDirectorySource
+  /** Non-empty when the configured path was REJECTED and the default was used. */
+  warnings: string[]
+}
+
+/**
+ * The three kinds of thing a directory can hold.
+ *
+ * The backend maps the shell's `stat` vocabulary ("regular file", "directory",
+ * "symbolic link") onto these, because a frontend should not have to know
+ * what `stat` calls a regular file.
+ */
+export type FileType = "file" | "directory" | "symlink"
+
+export interface FileEntry {
+  name: string
+  type: FileType
+  /**
+   * On a DIRECTORY this is the directory inode's own size — 4096 on ext4 —
+   * NOT the size of its contents. Only render it for "file" and "symlink".
+   */
+  size_bytes: number
+  /** RFC 3339. */
+  modified_at: string
+  /** Permission bits in octal, as a string ("600", "755", "644"). */
+  mode: string
+}
+
+export interface DirListing {
+  path: string
+  /** The directory to go "up" to. "/" at the root. */
+  parent: string
+  /** Never null — the backend sends an empty array instead. */
+  entries: FileEntry[]
+}
+
+export interface FileContent {
+  path: string
+  /**
+   * Empty when `binary` is true. A binary file is never served as text, so
+   * that a GET → PUT round trip is exact — Go's JSON encoder would otherwise
+   * replace invalid UTF-8 with U+FFFD and silently change the file.
+   */
+  content: string
+  size_bytes: number
+  modified_at: string
+  mode: string
+  binary: boolean
+}
+
+export interface FileWriteResult {
+  /** Inside `data`, not beside it. Null when the write wrote no ledger row. */
+  action_id?: string | null
+  path: string
+  size_bytes: number
+  modified_at: string
+  mode: string
+  warnings: string[]
+}
+
+export interface GitStatus {
+  repo_path: string
+  branch: string
+  sha: string
+  /** `git status --porcelain` output, one entry per changed file. */
+  dirty: string[]
+  warnings: string[]
+}
+
+export interface GitPullResult {
+  action_id?: string | null
+  branch: string
+  sha_before: string
+  sha_after: string
+  output: string
+  warnings: string[]
+}
+
+export interface GitPushResult {
+  /** Null on a "nothing to push" answer — no ledger row was written. */
+  action_id?: string | null
+  branch: string
+  pushed: boolean
+  /** Present only when `pushed` is false. */
+  reason?: string
+  sha_before: string
+  sha_after: string
+  files: string[]
+  output: string
+  warnings: string[]
 }

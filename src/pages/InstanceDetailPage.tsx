@@ -26,7 +26,11 @@ import {
   XCircle,
   Zap,
 } from "lucide-react"
-import { useInstance, useTestDbConnection } from "../queries/instances"
+import {
+  useAppDirectory,
+  useInstance,
+  useTestDbConnection,
+} from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
 import { useBackups } from "../queries/backups"
 import { useSecurityCheck } from "../queries/security"
@@ -912,6 +916,7 @@ function SettingsTab({
 }) {
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const appDirectoryQ = useAppDirectory(instance.id)
   const configRecord = instance.config as Record<string, unknown>
   const remoteDb = readRemoteDbConfig(instance.config)
   const sizeBytes =
@@ -989,6 +994,33 @@ function SettingsTab({
               onClick={() => navigate(`/instances/${instance.id}/nginx-logs`)}
             >
               Open log viewer
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Environment file</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Read and edit the app's{" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">.env</code>{" "}
+                at{" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                  {appDirectoryQ.data ? `${appDirectoryQ.data.path}/.env` : "…"}
+                </code>
+                .
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={Folder}
+              onClick={() => navigate(`/instances/${instance.id}/files?env=1`)}
+            >
+              Open .env
             </Button>
           </CardHeader>
         </Card>

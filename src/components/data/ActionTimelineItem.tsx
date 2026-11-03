@@ -1,4 +1,4 @@
-import { Archive, Rocket, ShieldCheck, RefreshCw, History, Power } from "lucide-react"
+import { Archive, Rocket, ShieldCheck, RefreshCw, History, Power, FileText, Download, Upload } from "lucide-react"
 import { type LucideIcon } from "lucide-react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
@@ -14,6 +14,9 @@ const typeIcon: Record<string, LucideIcon> = {
   RESTORE: Archive,
   DEPLOY_APP: Rocket,
   APP_CONTROL: Power,
+  FILE_EDIT: FileText,
+  GIT_PULL: Download,
+  GIT_PUSH: Upload,
 }
 
 const typeLabel: Record<string, string> = {
@@ -23,6 +26,9 @@ const typeLabel: Record<string, string> = {
   RESTORE: "Restore",
   DEPLOY_APP: "App deploy",
   APP_CONTROL: "App control",
+  FILE_EDIT: "File edit",
+  GIT_PULL: "Git pull",
+  GIT_PUSH: "Git push",
 }
 
 const typeAccent: Record<string, string> = {
@@ -33,6 +39,9 @@ const typeAccent: Record<string, string> = {
   DEPLOY_APP: "bg-accent-soft text-accent-soft-fg",
   // Operators flip service state — warn before glance, success on tap.
   APP_CONTROL: "bg-warning-soft text-warning-fg",
+  FILE_EDIT: "bg-info-soft text-info-fg",
+  GIT_PULL: "bg-primary-soft text-primary",
+  GIT_PUSH: "bg-accent-soft text-accent-soft-fg",
 }
 
 export interface ActionTimelineItemProps {
@@ -87,6 +96,12 @@ export function ActionTimelineItem({
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-fg-muted">
           <span>{formatRelative(action.started_at)}</span>
+          {action.file_path ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className="break-all font-mono">{action.file_path}</span>
+            </>
+          ) : null}
           {duration != null ? (
             <>
               <span aria-hidden>·</span>

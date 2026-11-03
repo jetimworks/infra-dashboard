@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { instancesApi } from "../api/instances"
+import { filesApi } from "../api/files"
 import { normalizeError } from "../api/errors"
 import { qk } from "../lib/query-keys"
 import type {
@@ -374,5 +375,225 @@ export function useNginxLogContent(
       instancesApi.getNginxLog(id as string, filename as string, lines),
     enabled: Boolean(id && filename && !filename.endsWith(".gz")),
     staleTime: 0,
+  })
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// VPS files, app directory & git
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * The one application directory on the instance: what the release pipeline
+ * deploys from, what the file browser opens at, and what the git endpoints
+ * act on.
+ *
+ * It is read from the API, never from the frontend. `source` says whether it
+ * came from the instance's config or from the platform default, and
+ * `warnings` is non-empty when the configured path was rejected.
+ */
+export function useAppDirectory(id: string | undefined) {
+  return useQuery({
+    queryKey: id
+      ? qk.instanceAppDirectory(id)
+      : ["instances", id, "app-directory", "noop"],
+    queryFn: () => filesApi.appDirectory(id as string),
+    enabled: Boolean(id),
+    staleTime: 30_000,
+  })
+}
+
+/**
+ * Changes the application directory.
+ *
+ * This MERGES into the stored config. `PUT /instances/{id}` must never be used
+ * for this — it replaces the whole config blob and wipes the instance's
+ * db_name, db_user, db_password and deploy_script_path.
+ */
+export function useSetAppDirectory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, path }: { id: string; path: string }) =>
+      filesApi.setAppDirectory(id, path),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceAppDirectory(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      toast.success("App directory updated")
+    },
+    // No error toast: the backend's rejection message ("the directory /root/app
+    // does not exist on the instance") is the diagnosis, and the page renders
+    // it verbatim.
+  })
+}
+
+/**
+ * Lists a directory on the host.
+ *
+ * `path` undefined means "list the app directory" — the browser's default
+ * open. The response echoes the NORMALISED path, so the page drives its
+ * breadcrumb from the response, not from what it asked for.
+ */
+export function useDirectoryListing(
+  id: string | undefined,
+  path: string | undefined
+) {
+  return useQuery({
+    queryKey: id
+      ? qk.instanceFiles(id, path ?? "")
+      : ["instances", id, "files", "list", "noop"],
+    queryFn: () => filesApi.list(id as string, path),
+    enabled: Boolean(id),
+    staleTime: 15_000,
+  })
+}
+
+/**
+ * Reads one file.
+ *
+ * `retry: false` — a 404 on a path is a diagnosis, not a blip worth retrying.
+ */
+export function useFileContent(
+  id: string | undefined,
+  path: string | undefined
+) {
+  return useQuery({
+    queryKey:
+      id && path
+        ? qk.instanceFileContent(id, path)
+        : ["instances", id, "files", "content", "noop"],
+    queryFn: () => filesApi.content(id as string, path as string),
+    enabled: Boolean(id && path),
+    retry: false,
+    staleTime: 0,
+  })
+}
+
+/**
+ * Writes one file.
+ *
+ * The write is atomic server-side and preserves mode and owner. A failed
+ * write still leaves a FAILED row in the ledger, so the activity feed shows
+ * the attempt either way.
+ */
+export function useWriteFile() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      path,
+      content,
+    }: {
+      id: string
+      path: string
+      content: string
+    }) => filesApi.write(id, path, content),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      qc.invalidateQueries({
+        queryKey: qk.instanceFileContent(vars.id, vars.path),
+      })
+      qc.invalidateQueries({ queryKey: qk.instanceActionsRoot(vars.id) })
+      toast.success(`Saved ${vars.path}`)
+    },
+    // No error toast: the page renders the backend's message verbatim, next
+    // to the file. A 500 here can also mean "the file was written but the
+    // audit row could not be recorded" — paraphrasing that would send the
+    // operator back to fix something that is already fixed.
+  })
+}
+
+/**
+ * The app's .env, through the dedicated endpoint — the frontend never has to
+ * build the path itself.
+ *
+ * A 404 means "there is no .env yet", not a dead end: the page offers to
+ * create it.
+ */
+export function useInstanceEnv(id: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: id ? qk.instanceEnv(id) : ["instances", id, "files", "env", "noop"],
+    queryFn: () => filesApi.env(id as string),
+    enabled: Boolean(id) && enabled,
+    retry: false,
+    staleTime: 0,
+  })
+}
+
+/** Writes the app's .env. Creates it with mode 600 when it is missing. */
+export function useWriteEnv() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      filesApi.writeEnv(id, content),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceEnv(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceActionsRoot(vars.id) })
+      toast.success("Saved .env")
+    },
+    // No error toast — the page renders the backend's message verbatim.
+  })
+}
+
+/** The working tree's state: branch, HEAD, and what is changed. */
+export function useGitStatus(id: string | undefined) {
+  return useQuery({
+    queryKey: id
+      ? qk.instanceGitStatus(id)
+      : ["instances", id, "git", "status", "noop"],
+    queryFn: () => filesApi.gitStatus(id as string),
+    enabled: Boolean(id),
+    staleTime: 15_000,
+  })
+}
+
+/**
+ * Pulls the configured branch.
+ *
+ * The pull is `--ff-only`, so a diverged branch fails with git's own message
+ * and nothing is retried.
+ */
+export function useGitPull() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, branch }: { id: string; branch?: string }) =>
+      filesApi.gitPull(id, branch),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceGitRoot(vars.id) })
+      // A pull changes the working tree on disk, so the open file and the
+      // listing are both stale after it.
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceActionsRoot(vars.id) })
+      toast.success("Pulled")
+    },
+    // No error toast: git's own message — "Not possible to fast-forward,
+    // aborting." — is the diagnosis, and the page renders it verbatim.
+  })
+}
+
+/**
+ * Commits and pushes the working tree.
+ *
+ * The backend stages EVERY untracked, non-ignored file, so the page shows the
+ * operator what is about to be committed BEFORE this runs. A push with nothing
+ * to push is a 200 with `pushed: false` — the page renders that as
+ * information, so there is no error toast here.
+ */
+export function useGitPush() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      branch,
+      message,
+    }: {
+      id: string
+      branch?: string
+      message: string
+    }) => filesApi.gitPush(id, { branch, message }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: qk.instanceGitRoot(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      qc.invalidateQueries({ queryKey: qk.instanceActionsRoot(vars.id) })
+    },
   })
 }
