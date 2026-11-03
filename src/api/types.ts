@@ -1061,13 +1061,16 @@ export interface AppDirectory {
 }
 
 /**
- * The three kinds of thing a directory can hold.
+ * The four kinds of thing a directory can hold.
  *
  * The backend maps the shell's `stat` vocabulary ("regular file", "directory",
  * "symbolic link") onto these, because a frontend should not have to know
- * what `stat` calls a regular file.
+ * what `stat` calls a regular file. "other" is everything else — a character
+ * device, a block device, a FIFO, a socket. It is neither openable nor
+ * writable, so it is rendered as a name and a size and never offered for
+ * editing.
  */
-export type FileType = "file" | "directory" | "symlink"
+export type FileType = "file" | "directory" | "symlink" | "other"
 
 export interface FileEntry {
   name: string

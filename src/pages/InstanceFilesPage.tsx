@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom"
 import {
   ChevronRight,
   ChevronUp,
+  Circle,
   Download,
   FileText,
   Folder,
@@ -583,6 +584,9 @@ function DirectoryPanel({
                   onOpenDirectory(joinPath(listing?.path ?? "/", entry.name))
                   return
                 }
+                // A device, a FIFO or a socket is not a file. It is rendered
+                // as a name and a size and never opened.
+                if (entry.type === "other") return
                 onOpenFile(entry)
               }}
             />
@@ -646,24 +650,37 @@ function DirectoryEntry({
   onOpen: () => void
 }) {
   const isDirectory = entry.type === "directory"
+  // "other" is everything the backend could not map onto a file, a directory
+  // or a symlink — a character device, a block device, a FIFO, a socket. It
+  // has a name and a size, and it is neither openable nor writable: the
+  // backend answers 409 for it on both the read and the write path.
+  const isOther = entry.type === "other"
   // The listing already knows the size, so a file over the cap is never
   // opened — the backend would answer 413 anyway.
-  const tooLarge = !isDirectory && entry.size_bytes > MAX_EDITABLE_BYTES
-  const Icon = isDirectory ? Folder : entry.type === "symlink" ? Link2 : FileText
+  const tooLarge =
+    !isDirectory && !isOther && entry.size_bytes > MAX_EDITABLE_BYTES
+  const Icon = isDirectory
+    ? Folder
+    : entry.type === "symlink"
+      ? Link2
+      : isOther
+        ? Circle
+        : FileText
+  const locked = tooLarge || isOther
 
   return (
     <li>
       <button
         type="button"
         onClick={onOpen}
-        disabled={tooLarge}
+        disabled={locked}
         aria-pressed={active}
         className={cn(
           "flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm transition-colors duration-150",
           active
             ? "bg-primary-soft text-primary"
             : "text-fg hover:bg-surface-sunken",
-          tooLarge && "cursor-not-allowed opacity-60 hover:bg-transparent"
+          locked && "cursor-not-allowed opacity-60 hover:bg-transparent"
         )}
       >
         <span className="flex min-w-0 items-center gap-2">
@@ -692,6 +709,11 @@ function DirectoryEntry({
               {isDirectory ? "—" : formatBytes(entry.size_bytes)}
             </span>
           )}
+          {isOther ? (
+            <span className="rounded bg-surface-sunken px-1.5 py-0.5 text-[10px] uppercase tracking-wider">
+              Not a file
+            </span>
+          ) : null}
           <span aria-hidden>·</span>
           <span className="font-mono">{entry.mode}</span>
         </span>
@@ -895,6 +917,91 @@ function modeWarning(mode: string, path: string): boolean {
   return (parsed & 0o077) !== 0
 }
 
+/**
+ * The status codes git's porcelain notation uses.
+ *
+ * `git status --porcelain -z` writes a two-character status: the first
+ * column is the index state, the second is the worktree state. The backend
+ * trims the LEADING whitespace, so a staged change reads "M  path" (two
+ * spaces) and an unstaged deletion reads "D path" with the leading space
+ * already gone.
+ */
+const GIT_STATUS_CODES = new Set([
+  "M",
+  "A",
+  "D",
+  "R",
+  "C",
+  "U",
+  "T",
+  "MM",
+  "AM",
+  "DM",
+  "RM",
+  "CM",
+  "??",
+  "!!",
+])
+
+/**
+ * Splits one entry of `dirty` into its status and its path.
+ *
+ * The path is separated by a RUN of whitespace, not by a single space.
+ *
+ * A RENAME writes TWO entries: "R  src/new.go" and then the orphaned old
+ * path with no status prefix at all. That second entry is indistinguishable
+ * from a path that simply carries no status, so it comes back with an empty
+ * status — and the array length is NOT the number of changed files.
+ */
+function parseGitStatusLine(line: string): { status: string; path: string } {
+  const trimmed = line.trimStart()
+  const match = /^(\S+)\s+(.+)$/.exec(trimmed)
+  if (!match || !GIT_STATUS_CODES.has(match[1])) {
+    return { status: "", path: trimmed }
+  }
+  return { status: match[1], path: match[2] }
+}
+
+/**
+ * The changed-file list, one entry per line.
+ *
+ * The status is git's own two-character notation and the path is separated
+ * from it by a run of whitespace. An entry with no status is the orphaned
+ * old path of a rename — it is still shown, because it is still on the host.
+ */
+function GitChangeList({
+  changes,
+  className,
+}: {
+  changes: { status: string; path: string }[]
+  className?: string
+}) {
+  return (
+    <ul
+      className={cn(
+        "overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.8125rem] text-fg",
+        className
+      )}
+    >
+      {changes.map((change, index) => (
+        <li
+          key={`${change.path}-${index}`}
+          className="flex gap-2 whitespace-pre-wrap break-all"
+        >
+          {change.status ? (
+            <span className="shrink-0 text-fg-muted">{change.status}</span>
+          ) : (
+            <span className="shrink-0 text-fg-subtle" aria-hidden>
+              ·
+            </span>
+          )}
+          <span className="min-w-0">{change.path}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function GitPanel({
   status,
   loading,
@@ -914,6 +1021,11 @@ function GitPanel({
   const [message, setMessage] = useState("")
 
   const dirty = status?.dirty ?? []
+  // A rename contributes two entries and only one of them carries a status,
+  // so the count of changed files is the count of status-bearing entries —
+  // not the length of the array.
+  const changes = dirty.map(parseGitStatusLine)
+  const changeCount = changes.filter((change) => change.status !== "").length
   const canPush = message.trim().length > 0
 
   const closePushForm = () => {
@@ -937,7 +1049,11 @@ function GitPanel({
               <StatusPill
                 status="neutral"
                 size="sm"
-                label={status.branch}
+                // "HEAD" is git's name for a DETACHED HEAD, not a branch
+                // called HEAD. The backend checks the deploy branch out
+                // before it does anything, so the frontend only has to say
+                // what it is looking at.
+                label={status.branch === "HEAD" ? "detached HEAD" : status.branch}
               />
               <StatusPill
                 status="neutral"
@@ -950,7 +1066,11 @@ function GitPanel({
             variant="outline"
             size="sm"
             leftIcon={Download}
-            onClick={() => pull.mutate({ id: instanceId })}
+            onClick={() =>
+              // No branch is sent either — the backend checks the instance's
+              // configured deploy branch out before it pulls.
+              pull.mutate({ id: instanceId })
+            }
             isLoading={pull.isPending}
             disabled={!status}
           >
@@ -993,15 +1113,9 @@ function GitPanel({
           ) : (
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">
-                {dirty.length} {dirty.length === 1 ? "change" : "changes"}
+                {changeCount} {changeCount === 1 ? "change" : "changes"}
               </p>
-              <ul className="max-h-48 overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.8125rem] text-fg">
-                {dirty.map((line) => (
-                  <li key={line} className="whitespace-pre-wrap break-all">
-                    {line}
-                  </li>
-                ))}
-              </ul>
+              <GitChangeList changes={changes} className="max-h-48" />
               <p className="mt-2 text-xs text-fg-subtle">
                 A push stages every untracked, non-ignored file — so this list is
                 exactly what gets committed.
@@ -1012,14 +1126,11 @@ function GitPanel({
           {showPushForm ? (
             <div className="space-y-3 rounded-md border border-border/40 bg-surface-sunken p-4">
               <p className="text-sm font-medium text-fg">Commit message</p>
-              {dirty.length > 0 ? (
-                <ul className="max-h-32 overflow-auto rounded bg-surface p-2 font-mono text-[0.75rem] text-fg-muted">
-                  {dirty.map((line) => (
-                    <li key={line} className="whitespace-pre-wrap break-all">
-                      {line}
-                    </li>
-                  ))}
-                </ul>
+              {changes.length > 0 ? (
+                <GitChangeList
+                  changes={changes}
+                  className="max-h-32 rounded bg-surface text-[0.75rem] text-fg-muted"
+                />
               ) : null}
               <Textarea
                 value={message}
@@ -1044,6 +1155,10 @@ function GitPanel({
                   leftIcon={Upload}
                   onClick={() =>
                     push.mutate(
+                      // No branch is sent. On a detached repository the
+                      // status reports "HEAD", and `git push origin HEAD` is
+                      // refused — the instance's configured deploy branch is
+                      // what the backend uses instead.
                       { id: instanceId, message },
                       { onSuccess: () => closePushForm() }
                     )
