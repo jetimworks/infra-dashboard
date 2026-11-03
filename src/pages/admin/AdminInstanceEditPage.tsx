@@ -11,6 +11,7 @@ import {
   useDeactivateInstance,
   useDeleteInstance,
 } from "../../queries/instances"
+import { useAdminProjects } from "../../queries/admin"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
 import { Input, Field, PasswordInput } from "../../components/ui/Input"
@@ -43,6 +44,7 @@ import {
 function buildEditSchema(instanceType: InstanceType) {
   return z
     .object({
+      project_id: z.string().min(1, "Project is required"),
       name: z.string().min(1, "Name is required"),
       host: z.string().optional(),
       port: z.string().optional(),
@@ -118,6 +120,7 @@ export function AdminInstanceEditPage() {
   const updatePassword = useUpdateInstancePassword()
   const deactivate = useDeactivateInstance()
   const remove = useDeleteInstance()
+  const projectsQ = useAdminProjects()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   // The password control is deliberately outside the main form: it has its own
@@ -155,6 +158,7 @@ export function AdminInstanceEditPage() {
       // real connection settings rather than guessing at aliases.
       const db = readRemoteDbConfig(instanceQ.data.config)
       reset({
+        project_id: instanceQ.data.project_id,
         name: instanceQ.data.name,
         host: instanceQ.data.host ?? "",
         port: instanceQ.data.port != null ? String(instanceQ.data.port) : "",
@@ -192,6 +196,7 @@ export function AdminInstanceEditPage() {
       await updateInstance.mutateAsync({
         id,
         body: {
+          project_id: data.project_id,
           name: data.name,
           host: data.host || null,
           port: portNum != null && !Number.isNaN(portNum) ? portNum : null,
@@ -333,6 +338,24 @@ export function AdminInstanceEditPage() {
             <CardTitle>Details</CardTitle>
           </CardHeader>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field
+              label="Project"
+              htmlFor="ie-project"
+              required
+              error={errors.project_id?.message}
+            >
+              <select
+                id="ie-project"
+                {...register("project_id")}
+                className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                {(projectsQ.data ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <Field
               label="Name"
               htmlFor="ie-name"

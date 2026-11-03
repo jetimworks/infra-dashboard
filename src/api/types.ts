@@ -212,6 +212,7 @@ export interface CreateInstanceInput {
 }
 
 export interface UpdateInstanceInput {
+  project_id?: string
   name?: string
   host?: string | null
   port?: number | null

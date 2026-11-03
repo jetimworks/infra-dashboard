@@ -44,6 +44,7 @@ const typeLabel: Record<InstanceType, string> = {
 }
 
 const editSchema = z.object({
+  user_id: z.string().min(1, "Owner is required"),
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   total_allocated_ram: z.string().optional(),
@@ -122,6 +123,7 @@ export function AdminProjectDetailPage() {
 
   const openEdit = () => {
     reset({
+      user_id: project.user_id,
       name: project.name,
       description: project.description ?? "",
       total_allocated_ram: project.total_allocated_ram,
@@ -271,6 +273,19 @@ export function AdminProjectDetailPage() {
               {errorMsg}
             </div>
           ) : null}
+          <Field label="Owner" htmlFor="ep-owner" required error={errors.user_id?.message} hint="The user this project belongs to.">
+            <select
+              id="ep-owner"
+              {...register("user_id")}
+              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {(usersQ.data ?? []).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.email}
+                </option>
+              ))}
+            </select>
+          </Field>
           <Field label="Project name" htmlFor="ep-name" required error={errors.name?.message}>
             <Input id="ep-name" {...register("name")} />
           </Field>
