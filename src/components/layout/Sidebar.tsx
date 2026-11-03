@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ClipboardList,
   Cloud,
+  Globe,
   HelpCircle,
   LayoutDashboard,
   LifeBuoy,
@@ -27,6 +28,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/instances", label: "Infrastructure", icon: ShieldCheck },
+  { to: "/deployments", label: "Deployments", icon: Globe },
   { to: "/action-requests", label: "Action Requests", icon: ClipboardList },
   { to: "/activity", label: "Activity", icon: Activity, staffOnly: true },
   { to: "/support", label: "Support", icon: LifeBuoy },

@@ -33,6 +33,11 @@ export type ActionType =
   | "RESTORE"
   | "DEPLOY_APP"
   | "APP_CONTROL"
+  | "RELEASE"
+  | "ROLLBACK"
+  | "SWAP_CREATE"
+  | "SERVICE_CONTROL"
+  | "DEPLOYMENT"
   | string
 export type ActionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
 export type SecurityFindingStatus = "ok" | "warning" | "action_required"
@@ -643,4 +648,383 @@ export interface AdminActionRequest {
   admin_notes: AdminNote[]
   created_at: string
   updated_at: string
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Releases
+//
+// The release pipeline is four stages that run over SSH. The list endpoint
+// returns a summary of each stage; the detail endpoint returns the stage's
+// own output as well.
+//
+// Two shapes carry the same pipeline and they are NOT interchangeable: the
+// summary has `duration_seconds` and no `output`, the detail has `output` and
+// no `duration_seconds`. Never mix the fields up.
+//
+// Several slice fields are `| null` because a nil Go slice marshals as JSON
+// `null`, not `[]`. They are normalised at the render boundary with `?? []`.
+// ──────────────────────────────────────────────────────────────────────────
+
+export type ReleaseStageStatus =
+  | "PENDING"
+  | "RUNNING"
+  | "SUCCESS"
+  | "FAILED"
+  | "SKIPPED"
+
+export type ReleaseStageName =
+  | "fetch"
+  | "checkout"
+  | "deploy"
+  | "restore_branch"
+
+/** One named section of the deploy script's output. */
+export interface ReleaseSubStage {
+  name: string
+  output: string
+}
+
+/** A stage as it appears in the history list — no output. */
+export interface ReleaseStageSummary {
+  name: string
+  status: ReleaseStageStatus
+  exit_code: number
+  started_at?: string
+  completed_at?: string
+}
+
+/** A stage as it appears in the detail view — with the command's output. */
+export interface ReleaseStage {
+  name: string
+  status: ReleaseStageStatus
+  exit_code: number
+  started_at?: string | null
+  completed_at?: string | null
+  /**
+   * The command's stdout. Always present, but often empty — and a SKIPPED
+   * stage carries the reason it was skipped here rather than in an error
+   * field of its own.
+   */
+  output: string
+  sub_stages?: ReleaseSubStage[] | null
+}
+
+export interface ReleaseSummary {
+  id: string
+  action_type: "RELEASE" | "ROLLBACK" | string
+  status: ActionStatus
+  sha: string
+  previous_sha: string
+  resolved_sha: string
+  branch: string
+  result: string
+  reason: string
+  trigger: string
+  started_at: string
+  completed_at?: string | null
+  /** Only on the summary. The detail computes its own from the timestamps. */
+  duration_seconds?: number | null
+  error_message?: string | null
+  stages: ReleaseStageSummary[] | null
+}
+
+export interface ReleaseDetail {
+  id: string
+  action_type: "RELEASE" | "ROLLBACK" | string
+  status: ActionStatus
+  sha: string
+  resolved_sha: string
+  previous_sha: string
+  branch: string
+  repo_path: string
+  script_path: string
+  result: string
+  reason: string
+  trigger: string
+  user_id: string
+  /** Absent on anything that is not a rollback. */
+  rollback_of?: string
+  started_at: string
+  completed_at?: string | null
+  error_message?: string | null
+  stages: ReleaseStage[] | null
+  deploy_output: string
+  /**
+   * The deploy stage's output split into named sections. The top-level field
+   * always carries one entry whose `name` is empty — that is the preamble
+   * before the first marker — so filter empty names before rendering.
+   */
+  sub_stages?: ReleaseSubStage[] | null
+}
+
+/** The 202 from a deploy or a rollback. */
+export interface ReleaseAcceptedResponse {
+  action_id: string
+  status: string
+  sha: string
+  previous_sha: string
+  warnings: string[] | null
+}
+
+/**
+ * The release history.
+ *
+ * This one is a FLAT envelope — `data` is the array and `total`, `limit` and
+ * `offset` are its siblings — not the `{"data": {...}}` shape the single-item
+ * release endpoints use.
+ */
+export interface ReleaseListResponse {
+  data: ReleaseSummary[] | null
+  total: number
+  limit: number
+  offset: number
+}
+
+/**
+ * The release history, normalised.
+ *
+ * The wire shape is a flat envelope whose `data` is the array; the API
+ * module unwraps it into this so no consumer has to reach through `.data`.
+ */
+export interface ReleasePage {
+  items: ReleaseSummary[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface ReleaseCommit {
+  sha: string
+  author: string
+  date: string
+  subject: string
+}
+
+/** One category of change worth a second look before it is deployed. */
+export interface ReleaseRisk {
+  code: string
+  severity: "high" | "medium" | "low" | string
+  message: string
+  paths: string[] | null
+}
+
+export interface ReleaseDiff {
+  from: string
+  to: string
+  resolved_sha: string
+  current_sha: string
+  commit_count: number
+  commits: ReleaseCommit[] | null
+  files_changed: number
+  insertions: number
+  deletions: number
+  dirty: boolean
+  dirty_entries: string[] | null
+  risks: ReleaseRisk[] | null
+  warnings: string[] | null
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// System toolkit (disk, large files, swap, systemd)
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface DiskUsage {
+  filesystem: string
+  total_bytes: number
+  used_bytes: number
+  available_bytes: number
+  used_percent: number
+  mount_point: string
+}
+
+export interface DirUsage {
+  path: string
+  size_bytes: number
+}
+
+export interface DiskReport {
+  path: string
+  filesystems: DiskUsage[] | null
+  directories: DirUsage[] | null
+  warnings: string[] | null
+}
+
+export interface BigFile {
+  path: string
+  size_bytes: number
+  /** RFC 3339. */
+  modified_at: string
+}
+
+export interface BigFilesResponse {
+  path: string
+  min_size_mb: number
+  limit: number
+  files: BigFile[] | null
+}
+
+export interface SwapArea {
+  name: string
+  size_bytes: number
+  used_bytes: number
+  priority: number
+}
+
+export interface FreeMemory {
+  total_bytes: number
+  used_bytes: number
+  available_bytes: number
+  swap_total_bytes: number
+  swap_used_bytes: number
+}
+
+export interface SwapStatus {
+  exists: boolean
+  total_bytes: number
+  used_bytes: number
+  swappiness: number
+  areas: SwapArea[] | null
+  path: string
+  /**
+   * False means the swap file exists but is not in /etc/fstab, so it will be
+   * gone after the next reboot. That is a warning, not a failure.
+   */
+  in_fstab: boolean
+  memory: FreeMemory
+  warnings: string[] | null
+}
+
+export interface SwapCreateResponse {
+  action_id: string
+  status: string
+  path: string
+  size_mb: number
+  total_bytes: number
+  output: string
+  warnings: string[] | null
+}
+
+/** One systemd unit as the host reports it. `unit` is the full name. */
+export interface ServiceUnit {
+  unit: string
+  load_state: string
+  active_state: string
+  sub_state: string
+  description: string
+}
+
+/**
+ * The outcome of a service-control call.
+ *
+ * `status` is the verdict, not the HTTP code: the endpoint answers 200 even
+ * when the command failed, and then `status` is "UNKNOWN". Branch on the
+ * status field, never on the response status.
+ */
+export interface ServiceControlResponse {
+  action_id: string
+  unit: string
+  action: string
+  status: string
+  output: string
+  warnings: string[] | null
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// AI ops console
+// ──────────────────────────────────────────────────────────────────────────
+
+export type AiProposalType =
+  | "deploy_release"
+  | "rollback_release"
+  | "service_control"
+  | "swap_create"
+  | string
+
+export interface AiProposal {
+  id: string
+  type: AiProposalType
+  params: Record<string, unknown>
+  summary: string
+  /** Proposals expire 15 minutes after they are made. */
+  expires_at: string
+}
+
+export interface AiContextBlock {
+  type: string
+  title: string
+  body: string
+}
+
+export interface AiChatResponse {
+  reply: string
+  /**
+   * Writes only. A question the console answered by reading returns an
+   * empty list plus a note explaining what it did instead — that is an
+   * answer, not a failure.
+   */
+  proposed_actions: AiProposal[] | null
+  context: AiContextBlock[] | null
+  notes: string[] | null
+  model_calls: number
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Deployments
+//
+// The request body is camelCase (instanceId, gitRepo) and the response object
+// is snake_case. The acceptance response mixes both: `actionId` is camelCase
+// while the deployment object carries `action_id`.
+// ──────────────────────────────────────────────────────────────────────────
+
+export type DeploymentFramework =
+  | "react"
+  | "vue"
+  | "angular"
+  | "nextjs"
+  | "static"
+
+export interface Deployment {
+  id: string
+  instance_id: string
+  domain: string
+  framework: DeploymentFramework | string
+  git_repo: string
+  branch: string
+  app_path: string
+  port?: number | null
+  status: string
+  action_id?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateDeploymentInput {
+  instanceId: string
+  domain: string
+  gitRepo: string
+  framework: DeploymentFramework
+  branch?: string
+  /** Required for `nextjs` and `static`. */
+  port?: number
+}
+
+export interface DeploymentAcceptedResponse {
+  id: string
+  /** camelCase here, snake_case on the deployment object. */
+  actionId: string
+  status: string
+  message: string
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Platform
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface PlatformHealth {
+  status: "ok" | "degraded" | string
+  checks: {
+    database: string
+    redis: string
+  }
+  uptime_seconds: number
 }

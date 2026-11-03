@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ClipboardList,
   Cloud,
+  Gauge,
   HelpCircle,
   LayoutDashboard,
   Server,
@@ -30,6 +31,7 @@ const navItems: NavItem[] = [
   { to: "/admin/security-audits", label: "Security audits", icon: ShieldCheck },
   { to: "/admin/action-requests", label: "Action Requests", icon: ClipboardList },
   { to: "/admin/activity", label: "Activity", icon: Activity },
+  { to: "/admin/platform", label: "Platform", icon: Gauge },
 ]
 
 export function AdminSidebar({ className }: { className?: string }) {

@@ -14,14 +14,28 @@ import type {
   UpdateInstanceInput,
 } from "../api/types"
 
-export function useInstances(filters?: {
-  projectId?: string
-  type?: InstanceType
-  parentId?: string
-}) {
+/**
+ * The caller's instances.
+ *
+ * `parentId` is accepted so the query key can distinguish the call, but it is
+ * NOT a server-side filter: `GET /instances` reads only `project_id`, `view`
+ * and `type` from the query string, so a `parent_id` parameter is silently
+ * ignored and the whole list comes back. Anything that needs "the children of
+ * this host" has to filter the response on the `parent_id` column the
+ * `Instance` type already exposes.
+ */
+export function useInstances(
+  filters?: {
+    projectId?: string
+    type?: InstanceType
+    parentId?: string
+  },
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: qk.instances(filters),
     queryFn: () => instancesApi.list(filters),
+    enabled: options?.enabled ?? true,
     staleTime: 30_000,
   })
 }

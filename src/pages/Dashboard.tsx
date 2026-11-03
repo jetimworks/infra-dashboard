@@ -12,10 +12,13 @@ import { useAuth } from "../auth/useAuth"
 import { useProject } from "../contexts/ProjectContext"
 import { useInstances } from "../queries/instances"
 import { useActions } from "../queries/actions"
+import { usePlatformHealth } from "../queries/platform"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
+import { PlatformStatusCard } from "../components/platform/PlatformStatusCard"
+import { normalizeError } from "../api/errors"
 import { cn } from "../lib/utils"
 import type { Instance } from "../api/types"
 
@@ -76,6 +79,7 @@ export function DashboardPage() {
   const { selectedProjectId } = useProject()
   const instancesQ = useInstances()
   const actionsQ = useActions({ limit: 5 })
+  const healthQ = usePlatformHealth()
 
   const allInstances = useMemo(() => instancesQ.data ?? [], [instancesQ.data])
   const instances = useMemo(
@@ -178,6 +182,17 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Platform health. A degraded platform is worth knowing about before
+          an operator starts a release, and the probe is public — every user
+          gets the same answer. */}
+      <PlatformStatusCard
+        health={healthQ.data}
+        loading={healthQ.isLoading}
+        refreshing={healthQ.isFetching}
+        error={healthQ.isError ? normalizeError(healthQ.error) : null}
+        onRefresh={() => void healthQ.refetch()}
+      />
 
       {/* Quick stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

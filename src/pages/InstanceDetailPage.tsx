@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import {
   Activity,
+  Award,
+  Bot,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
@@ -9,6 +11,7 @@ import {
   Database,
   Folder,
   GitBranch,
+  HardDrive,
   HardDriveDownload,
   LineChart,
   type LucideIcon,
@@ -29,6 +32,7 @@ import { useBackups } from "../queries/backups"
 import { useSecurityCheck } from "../queries/security"
 import { useInstanceActions } from "../queries/actions"
 import { useActionRequests } from "../queries/action-requests"
+import { useOpsSignals, type OpsSignals } from "../queries/ops"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { Tabs } from "../components/ui/Tabs"
 import { Button } from "../components/ui/Button"
@@ -42,6 +46,9 @@ import { SecurityFindingItem } from "../components/data/SecurityFindingItem"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
+import { OpsScoreCard } from "../components/ops/OpsScoreCard"
+import { InstanceProgressPanel } from "../components/ops/InstanceProgressPanel"
+import { QuestRow } from "../components/ops/QuestRow"
 import { normalizeError } from "../api/errors"
 import { formatBytes, formatRelative, cn } from "../lib/utils"
 import { DEFAULT_SERVICE_NAME, resolveServiceName } from "../lib/service-name"
@@ -62,6 +69,7 @@ import type {
 
 type TabValue =
   | "overview"
+  | "progress"
   | "metrics"
   | "security"
   | "backups"
@@ -238,6 +246,7 @@ export function InstanceDetailPage() {
   const securityQ = useSecurityCheck(id, refreshNonce > 0)
   const actionsQ = useInstanceActions(id, { limit: 50 })
   const actionRequestsQ = useActionRequests({ instanceId: id })
+  const opsSignals = useOpsSignals(id)
 
   if (instanceQ.isLoading) return <LoadingPage label="Loading…" />
   if (instanceQ.isError) {
@@ -265,6 +274,7 @@ export function InstanceDetailPage() {
 
   const tabItems: { value: TabValue; label: string; icon: LucideIcon }[] = [
     { value: "overview", label: "Overview", icon: Activity },
+    { value: "progress", label: "Progress", icon: Award },
     { value: "metrics", label: "Metrics", icon: LineChart },
     { value: "security", label: "Security", icon: ShieldCheck },
     ...(supportsBackups
@@ -365,8 +375,12 @@ export function InstanceDetailPage() {
             metricsLoading={metricsQ.isLoading}
             security={securityQ.data}
             securityLoading={securityQ.isLoading}
+            signals={opsSignals}
             onViewSecurity={() => setTab("security")}
+            onViewProgress={() => setTab("progress")}
           />
+        ) : tab === "progress" ? (
+          <InstanceProgressPanel signals={opsSignals} />
         ) : tab === "metrics" ? (
           <MetricsTab instanceId={id!} />
         ) : tab === "security" ? (
@@ -417,17 +431,48 @@ function OverviewTab({
   metricsLoading,
   security,
   securityLoading,
+  signals,
   onViewSecurity,
+  onViewProgress,
 }: {
   instanceType: InstanceType
   metrics?: Record<string, InstanceMetric>
   metricsLoading: boolean
   security?: import("../api/types").SecurityCheck
   securityLoading: boolean
+  signals: OpsSignals
   onViewSecurity: () => void
+  onViewProgress: () => void
 }) {
+  // The overview shows the first three quests; the Progress tab shows all of
+  // them. A long list here would push everything else off the page.
+  const quests = signals.quests.slice(0, 3)
+
   return (
     <div className="space-y-6">
+      <OpsScoreCard score={signals.score} level={signals.level} />
+
+      {quests.length > 0 ? (
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-fg-muted">
+              Needs a look
+            </h2>
+            <button
+              onClick={onViewProgress}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View all
+            </button>
+          </div>
+          <div className="space-y-2.5">
+            {quests.map((quest) => (
+              <QuestRow key={quest.id} quest={quest} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-fg-muted">
           Live status
@@ -944,6 +989,68 @@ function SettingsTab({
               onClick={() => navigate(`/instances/${instance.id}/nginx-logs`)}
             >
               Open log viewer
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Releases</CardTitle>
+            <p className="mt-1 text-sm text-fg-muted">
+              Deploy a commit, watch the four-stage pipeline run, and roll a
+              release back when it goes wrong.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={Rocket}
+            onClick={() => navigate(`/instances/${instance.id}/releases`)}
+          >
+            Open releases
+          </Button>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Copilot</CardTitle>
+            <p className="mt-1 text-sm text-fg-muted">
+              Ask about this instance in plain language. It reads the host and
+              the release history, and proposes changes for you to confirm.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={Bot}
+            onClick={() => navigate(`/instances/${instance.id}/copilot`)}
+          >
+            Open copilot
+          </Button>
+        </CardHeader>
+      </Card>
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>System toolkit</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Where the disk space went, which files are large, whether the
+                host has swap space, and which systemd units it is running.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={HardDrive}
+              onClick={() => navigate(`/instances/${instance.id}/system`)}
+            >
+              Open system toolkit
             </Button>
           </CardHeader>
         </Card>

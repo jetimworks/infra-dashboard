@@ -26,6 +26,10 @@ import { InstanceDeployPage } from "./pages/InstanceDeployPage"
 import { InstanceAppControlPage } from "./pages/InstanceAppControlPage"
 import { InstanceNginxLogsPage } from "./pages/InstanceNginxLogsPage"
 import { InstanceSchemasPage } from "./pages/InstanceSchemasPage"
+import { InstanceSystemPage } from "./pages/InstanceSystemPage"
+import { InstanceReleasesPage } from "./pages/InstanceReleasesPage"
+import { InstanceCopilotPage } from "./pages/InstanceCopilotPage"
+import { DeploymentsPage } from "./pages/DeploymentsPage"
 import { ActivityPage } from "./pages/ActivityPage"
 import { AccountPage } from "./pages/AccountPage"
 import { SupportPage } from "./pages/SupportPage"
@@ -48,6 +52,7 @@ import { AdminInstanceSystemActionPage } from "./pages/admin/AdminInstanceSystem
 import { AdminSecurityAuditsPage } from "./pages/admin/AdminSecurityAuditsPage"
 import { AdminActionRequestsPage } from "./pages/admin/AdminActionRequestsPage"
 import { AdminActionRequestDetailPage } from "./pages/admin/AdminActionRequestDetailPage"
+import { AdminPlatformPage } from "./pages/admin/AdminPlatformPage"
 
 export default function App() {
   // Always use vibrant mode - remove old color mode preferences
@@ -100,6 +105,7 @@ function AnimatedRoutes() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<PageWrapper><DashboardPage /></PageWrapper>} />
             <Route path="/instances" element={<PageWrapper><InstancesListPage /></PageWrapper>} />
+            <Route path="/deployments" element={<PageWrapper><DeploymentsPage /></PageWrapper>} />
             <Route path="/projects/:id" element={<PageWrapper><ProjectDetailPage /></PageWrapper>} />
             <Route path="/instances/:id" element={<PageWrapper><InstanceDetailPage /></PageWrapper>} />
             <Route
@@ -129,6 +135,18 @@ function AnimatedRoutes() {
             <Route
               path="/instances/:id/schemas"
               element={<PageWrapper><InstanceSchemasPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/system"
+              element={<PageWrapper><InstanceSystemPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/releases"
+              element={<PageWrapper><InstanceReleasesPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/copilot"
+              element={<PageWrapper><InstanceCopilotPage /></PageWrapper>}
             />
             <Route path="/activity" element={<PageWrapper><ActivityPage /></PageWrapper>} />
             <Route path="/account" element={<PageWrapper><AccountPage /></PageWrapper>} />
@@ -181,6 +199,10 @@ function AnimatedRoutes() {
               <Route
                 path="/admin/activity"
                 element={<PageWrapper><AdminActivityPage /></PageWrapper>}
+              />
+              <Route
+                path="/admin/platform"
+                element={<PageWrapper><AdminPlatformPage /></PageWrapper>}
               />
             </Route>
           </Route>
