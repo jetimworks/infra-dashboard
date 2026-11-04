@@ -18,6 +18,7 @@ import { useInstance } from "../queries/instances"
 import { useAiChat, useExecuteAiProposal } from "../queries/aiops"
 import { normalizeError } from "../api/errors"
 import { pageVariants, reducedVariants } from "../lib/motion"
+import { buildMessageWithHistory } from "../lib/copilot-history"
 import type { AiChatResponse, AiProposal } from "../api/types"
 
 /**
@@ -61,7 +62,17 @@ const SUGGESTIONS = [
   "What did we deploy last?",
 ]
 
+/**
+ * The route entry point. The transcript is keyed by instance id, so moving
+ * from one instance's copilot to another starts a fresh thread instead of
+ * carrying the old one (and its history) across.
+ */
 export function InstanceCopilotPage() {
+  const { id } = useParams<{ id: string }>()
+  return <CopilotThread key={id ?? ""} />
+}
+
+function CopilotThread() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
@@ -107,9 +118,11 @@ export function InstanceCopilotPage() {
     if (clearDraft) setDraft("")
 
     try {
+      // The server only sees one message per request, so the earlier turns
+      // travel inside it. `turns` here is the transcript before this question.
       const answer = await chat.mutateAsync({
         instanceId: id,
-        message: trimmed,
+        message: buildMessageWithHistory(turns, trimmed),
       })
       setTurns((prev) =>
         prev.map((turn) =>
@@ -389,7 +402,8 @@ export function InstanceCopilotPage() {
             />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs text-fg-subtle">
-                Enter to send, Shift+Enter for a new line.
+                Enter to send, Shift+Enter for a new line. The thread clears
+                when you refresh the page.
               </span>
               <Button
                 type="submit"
