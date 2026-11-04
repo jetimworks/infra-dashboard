@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import {
   ChevronRight,
@@ -22,6 +22,7 @@ import { StatusPill } from "../components/ui/StatusPill"
 import { LoadingPage, LoadingBlock } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
+import { ConfirmDialog } from "../components/ui/ConfirmDialog"
 import { WarningBlock } from "../components/system/WarningBlock"
 import { ReleaseOutputBlock } from "../components/releases/ReleaseOutputBlock"
 import {
@@ -30,7 +31,9 @@ import {
   useFileContent,
   useGitPull,
   useGitPush,
+  useGitRevert,
   useGitStatus,
+  useGitUnstage,
   useInstance,
   useInstanceEnv,
   useSetAppDirectory,
@@ -40,7 +43,7 @@ import {
 import { normalizeError } from "../api/errors"
 import { cn, formatBytes, formatRelative } from "../lib/utils"
 import { pageVariants, reducedVariants } from "../lib/motion"
-import type { FileEntry, InstanceType } from "../api/types"
+import type { FileEntry, GitStatus, InstanceType } from "../api/types"
 
 /**
  * The host's filesystem and the repository the release pipeline deploys from.
@@ -918,63 +921,80 @@ function modeWarning(mode: string, path: string): boolean {
 }
 
 /**
- * The status codes git's porcelain notation uses.
- *
- * `git status --porcelain -z` writes a two-character status: the first
- * column is the index state, the second is the worktree state. The backend
- * trims the LEADING whitespace, so a staged change reads "M  path" (two
- * spaces) and an unstaged deletion reads "D path" with the leading space
- * already gone.
+ * Git's two-character status codes, as they appear in `git status --porcelain`.
+ * `?` is untracked; `!` is ignored and never listed here.
  */
-const GIT_STATUS_CODES = new Set([
-  "M",
-  "A",
-  "D",
-  "R",
-  "C",
-  "U",
-  "T",
-  "MM",
-  "AM",
-  "DM",
-  "RM",
-  "CM",
-  "??",
-  "!!",
-])
+const GIT_STATUS_CHARS = new Set(["M", "A", "D", "R", "C", "U", "T", "?", "!"])
+
+/** The backend refuses more than this many paths per unstage or revert. */
+const MAX_GIT_PATHS = 200
+
+interface GitChange {
+  /** The entry exactly as the backend sent it; the selection key. */
+  line: string
+  /** The repo-relative path. Everything after the status, never split. */
+  path: string
+  /** Git's XY code, padded so the columns line up. Empty for a bare path. */
+  code: string
+  /** True when the index holds a change to this path. */
+  staged: boolean
+}
 
 /**
- * Splits one entry of `dirty` into its status and its path.
+ * Reads one entry of `dirty`.
  *
- * The path is separated by a RUN of whitespace, not by a single space.
+ * The backend trims the LEADING space of the porcelain line, so an unstaged
+ * change arrives as "M path" (the Y column) and a staged one as "M  path"
+ * (X column, then a space that was already in the path's column). Both are
+ * read by position. A path may contain spaces, so nothing is split on
+ * whitespace.
  *
- * A RENAME writes TWO entries: "R  src/new.go" and then the orphaned old
- * path with no status prefix at all. That second entry is indistinguishable
- * from a path that simply carries no status, so it comes back with an empty
- * status — and the array length is NOT the number of changed files.
+ * A rename's orphaned old name has no status at all. It comes back as a
+ * bare path and is shown as one.
  */
-function parseGitStatusLine(line: string): { status: string; path: string } {
-  const trimmed = line.trimStart()
-  const match = /^(\S+)\s+(.+)$/.exec(trimmed)
-  if (!match || !GIT_STATUS_CODES.has(match[1])) {
-    return { status: "", path: trimmed }
+function parseGitChange(line: string): GitChange {
+  const x = line.charAt(0)
+  const y = line.charAt(1)
+  const z = line.charAt(2)
+
+  if (GIT_STATUS_CHARS.has(x) && y === " " && z !== " ") {
+    // Unstaged: the leading space was trimmed, so the status is the Y column.
+    return { line, path: line.slice(2), code: ` ${x}`, staged: false }
   }
-  return { status: match[1], path: match[2] }
+  if (GIT_STATUS_CHARS.has(x) && y === " " && z === " ") {
+    // Staged only: X is set, Y is a space.
+    return { line, path: line.slice(3), code: `${x} `, staged: true }
+  }
+  if (GIT_STATUS_CHARS.has(x) && GIT_STATUS_CHARS.has(y) && z === " ") {
+    // Both columns set ("MM", "AM"), or untracked ("??", never staged).
+    return {
+      line,
+      path: line.slice(3),
+      code: `${x}${y}`,
+      staged: x !== "?",
+    }
+  }
+  return { line, path: line, code: "", staged: false }
 }
 
 /**
  * The changed-file list, one entry per line.
  *
- * The status is git's own two-character notation and the path is separated
- * from it by a run of whitespace. An entry with no status is the orphaned
- * old path of a rename — it is still shown, because it is still on the host.
+ * With `onToggle` each row gets a checkbox; without it the list is read-only
+ * (the push form shows what is about to be committed this way).
  */
 function GitChangeList({
   changes,
   className,
+  selected,
+  onToggle,
+  selectionFull,
 }: {
-  changes: { status: string; path: string }[]
+  changes: GitChange[]
   className?: string
+  selected?: Set<string>
+  onToggle?: (line: string) => void
+  selectionFull?: boolean
 }) {
   return (
     <ul
@@ -983,21 +1003,42 @@ function GitChangeList({
         className
       )}
     >
-      {changes.map((change, index) => (
-        <li
-          key={`${change.path}-${index}`}
-          className="flex gap-2 whitespace-pre-wrap break-all"
-        >
-          {change.status ? (
-            <span className="shrink-0 text-fg-muted">{change.status}</span>
-          ) : (
-            <span className="shrink-0 text-fg-subtle" aria-hidden>
-              ·
+      {changes.map((change, index) => {
+        const label = (
+          <>
+            <span className="shrink-0 whitespace-pre text-fg-muted">
+              {change.code || "·"}
             </span>
-          )}
-          <span className="min-w-0">{change.path}</span>
-        </li>
-      ))}
+            <span className="min-w-0 whitespace-pre-wrap break-all">
+              {change.path}
+            </span>
+          </>
+        )
+        return (
+          <li
+            key={`${change.line}-${index}`}
+            className="flex items-start gap-2"
+          >
+            {onToggle ? (
+              <label className="flex min-w-0 cursor-pointer items-start gap-2">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-3.5 w-3.5 shrink-0 cursor-pointer"
+                  checked={selected?.has(change.line) ?? false}
+                  disabled={
+                    selectionFull && !(selected?.has(change.line) ?? false)
+                  }
+                  onChange={() => onToggle(change.line)}
+                  aria-label={`Select ${change.path}`}
+                />
+                {label}
+              </label>
+            ) : (
+              label
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -1010,28 +1051,57 @@ function GitPanel({
   pull,
   push,
 }: {
-  status: import("../api/types").GitStatus | undefined
+  status: GitStatus | undefined
   loading: boolean
   error: { message: string } | null
   instanceId: string
   pull: ReturnType<typeof useGitPull>
   push: ReturnType<typeof useGitPush>
 }) {
+  const unstage = useGitUnstage()
+  const revert = useGitRevert()
   const [showPushForm, setShowPushForm] = useState(false)
   const [message, setMessage] = useState("")
+  const [pickedLines, setPickedLines] = useState<Set<string>>(() => new Set())
+  const [confirmRevert, setConfirmRevert] = useState(false)
 
   const dirty = status?.dirty ?? []
-  // A rename contributes two entries and only one of them carries a status,
-  // so the count of changed files is the count of status-bearing entries —
-  // not the length of the array.
-  const changes = dirty.map(parseGitStatusLine)
-  const changeCount = changes.filter((change) => change.status !== "").length
+  const changes = dirty.map(parseGitChange)
   const canPush = message.trim().length > 0
+
+  // Selection survives only while its entry is still in the change list. A
+  // stale pick is dropped at render time rather than by an effect.
+  const dirtyKey = dirty.join("\n")
+  const selected = useMemo(() => {
+    const present = new Set(dirtyKey ? dirtyKey.split("\n") : [])
+    return new Set([...pickedLines].filter((line) => present.has(line)))
+  }, [dirtyKey, pickedLines])
+
+  const selectedChanges = changes.filter((change) => selected.has(change.line))
+  const selectedPaths = selectedChanges.map((change) => change.path)
+  const selectedStagedPaths = selectedChanges
+    .filter((change) => change.staged)
+    .map((change) => change.path)
+  const selectionFull = selected.size >= MAX_GIT_PATHS
+  const actionsBusy = unstage.isPending || revert.isPending
+
+  const toggleLine = (line: string) => {
+    const next = new Set(selected)
+    if (next.has(line)) {
+      next.delete(line)
+    } else if (next.size < MAX_GIT_PATHS) {
+      next.add(line)
+    }
+    setPickedLines(next)
+  }
 
   const closePushForm = () => {
     setShowPushForm(false)
     setMessage("")
   }
+
+  const onBranch = status ? status.head_branch === status.branch : true
+  const detached = status?.head_branch === "HEAD"
 
   return (
     <Card>
@@ -1049,11 +1119,7 @@ function GitPanel({
               <StatusPill
                 status="neutral"
                 size="sm"
-                // "HEAD" is git's name for a DETACHED HEAD, not a branch
-                // called HEAD. The backend checks the deploy branch out
-                // before it does anything, so the frontend only has to say
-                // what it is looking at.
-                label={status.branch === "HEAD" ? "detached HEAD" : status.branch}
+                label={status.branch}
               />
               <StatusPill
                 status="neutral"
@@ -1067,8 +1133,7 @@ function GitPanel({
             size="sm"
             leftIcon={Download}
             onClick={() =>
-              // No branch is sent either — the backend checks the instance's
-              // configured deploy branch out before it pulls.
+              // No branch is sent. The backend pulls the selected branch.
               pull.mutate({ id: instanceId })
             }
             isLoading={pull.isPending}
@@ -1102,6 +1167,21 @@ function GitPanel({
             <code className="font-mono text-fg">{status.repo_path}</code>
           </p>
 
+          {!onBranch ? (
+            <WarningBlock
+              title="The repository is not on the selected branch"
+              warnings={[
+                `The repository is ${
+                  detached ? "on a detached HEAD" : `on ${status.head_branch}`
+                }, not ${status.branch}. Pull and push will check out ${
+                  status.branch
+                }. Unstage and revert will refuse until the repository is back on ${
+                  status.branch
+                }: pull, or check it out on the host.`,
+              ]}
+            />
+          ) : null}
+
           {status.warnings.length > 0 ? (
             <WarningBlock warnings={status.warnings} />
           ) : null}
@@ -1112,16 +1192,106 @@ function GitPanel({
             </p>
           ) : (
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">
-                {changeCount} {changeCount === 1 ? "change" : "changes"}
-              </p>
-              <GitChangeList changes={changes} className="max-h-48" />
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">
+                  {dirty.length} {dirty.length === 1 ? "change" : "changes"}
+                  {selected.size > 0 ? ` · ${selected.size} selected` : ""}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      unstage.mutate({
+                        id: instanceId,
+                        paths: selectedStagedPaths,
+                      })
+                    }
+                    isLoading={unstage.isPending}
+                    disabled={selectedStagedPaths.length === 0 || actionsBusy}
+                  >
+                    Unstage
+                  </Button>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => setConfirmRevert(true)}
+                    disabled={selectedPaths.length === 0 || actionsBusy}
+                  >
+                    Revert
+                  </Button>
+                </div>
+              </div>
+              <GitChangeList
+                changes={changes}
+                className="max-h-64"
+                selected={selected}
+                onToggle={toggleLine}
+                selectionFull={selectionFull}
+              />
               <p className="mt-2 text-xs text-fg-subtle">
-                A push stages every untracked, non-ignored file — so this list is
-                exactly what gets committed.
+                Unstage takes a staged file out of the index and keeps its
+                content. Revert discards uncommitted changes. A push stages every
+                untracked, non-ignored file, so this list is what gets committed.
               </p>
             </div>
           )}
+
+          {unstage.isError ? (
+            <ErrorState
+              title="Couldn't unstage"
+              description={normalizeError(unstage.error).message}
+              className="py-6"
+            />
+          ) : null}
+          {unstage.data?.warnings?.length ? (
+            <WarningBlock warnings={unstage.data.warnings} />
+          ) : null}
+
+          {revert.isError ? (
+            <ErrorState
+              title="Couldn't revert"
+              description={normalizeError(revert.error).message}
+              className="py-6"
+            />
+          ) : null}
+          {revert.data ? (
+            <div className="space-y-3 rounded-md bg-info-soft p-4 text-info-fg ring-1 ring-inset ring-info/20">
+              <p className="text-sm font-semibold">
+                Restored {revert.data.restored.length}{" "}
+                {revert.data.restored.length === 1 ? "file" : "files"} to HEAD
+              </p>
+              {revert.data.restored.length > 0 ? (
+                <ul className="max-h-32 overflow-auto font-mono text-[0.8125rem]">
+                  {revert.data.restored.map((path) => (
+                    <li key={path} className="whitespace-pre-wrap break-all">
+                      {path}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {revert.data.skipped.length > 0 ? (
+                <>
+                  <p className="text-sm">
+                    Skipped {revert.data.skipped.length}: HEAD does not have
+                    these, so nothing was discarded. Nothing has been deleted
+                    either. Remove them on the host or through the file manager
+                    if that is what you want.
+                  </p>
+                  <ul className="max-h-32 overflow-auto font-mono text-[0.8125rem]">
+                    {revert.data.skipped.map((path) => (
+                      <li key={path} className="whitespace-pre-wrap break-all">
+                        {path}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+          {revert.data?.warnings?.length ? (
+            <WarningBlock warnings={revert.data.warnings} />
+          ) : null}
 
           {showPushForm ? (
             <div className="space-y-3 rounded-md border border-border/40 bg-surface-sunken p-4">
@@ -1155,10 +1325,8 @@ function GitPanel({
                   leftIcon={Upload}
                   onClick={() =>
                     push.mutate(
-                      // No branch is sent. On a detached repository the
-                      // status reports "HEAD", and `git push origin HEAD` is
-                      // refused — the instance's configured deploy branch is
-                      // what the backend uses instead.
+                      // No branch is sent. The backend pushes the selected
+                      // branch, after checking it out.
                       { id: instanceId, message },
                       { onSuccess: () => closePushForm() }
                     )
@@ -1240,6 +1408,25 @@ function GitPanel({
           branch has diverged, git says so and nothing is retried for you.
         </span>
       </p>
+
+      <ConfirmDialog
+        open={confirmRevert}
+        onClose={() => setConfirmRevert(false)}
+        title="Revert these files?"
+        description={`This discards every uncommitted change to ${selectedPaths.length} ${
+          selectedPaths.length === 1 ? "file" : "files"
+        } and restores it to HEAD. The discarded changes cannot be recovered. Untracked and newly added files are never deleted; they are reported as skipped.`}
+        confirmLabel="Revert"
+        tone="danger"
+        requireCheckbox
+        isLoading={revert.isPending}
+        onConfirm={() =>
+          revert.mutate(
+            { id: instanceId, paths: selectedPaths },
+            { onSuccess: () => setConfirmRevert(false) }
+          )
+        }
+      />
     </Card>
   )
 }
