@@ -50,11 +50,11 @@ import { SecurityFindingItem } from "../components/data/SecurityFindingItem"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
-import { OpsScoreCard } from "../components/ops/OpsScoreCard"
 import { InstanceProgressPanel } from "../components/ops/InstanceProgressPanel"
 import { QuestRow } from "../components/ops/QuestRow"
 import { normalizeError } from "../api/errors"
 import { formatBytes, formatRelative, cn } from "../lib/utils"
+import { useTabParam } from "../lib/use-tab-param"
 import { DEFAULT_SERVICE_NAME, resolveServiceName } from "../lib/service-name"
 import {
   dbErrorGuidance,
@@ -239,7 +239,19 @@ function formatMetricValue(metricName: string, value: number | null): string | n
 export function InstanceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [tab, setTab] = useState<TabValue>("overview")
+  const [tab, setTab] = useTabParam<TabValue>(
+    [
+      "overview",
+      "progress",
+      "metrics",
+      "security",
+      "backups",
+      "activity",
+      "action-requests",
+      "settings",
+    ],
+    "overview"
+  )
   const [refreshNonce, setRefreshNonce] = useState(0)
   const [createOpen, setCreateOpen] = useState(false)
   const [prefillTitle, setPrefillTitle] = useState("")
@@ -454,8 +466,6 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
-      <OpsScoreCard score={signals.score} level={signals.level} />
-
       {quests.length > 0 ? (
         <section>
           <div className="mb-3 flex items-center justify-between">

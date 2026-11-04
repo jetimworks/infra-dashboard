@@ -25,6 +25,7 @@ import { SegmentedControl } from "../../components/ui/SegmentedControl"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { Drawer } from "../../components/ui/Drawer"
 import { formatDate } from "../../lib/utils"
+import { useTabParam } from "../../lib/use-tab-param"
 import type { Instance } from "../../api/types"
 
 type Tab = "VPS" | "RDS"
@@ -35,7 +36,7 @@ const tabOptions: { value: Tab; label: string; icon: typeof Server }[] = [
 ]
 
 export function AdminSecurityAuditsPage() {
-  const [tab, setTab] = useState<Tab>("VPS")
+  const [tab, setTab] = useTabParam<Tab>(["VPS", "RDS"], "VPS")
   const vpsQ = useInstances({ type: "VPS" })
   const rdsQ = useInstances({ type: "RDS" })
   // REMOTE_RDS is a database, and this tab is labelled "Databases" — so it

@@ -25,6 +25,7 @@ import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
 import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { formatRelative, formatDate } from "../lib/utils"
+import { useTabParam } from "../lib/use-tab-param"
 import { INSTANCE_BUCKETS, instanceMatchesBucket } from "../lib/instance-types"
 import type { Instance } from "../api/types"
 
@@ -39,7 +40,10 @@ const tabItems: { value: TabValue; label: string; icon: LucideIcon }[] = [
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [tab, setTab] = useState<TabValue>("servers")
+  const [tab, setTab] = useTabParam<TabValue>(
+    ["servers", "activity", "action-requests", "settings"],
+    "servers"
+  )
 
   const projectQ = useProject(id)
   const instancesQ = useInstances({ projectId: id })

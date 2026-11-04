@@ -13,6 +13,7 @@ import { Input } from "../components/ui/Input"
 import { Field } from "../components/ui/Input"
 import { Skeleton } from "../components/ui/LoadingState"
 import { formatDate } from "../lib/utils"
+import { useTabParam } from "../lib/use-tab-param"
 import { normalizeError } from "../api/errors"
 import type { LucideIcon } from "lucide-react"
 
@@ -34,7 +35,10 @@ type ProfileForm = z.infer<typeof profileSchema>
 export function AccountPage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [tab, setTab] = useState<TabValue>("profile")
+  const [tab, setTab] = useTabParam<TabValue>(
+    ["profile", "security", "preferences"],
+    "profile"
+  )
   const updateProfile = useUpdateProfile()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
