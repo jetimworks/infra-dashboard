@@ -1,5 +1,7 @@
-import { FolderTree, HardDrive } from "lucide-react"
+import { useState } from "react"
+import { FolderTree, HardDrive, Search } from "lucide-react"
 import { Card, CardHeader, CardTitle } from "../ui/Card"
+import { Input } from "../ui/Input"
 import { EmptyState } from "../ui/EmptyState"
 import { ErrorState } from "../ui/ErrorState"
 import { LoadingBlock } from "../ui/LoadingState"
@@ -40,6 +42,12 @@ export function DiskUsagePanel({
     (largest, dir) => (dir.size_bytes > largest ? dir.size_bytes : largest),
     0
   )
+
+  const [query, setQuery] = useState("")
+  const needle = query.trim().toLowerCase()
+  const visibleDirectories = needle
+    ? directories.filter((dir) => dir.path.toLowerCase().includes(needle))
+    : directories
 
   return (
     <Card>
@@ -115,8 +123,23 @@ export function DiskUsagePanel({
                   Largest directories
                 </h4>
               </div>
+              <div className="mt-3">
+                <Input
+                  type="search"
+                  leftIcon={Search}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search directories by path"
+                  aria-label="Search largest directories"
+                />
+              </div>
+              {needle && visibleDirectories.length === 0 ? (
+                <p className="mt-3 text-sm text-fg-muted">
+                  No directory matches “{query.trim()}”.
+                </p>
+              ) : null}
               <div className="mt-3 space-y-3">
-                {directories.map((directory) => (
+                {visibleDirectories.map((directory) => (
                   <DirectoryRow
                     key={directory.path}
                     path={directory.path}

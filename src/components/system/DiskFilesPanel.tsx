@@ -1,5 +1,7 @@
-import { FileText, FolderOpen, Info } from "lucide-react"
+import { useState } from "react"
+import { FileText, FolderOpen, Info, Search } from "lucide-react"
 import { Card, CardHeader, CardTitle } from "../ui/Card"
+import { Input } from "../ui/Input"
 import { EmptyState } from "../ui/EmptyState"
 import { ErrorState } from "../ui/ErrorState"
 import { LoadingBlock } from "../ui/LoadingState"
@@ -38,6 +40,11 @@ export function DiskFilesPanel({
   const files = response?.files ?? []
   const path = response?.path ?? "/var"
   const threshold = response?.min_size_mb ?? 100
+  const [query, setQuery] = useState("")
+  const needle = query.trim().toLowerCase()
+  const visibleFiles = needle
+    ? files.filter((file) => file.path.toLowerCase().includes(needle))
+    : files
 
   return (
     <Card>
@@ -75,6 +82,22 @@ export function DiskFilesPanel({
             {threshold} MB in {path}.
           </p>
 
+          <div className="mb-3">
+            <Input
+              type="search"
+              leftIcon={Search}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search large files by path"
+              aria-label="Search large files"
+            />
+          </div>
+          {needle && visibleFiles.length === 0 ? (
+            <p className="mb-3 text-sm text-fg-muted">
+              No file matches “{query.trim()}”.
+            </p>
+          ) : null}
+
           <Table className="rounded-none bg-transparent shadow-none">
             <TableHead>
               <TableRow>
@@ -84,7 +107,7 @@ export function DiskFilesPanel({
               </TableRow>
             </TableHead>
             <TableBody>
-              {files.map((file) => (
+              {visibleFiles.map((file) => (
                 <TableRow key={file.path}>
                   <TableCell>
                     <span className="break-all font-mono text-xs">

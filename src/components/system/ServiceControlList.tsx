@@ -6,12 +6,14 @@ import {
   Power,
   RefreshCw,
   RotateCw,
+  Search,
   Settings2,
   Square,
   XCircle,
 } from "lucide-react"
 import { Card, CardHeader, CardTitle } from "../ui/Card"
 import { Button } from "../ui/Button"
+import { Input } from "../ui/Input"
 import { ConfirmDialog } from "../ui/ConfirmDialog"
 import { EmptyState } from "../ui/EmptyState"
 import { ErrorState } from "../ui/ErrorState"
@@ -100,6 +102,16 @@ export function ServiceControlList({
     }
   }
 
+  const [query, setQuery] = useState("")
+  const needle = query.trim().toLowerCase()
+  const visibleUnits = needle
+    ? units.filter(
+        (unit) =>
+          unit.unit.toLowerCase().includes(needle) ||
+          unit.description.toLowerCase().includes(needle)
+      )
+    : units
+
   const busy =
     control.isPending && pending !== null
       ? `${pending.unit}:${pending.action}`
@@ -117,6 +129,24 @@ export function ServiceControlList({
             {units.length} {units.length === 1 ? "unit" : "units"}
           </span>
         </CardHeader>
+
+        {units.length > 0 ? (
+          <div className="px-4 pb-3">
+            <Input
+              type="search"
+              leftIcon={Search}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search services by name or description"
+              aria-label="Search services"
+            />
+            {needle && visibleUnits.length === 0 ? (
+              <p className="mt-3 text-sm text-fg-muted">
+                No service matches “{query.trim()}”.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {error ? (
           <div className="px-4 pb-4">
@@ -138,7 +168,7 @@ export function ServiceControlList({
           />
         ) : (
           <ul className="divide-y divide-border/30 border-t border-border/40">
-            {units.map((unit) => {
+            {visibleUnits.map((unit) => {
               const base = baseUnitName(unit.unit)
               const isCurated = (WRITABLE_SERVICE_UNITS as readonly string[]).includes(
                 base
