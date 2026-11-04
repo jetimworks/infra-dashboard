@@ -58,8 +58,17 @@ export function validateBranch(value: string): string | null {
  * The branch an instance falls back to when it does not pin one: the release
  * deploy branch from the instance config, or the platform default.
  *
- * Mirrors domain.DefaultDeployBranch ("dev") and the config key
- * domain.ConfigKeyDeployBranch ("deploy_branch").
+ * Mirrors the backend's resolution exactly — domain.ResolveReleaseSettings
+ * reads the config key domain.ConfigKeyDeployBranch ("deploy_branch") through
+ * domain.ConfigString, which returns the raw value only when it is a non-empty
+ * string, and then keeps it only when domain.IsValidGitBranch accepts it.
+ * A value the backend rejects is replaced by domain.DefaultDeployBranch
+ * ("dev"), with a warning.
+ *
+ * So the value is NOT trimmed here: the backend does not trim it either, and
+ * " main" is a value it rejects. Naming "main" as the fallback when the
+ * backend is actually using "dev" is exactly the silent divergence this
+ * control exists to prevent.
  */
 export const DEFAULT_DEPLOY_BRANCH = "dev"
 
@@ -67,7 +76,6 @@ export function readDeployBranch(
   config: Record<string, unknown> | undefined
 ): string {
   const value = config?.deploy_branch
-  return typeof value === "string" && value.trim()
-    ? value.trim()
-    : DEFAULT_DEPLOY_BRANCH
+  if (typeof value !== "string" || value === "") return DEFAULT_DEPLOY_BRANCH
+  return isValidBranchName(value) ? value : DEFAULT_DEPLOY_BRANCH
 }
