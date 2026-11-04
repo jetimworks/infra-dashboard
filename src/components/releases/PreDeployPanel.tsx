@@ -135,7 +135,7 @@ export function PreDeployPanel({
                 Uncommitted changes on the server
               </p>
               <p className="mt-1 text-sm text-fg">
-                The deploy will refuse to run until these are cleared.
+                Deploying now may cause a merge conflict until these are cleared.
               </p>
               <ul className="mt-3 space-y-1 font-mono text-xs text-fg">
                 {dirty.map((line) => (
@@ -195,8 +195,8 @@ function VerdictBanner({
       <Banner
         tone="warning"
         Icon={AlertTriangle}
-        title="Blocked by uncommitted changes"
-        body="Clear the changes listed below, then re-check."
+        title="Uncommitted changes on the server"
+        body="You can still deploy, but it may cause a merge conflict. Clear the changes listed below to be safe."
       />
     )
   }

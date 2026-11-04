@@ -253,16 +253,16 @@ export function InstanceDeployPage() {
       : verdict === "upToDate"
         ? "Deploy anyway"
         : "Deploy now"
-  const deployDisabled =
-    deployApp.isPending ||
-    verdict === "blocked" ||
-    (previewQ.isFetching && !report)
+  const deployDisabled = deployApp.isPending || (previewQ.isFetching && !report)
   const confirmDescription = (() => {
     const base =
       "This runs /root/deploy.sh on the server, which typically restarts your app. A few seconds of downtime is normal."
+    const mergeRisk =
+      "The server has uncommitted changes. The deploy may fail or cause a merge conflict until they are cleared. "
     if (verdict === "ready" && report) {
       return `${report.commit_count} commit${report.commit_count === 1 ? "" : "s"} and ${report.files_changed} file${report.files_changed === 1 ? "" : "s"} from ${report.remote_branch} will go live. ${base}`
     }
+    if (verdict === "blocked") return `${mergeRisk}${base}`
     if (verdict === "upToDate") return `The server is already up to date with ${previewBranch}. ${base}`
     if (verdict === "unknown") return `The pre-deploy check did not finish, so the changes are unknown. ${base}`
     return base
@@ -434,7 +434,7 @@ export function InstanceDeployPage() {
               {verdict === "blocked" ? (
                 <p className="flex items-center gap-2 text-sm text-warning-fg">
                   <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden />
-                  Deploy is paused until the uncommitted changes on the server are cleared.
+                  The server has uncommitted changes. Deploying now may cause a merge conflict.
                 </p>
               ) : verdict === "unknown" && !previewQ.isFetching ? (
                 <p className="flex items-center gap-2 text-sm text-warning-fg">
