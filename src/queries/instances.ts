@@ -7,6 +7,7 @@ import { qk } from "../lib/query-keys"
 import type {
   AppControlInput,
   CreateInstanceInput,
+  GitStatus,
   CreateLocalServiceInput,
   CreateRemoteServiceInput,
   InstanceType,
@@ -594,6 +595,58 @@ export function useGitPush() {
       qc.invalidateQueries({ queryKey: qk.instanceGitRoot(vars.id) })
       qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
       qc.invalidateQueries({ queryKey: qk.instanceActionsRoot(vars.id) })
+    },
+  })
+}
+
+/**
+ * Moves paths out of the index. Nothing on the host changes, and no ledger
+ * row is written, so only the status cache is touched — its `dirty` list is
+ * replaced by the one the backend returns.
+ */
+export function useGitUnstage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      paths,
+      branch,
+    }: {
+      id: string
+      paths: string[]
+      branch?: string
+    }) => filesApi.gitUnstage(id, paths, branch),
+    onSuccess: (data, vars) => {
+      qc.setQueryData<GitStatus>(qk.instanceGitStatus(vars.id), (old) =>
+        old ? { ...old, dirty: data.dirty } : old
+      )
+    },
+  })
+}
+
+/**
+ * Discards uncommitted changes to the given paths. The discarded changes
+ * cannot be recovered; the page confirms before it calls this. Untracked and
+ * newly added paths come back in `skipped` and are never deleted.
+ */
+export function useGitRevert() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      paths,
+      branch,
+    }: {
+      id: string
+      paths: string[]
+      branch?: string
+    }) => filesApi.gitRevert(id, paths, branch),
+    onSuccess: (data, vars) => {
+      qc.setQueryData<GitStatus>(qk.instanceGitStatus(vars.id), (old) =>
+        old ? { ...old, dirty: data.dirty } : old
+      )
+      // A revert rewrites files on disk, so the open editor and listing are stale.
+      qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
     },
   })
 }

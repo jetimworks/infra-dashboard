@@ -4,6 +4,7 @@ import type {
   DirListing,
   FileContent,
   FileWriteResult,
+  GitPathsResult,
   GitPullResult,
   GitPushResult,
   GitStatus,
@@ -136,6 +137,38 @@ export const filesApi = {
     const res = await apiPost<{ data: GitPushResult }>(
       `/instances/${instanceId}/git/push`,
       body
+    )
+    return res.data
+  },
+
+  /**
+   * Moves paths out of the index. Working-tree content is kept, so nothing
+   * on the host changes. `branch` is optional; the selected branch is used.
+   */
+  gitUnstage: async (
+    instanceId: string,
+    paths: string[],
+    branch?: string
+  ): Promise<GitPathsResult> => {
+    const res = await apiPost<{ data: GitPathsResult }>(
+      `/instances/${instanceId}/git/unstage`,
+      branch ? { branch, paths } : { paths }
+    )
+    return res.data
+  },
+
+  /**
+   * Discards uncommitted changes to the given paths and restores them to HEAD.
+   * Not recoverable. Untracked and newly added paths come back as `skipped`.
+   */
+  gitRevert: async (
+    instanceId: string,
+    paths: string[],
+    branch?: string
+  ): Promise<GitPathsResult> => {
+    const res = await apiPost<{ data: GitPathsResult }>(
+      `/instances/${instanceId}/git/revert`,
+      branch ? { branch, paths } : { paths }
     )
     return res.data
   },

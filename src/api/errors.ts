@@ -34,11 +34,11 @@ export function normalizeError(err: unknown): ApiError {
   if (axios.isAxiosError(axiosErr)) {
     const data = axiosErr.response?.data
     const status = axiosErr.response?.status ?? 0
-    if (data?.errors && data.errors.length > 0) {
-      return new ApiError(status, data.errors.join(". "), data.errors)
-    }
     if (data?.error) {
       return new ApiError(status, data.error)
+    }
+    if (data?.errors && data.errors.length > 0) {
+      return new ApiError(status, data.errors.join("\n"), data.errors)
     }
     if (data?.message) {
       return new ApiError(status, data.message)

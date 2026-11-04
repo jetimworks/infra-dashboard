@@ -1121,9 +1121,15 @@ export interface FileWriteResult {
 
 export interface GitStatus {
   repo_path: string
+  /** The selected branch: the instance's deploy branch the operator picked. */
   branch: string
+  /** What the repository has checked out now. "HEAD" means a detached HEAD. */
+  head_branch: string
   sha: string
-  /** `git status --porcelain` output, one entry per changed file. */
+  /**
+   * `git status --porcelain` lines: "XY path", with only the leading space
+   * trimmed. Parse by position, never by whitespace.
+   */
   dirty: string[]
   warnings: string[]
 }
@@ -1148,5 +1154,16 @@ export interface GitPushResult {
   sha_after: string
   files: string[]
   output: string
+  warnings: string[]
+}
+
+/** Result of unstage and revert. Both return the change list after the call. */
+export interface GitPathsResult {
+  branch: string
+  /** Paths brought back to HEAD (revert only). */
+  restored: string[]
+  /** Paths HEAD does not have, left alone (revert only). */
+  skipped: string[]
+  dirty: string[]
   warnings: string[]
 }
