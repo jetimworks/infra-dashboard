@@ -24,6 +24,8 @@ import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
 import { ConfirmDialog } from "../components/ui/ConfirmDialog"
 import { WarningBlock } from "../components/system/WarningBlock"
+import { AppDirectoryCard } from "../components/system/AppDirectoryCard"
+import { BranchControl } from "../components/system/BranchControl"
 import { ReleaseOutputBlock } from "../components/releases/ReleaseOutputBlock"
 import {
   useAppDirectory,
@@ -43,7 +45,7 @@ import {
 import { normalizeError } from "../api/errors"
 import { cn, formatBytes, formatRelative } from "../lib/utils"
 import { pageVariants, reducedVariants } from "../lib/motion"
-import type { FileEntry, GitStatus, InstanceType } from "../api/types"
+import type { FileEntry, GitStatus, Instance, InstanceType } from "../api/types"
 
 /**
  * The host's filesystem and the repository the release pipeline deploys from.
@@ -71,25 +73,6 @@ const typeLabel: Record<InstanceType, string> = {
 function joinPath(base: string, name: string): string {
   if (base === "/") return `/${name}`
   return `${base.replace(/\/+$/, "")}/${name}`
-}
-
-/**
- * A light client-side check on the app directory.
- *
- * The backend's charset is stricter than this (it also rejects shell
- * metacharacters), and it is the authority — a path this accepts but the
- * backend rejects comes back as a 400 whose message is shown verbatim. What
- * this catches is the handful of rules that are unambiguous enough to be worth
- * failing fast on.
- */
-function validateAppDirectory(path: string): string | null {
-  const trimmed = path.trim()
-  if (!trimmed) return "Enter a path."
-  if (!trimmed.startsWith("/")) return "The path must be absolute — it has to start with /."
-  if (trimmed.split("/").includes("..")) return "The path must not contain a '..' component."
-  if (/\s/.test(trimmed)) return "The path must not contain spaces."
-  if (trimmed.includes("'")) return "The path must not contain a single quote."
-  return null
 }
 
 export function InstanceFilesPage() {
@@ -151,6 +134,21 @@ export function InstanceFilesPage() {
     setBuffer(loaded.content)
     setLoadedContent(loaded.content)
   }, [activeDoc])
+
+  // The application directory IS the file browser's root. Changing it while
+  // the operator is inside a subdirectory of the old root leaves the browser
+  // on a path that may not exist, so the browser goes back to the root. The
+  // ref guard means this fires on a real change only, not on the first load.
+  const appDirPath = appDirQ.data?.path
+  const lastAppDirPath = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!appDirPath) return
+    if (lastAppDirPath.current && lastAppDirPath.current !== appDirPath) {
+      setCurrentPath(undefined)
+      setSelectedPath(undefined)
+    }
+    lastAppDirPath.current = appDirPath
+  }, [appDirPath])
 
   const dirty = buffer !== loadedContent
 
@@ -249,11 +247,9 @@ export function InstanceFilesPage() {
         directory={appDirQ.data}
         loading={appDirQ.isLoading}
         error={appDirQ.isError ? normalizeError(appDirQ.error) : null}
-        onSave={(path) => setAppDir.mutate({ id: instance.id, path })}
+        onSave={(path) => setAppDir.mutateAsync({ id: instance.id, path })}
         saving={setAppDir.isPending}
-        saveError={
-          setAppDir.isError ? normalizeError(setAppDir.error).message : null
-        }
+        saveWarnings={setAppDir.data?.warnings ?? []}
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
@@ -341,7 +337,7 @@ export function InstanceFilesPage() {
         status={gitQ.data}
         loading={gitQ.isLoading}
         error={gitQ.isError ? normalizeError(gitQ.error) : null}
-        instanceId={instance.id}
+        instance={instance}
         pull={pull}
         push={push}
       />
@@ -362,130 +358,6 @@ function Breadcrumb({ id, name }: { id: string; name: string }) {
       <ChevronRight className="h-3.5 w-3.5" aria-hidden />
       <span className="font-medium text-fg">Files</span>
     </nav>
-  )
-}
-
-function AppDirectoryCard({
-  directory,
-  loading,
-  error,
-  onSave,
-  saving,
-  saveError,
-}: {
-  directory: import("../api/types").AppDirectory | undefined
-  loading: boolean
-  error: { message: string } | null
-  onSave: (path: string) => void
-  saving: boolean
-  saveError: string | null
-}) {
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState("")
-  const [validationError, setValidationError] = useState<string | null>(null)
-
-  const startEditing = () => {
-    setDraft(directory?.path ?? "")
-    setValidationError(null)
-    setEditing(true)
-  }
-
-  const submit = () => {
-    const problem = validateAppDirectory(draft)
-    if (problem) {
-      setValidationError(problem)
-      return
-    }
-    onSave(draft.trim())
-    setEditing(false)
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="min-w-0">
-          <CardTitle>Application directory</CardTitle>
-          <p className="mt-1 text-sm text-fg-muted">
-            The release pipeline deploys from here, the file browser opens here,
-            and the git endpoints act on this repository.
-          </p>
-        </div>
-        {directory ? (
-          <StatusPill
-            status={directory.source === "config" ? "success" : "warning"}
-            size="sm"
-            label={directory.source === "config" ? "Configured" : "Platform default"}
-          />
-        ) : null}
-      </CardHeader>
-
-      {error ? (
-        <ErrorState
-          title="Couldn't read the application directory"
-          description={error.message}
-          className="py-6"
-        />
-      ) : loading && !directory ? (
-        <LoadingBlock label="Reading the application directory…" className="py-4" />
-      ) : (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <code className="min-w-0 flex-1 truncate rounded bg-surface-sunken px-2.5 py-2 font-mono text-[0.8125rem] text-fg">
-              {directory?.path ?? "—"}
-            </code>
-            {editing ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditing(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={Save}
-                  onClick={submit}
-                  isLoading={saving}
-                >
-                  Save
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" size="sm" onClick={startEditing}>
-                Change
-              </Button>
-            )}
-          </div>
-
-          {editing ? (
-            <div className="space-y-2">
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                rows={2}
-                className="font-mono text-[0.8125rem]"
-                spellCheck={false}
-                error={validationError ?? undefined}
-                hint="Absolute path, no spaces, no '..'."
-              />
-              {saveError ? (
-                <p className="text-xs text-danger-fg">{saveError}</p>
-              ) : null}
-            </div>
-          ) : null}
-
-          {directory?.warnings?.length ? (
-            <WarningBlock
-              warnings={directory.warnings}
-              title="The configured directory was rejected"
-            />
-          ) : null}
-        </div>
-      )}
-    </Card>
   )
 }
 
@@ -1047,17 +919,18 @@ function GitPanel({
   status,
   loading,
   error,
-  instanceId,
+  instance,
   pull,
   push,
 }: {
   status: GitStatus | undefined
   loading: boolean
   error: { message: string } | null
-  instanceId: string
+  instance: Instance
   pull: ReturnType<typeof useGitPull>
   push: ReturnType<typeof useGitPush>
 }) {
+  const instanceId = instance.id
   const unstage = useGitUnstage()
   const revert = useGitRevert()
   const [showPushForm, setShowPushForm] = useState(false)
@@ -1152,6 +1025,13 @@ function GitPanel({
           </Button>
         </div>
       </CardHeader>
+
+      {/* The branch control sits OUTSIDE the repository-state conditional: an
+          unreachable host is exactly when an operator wants to change the
+          branch, and the state cannot be read then. */}
+      <div className="mb-4">
+        <BranchControl instance={instance} effectiveBranch={status?.branch} />
+      </div>
 
       {error ? (
         <ErrorState

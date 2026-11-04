@@ -34,6 +34,29 @@ export const instancesApi = {
   update: (id: string, body: UpdateInstanceInput) =>
     apiPut<Instance, UpdateInstanceInput>(`/instances/${id}`, body),
 
+  /**
+   * Changes the branch this instance tracks.
+   *
+   * This sends `github_branch` and NOTHING else. `PUT /instances/{id}` applies
+   * every field it is given, and several of them are destructive by accident:
+   * `config` replaces the whole blob (the database credentials live in it),
+   * `project_id` moves the instance out of the caller's reach, and
+   * `host`/`port`/`username`/`password`/`ssh_key` change how the backend
+   * reaches the host. A dedicated function is the guard against a future
+   * caller passing a wider body.
+   *
+   * An empty branch is sent as the empty string, never as null: null is an
+   * absent field, and a body of nothing but nulls is a 400 "no fields to
+   * update". The empty string is how an instance goes back to the release
+   * deploy branch.
+   *
+   * The response is the whole instance object, unwrapped — not `{data: …}`.
+   */
+  setBranch: async (id: string, branch: string): Promise<Instance> =>
+    apiPut<Instance, { github_branch: string }>(`/instances/${id}`, {
+      github_branch: branch,
+    }),
+
   remove: (id: string) =>
     apiDelete<{ message: string }>(`/instances/${id}`),
 

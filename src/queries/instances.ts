@@ -82,6 +82,35 @@ export function useUpdateInstance() {
 }
 
 /**
+ * Changes the branch this instance tracks.
+ *
+ * The response is the whole instance object, so the detail query is REPLACED
+ * with it rather than patched — the same rule the write itself follows.
+ *
+ * The git status is refetched too. Its `branch` field is the branch the git
+ * endpoints will act on, and it only changes once the stored branch changes.
+ * The repository on the host does NOT move: the refetch is what makes the
+ * "the repository is not on the selected branch" warning appear.
+ */
+export function useSetBranch() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, branch }: { id: string; branch: string }) =>
+      instancesApi.setBranch(id, branch),
+    onSuccess: (updated, vars) => {
+      // The PUT returns the whole re-read instance, so the detail query is
+      // REPLACED with it rather than patched. The `updated?.id` guard keeps a
+      // malformed response from blanking the instance card.
+      if (updated?.id) qc.setQueryData(qk.instance(vars.id), updated)
+      qc.invalidateQueries({ queryKey: qk.instanceGitRoot(vars.id) })
+      toast.success("Branch updated")
+    },
+    // No error toast: the backend's message ("access denied", "no fields to
+    // update") is the diagnosis, and the control renders it verbatim.
+  })
+}
+
+/**
  * Local (containerised) services. Deliberately does NOT accept REMOTE_RDS:
  * a remote database is dialled directly over TCP and has no parent VPS, so
  * there is no create-<type> endpoint to send it to. Typing the parameter as
@@ -418,6 +447,10 @@ export function useSetAppDirectory() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: qk.instanceAppDirectory(vars.id) })
       qc.invalidateQueries({ queryKey: qk.instanceFilesRoot(vars.id) })
+      // `deploy_repo_path` lives in the instance config, and the Settings tab
+      // renders that config blob — without this the tab keeps showing the old
+      // path after a change.
+      qc.invalidateQueries({ queryKey: qk.instance(vars.id) })
       toast.success("App directory updated")
     },
     // No error toast: the backend's rejection message ("the directory /root/app

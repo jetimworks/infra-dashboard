@@ -29,6 +29,7 @@ import {
 import {
   useAppDirectory,
   useInstance,
+  useSetAppDirectory,
   useTestDbConnection,
 } from "../queries/instances"
 import { useInstanceMetricsLatest } from "../queries/metrics"
@@ -52,6 +53,7 @@ import { ActionRequestCard } from "../components/data/ActionRequestCard"
 import { ActionRequestCreateDialog } from "../components/feedback/ActionRequestCreateDialog"
 import { InstanceProgressPanel } from "../components/ops/InstanceProgressPanel"
 import { QuestRow } from "../components/ops/QuestRow"
+import { AppDirectoryCard } from "../components/system/AppDirectoryCard"
 import { normalizeError } from "../api/errors"
 import { formatBytes, formatRelative, cn } from "../lib/utils"
 import { useTabParam } from "../lib/use-tab-param"
@@ -927,6 +929,7 @@ function SettingsTab({
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const appDirectoryQ = useAppDirectory(instance.id)
+  const setAppDir = useSetAppDirectory()
   const configRecord = instance.config as Record<string, unknown>
   const remoteDb = readRemoteDbConfig(instance.config)
   const sizeBytes =
@@ -936,6 +939,17 @@ function SettingsTab({
 
   return (
     <div className="space-y-4">
+      {instance.type === "VPS" ? (
+        <AppDirectoryCard
+          directory={appDirectoryQ.data}
+          loading={appDirectoryQ.isLoading}
+          error={appDirectoryQ.isError ? normalizeError(appDirectoryQ.error) : null}
+          onSave={(path) => setAppDir.mutateAsync({ id: instance.id, path })}
+          saving={setAppDir.isPending}
+          saveWarnings={setAppDir.data?.warnings ?? []}
+        />
+      ) : null}
+
       {instance.type === "VPS" ? (
         <Card>
           <CardHeader>

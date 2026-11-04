@@ -203,9 +203,15 @@ export function AdminInstanceEditPage() {
           username: data.username || null,
           domain: data.domain || null,
           github_repo: data.github_repo || null,
-          github_branch: data.github_branch || null,
-          // Deliberately "" and not null. Every field above sends null when
-          // blank and the backend reads that as "leave alone" — for
+          // Deliberately NOT `|| null`. `github_branch` is a `*string` on the
+          // wire, so a JSON null is an ABSENT field: the backend leaves the
+          // column alone, and clearing the box would look like it worked while
+          // changing nothing. "" is the reset — it stores an empty branch, and
+          // the instance falls back to the release deploy branch. An absent
+          // value (the field was never touched) still leaves the column alone.
+          github_branch: data.github_branch,
+          // Deliberately "" and not null. The nullable fields above send null
+          // when blank and the backend reads that as "leave alone" — for
           // service_name it's the reverse: "" is the documented signal to
           // write NULL, and null would be swallowed. Changing this line to
           // `|| null` silently breaks the reset-to-default control.
