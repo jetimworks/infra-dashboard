@@ -835,6 +835,39 @@ export interface ReleaseDiff {
   warnings: string[] | null
 }
 
+export interface PreDeployFile {
+  status: string
+  path: string
+  old_path: string
+}
+
+export interface PreDeployCommit {
+  sha: string
+  short_sha: string
+  author: string
+  date: string
+  subject: string
+  url: string
+}
+
+export interface PreDeployReport {
+  repo_path: string
+  branch: string
+  remote_branch: string
+  remote_url: string
+  local_sha: string
+  remote_sha: string
+  up_to_date: boolean
+  head_branch: string
+  head_sha: string
+  dirty: string[]
+  commit_count: number
+  commits: PreDeployCommit[]
+  files_changed: number
+  files: PreDeployFile[]
+  warnings: string[]
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // System toolkit (disk, large files, swap, systemd)
 // ──────────────────────────────────────────────────────────────────────────

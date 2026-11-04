@@ -78,6 +78,8 @@ export const qk = {
     ["instances", id, "releases", "log", actionId] as const,
   instanceReleaseDiff: (id: string, to: string, from?: string) =>
     ["instances", id, "releases", "diff", { to, from: from ?? "" }] as const,
+  instancePreDeploy: (id: string, branch?: string) =>
+    ["instances", id, "releases", "pre-deploy", { branch: branch ?? "" }] as const,
 
   // ── System toolkit ──────────────────────────────────────────────────────
   instanceDiskRoot: (id: string) => ["instances", id, "disk"] as const,

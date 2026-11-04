@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Clock,
   Copy,
+  GitBranch,
   Lightbulb,
   Loader2,
   Rocket,
@@ -20,16 +21,21 @@ import {
 import { motion, useReducedMotion } from "framer-motion"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
+import { Field, Input } from "../components/ui/Input"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { ErrorState } from "../components/ui/ErrorState"
 import { EmptyState } from "../components/ui/EmptyState"
 import { ConfirmDialog } from "../components/ui/ConfirmDialog"
 import { ActionTimelineItem } from "../components/data/ActionTimelineItem"
+import { PreDeployPanel } from "../components/releases/PreDeployPanel"
+import { preDeployVerdict } from "../lib/pre-deploy"
 import { useDeployApp, useInstance } from "../queries/instances"
 import { useInstanceActions } from "../queries/actions"
+import { usePreDeploy } from "../queries/releases"
 import { normalizeError } from "../api/errors"
 import { cn, formatRelative, formatDuration } from "../lib/utils"
 import { pageVariants, reducedVariants } from "../lib/motion"
+import { readDeployBranch, validateBranch } from "../lib/branch-name"
 import type { Action, DeployAppResponse, DeployAppStatus, InstanceType } from "../api/types"
 
 const typeLabel: Record<InstanceType, string> = {
@@ -145,6 +151,25 @@ export function InstanceDeployPage() {
 
   const instanceQ = useInstance(id)
   const deployApp = useDeployApp()
+
+  // The branch the preview compares against. It starts as the branch the
+  // instance tracks (stored → config → platform default) and the operator can
+  // point the preview at another one. The override only changes the preview:
+  // /root/deploy.sh decides what it actually pulls.
+  const instanceData = instanceQ.data
+  const defaultBranch = instanceData
+    ? instanceData.github_branch || readDeployBranch(instanceData.config)
+    : undefined
+  const [branchOverride, setBranchOverride] = useState<string | null>(null)
+  const [branchDraft, setBranchDraft] = useState("")
+  const [branchError, setBranchError] = useState<string | null>(null)
+  const previewBranch = branchOverride ?? defaultBranch
+  const previewQ = usePreDeploy(
+    id,
+    previewBranch,
+    instanceData?.type === "VPS"
+  )
+  const verdict = preDeployVerdict(previewQ.data, previewQ.error)
   // Pull a generous batch of recent activity filtered to deploys; the audit
   // listing endpoint already accepts action_type as a filter.
   const actionsQ = useInstanceActions(id, { limit: 50, action_type: "DEPLOY_APP" })
@@ -205,6 +230,44 @@ export function InstanceDeployPage() {
   const instance = instanceQ.data
   const isVps = instance.type === "VPS"
 
+  const applyBranch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const problem = validateBranch(branchDraft)
+    if (problem) {
+      setBranchError(problem)
+      return
+    }
+    setBranchError(null)
+    setBranchOverride(branchDraft)
+  }
+
+  const resetBranch = () => {
+    setBranchOverride(null)
+    setBranchError(null)
+  }
+
+  const report = previewQ.data
+  const deployLabel =
+    verdict === "ready" && report
+      ? `Deploy ${report.commit_count} commit${report.commit_count === 1 ? "" : "s"}`
+      : verdict === "upToDate"
+        ? "Deploy anyway"
+        : "Deploy now"
+  const deployDisabled =
+    deployApp.isPending ||
+    verdict === "blocked" ||
+    (previewQ.isFetching && !report)
+  const confirmDescription = (() => {
+    const base =
+      "This runs /root/deploy.sh on the server, which typically restarts your app. A few seconds of downtime is normal."
+    if (verdict === "ready" && report) {
+      return `${report.commit_count} commit${report.commit_count === 1 ? "" : "s"} and ${report.files_changed} file${report.files_changed === 1 ? "" : "s"} from ${report.remote_branch} will go live. ${base}`
+    }
+    if (verdict === "upToDate") return `The server is already up to date with ${previewBranch}. ${base}`
+    if (verdict === "unknown") return `The pre-deploy check did not finish, so the changes are unknown. ${base}`
+    return base
+  })()
+
   const handleDeploy = async () => {
     if (!id) return
     setErrorMsg(null)
@@ -215,6 +278,8 @@ export function InstanceDeployPage() {
       setResult(res)
       // Refresh the recent-deploys list so the new audit row shows up.
       actionsQ.refetch()
+      // The server moved, so the preview is stale — re-check it.
+      previewQ.refetch()
     } catch (err) {
       const friendly = normalizeError(err).message
       setErrorMsg(friendly || "Deployment failed.")
@@ -285,31 +350,109 @@ export function InstanceDeployPage() {
             <InlineErrorAlert message={errorMsg} />
           ) : null}
 
-          {/* Trigger card */}
+          {/* Step 1 — what would change */}
           <Card>
             <div className="space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
-                  <Rocket className="h-5 w-5" aria-hidden />
+              <StepHeader
+                step={1}
+                icon={GitBranch}
+                title="Review what will change"
+                description="Checks the server's remote branch without changing anything. Safe to re-run."
+              />
+
+              <form
+                onSubmit={applyBranch}
+                className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[1fr_auto]"
+                noValidate
+              >
+                <Field
+                  label="Branch to preview"
+                  htmlFor="deploy-branch"
+                  error={branchError ?? undefined}
+                  hint={
+                    branchOverride === null
+                      ? "The branch this server tracks."
+                      : `Previewing ${branchOverride} instead of the tracked branch.`
+                  }
+                >
+                  <Input
+                    id="deploy-branch"
+                    className="font-mono"
+                    spellCheck={false}
+                    autoComplete="off"
+                    placeholder={defaultBranch ?? "dev"}
+                    value={branchDraft}
+                    onChange={(e) => {
+                      setBranchDraft(e.target.value)
+                      setBranchError(null)
+                    }}
+                    onFocus={() => {
+                      if (!branchDraft) setBranchDraft(previewBranch ?? "")
+                    }}
+                  />
+                </Field>
+                <div className="flex gap-2 sm:pt-[1.625rem]">
+                  <Button type="submit" variant="secondary" size="md">
+                    Check branch
+                  </Button>
+                  {branchOverride !== null ? (
+                    <Button type="button" variant="ghost" size="md" onClick={resetBranch}>
+                      Use tracked
+                    </Button>
+                  ) : null}
                 </div>
-                <div className="min-w-0">
-                  <CardTitle>Run a deploy</CardTitle>
-                  <p className="mt-1 text-sm text-fg-muted">
-                    We'll SSH in as <span className="font-mono">root</span>, execute the script, capture stdout, and report the outcome here. The script path is fixed at{" "}
-                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code>.
-                  </p>
-                </div>
+              </form>
+
+              <div className="border-t border-border/50 pt-5">
+                <PreDeployPanel
+                  report={report}
+                  loading={previewQ.isFetching}
+                  error={previewQ.isError ? normalizeError(previewQ.error) : null}
+                  onRetry={() => previewQ.refetch()}
+                  branch={previewBranch ?? ""}
+                />
               </div>
+            </div>
+          </Card>
+
+          {/* Step 2 — run it */}
+          <Card>
+            <div className="space-y-5">
+              <StepHeader
+                step={2}
+                icon={Rocket}
+                title="Deploy"
+                description={
+                  <>
+                    We'll SSH in as <span className="font-mono">root</span>, run{" "}
+                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code>,
+                    and report the outcome here.
+                  </>
+                }
+              />
+
+              {verdict === "blocked" ? (
+                <p className="flex items-center gap-2 text-sm text-warning-fg">
+                  <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden />
+                  Deploy is paused until the uncommitted changes on the server are cleared.
+                </p>
+              ) : verdict === "unknown" && !previewQ.isFetching ? (
+                <p className="flex items-center gap-2 text-sm text-warning-fg">
+                  <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                  The preview failed, so you'd be deploying without seeing the changes.
+                </p>
+              ) : null}
+
               <Button
                 variant="primary"
                 size="lg"
                 fullWidth
                 leftIcon={deployApp.isPending ? undefined : Rocket}
                 isLoading={deployApp.isPending}
-                disabled={deployApp.isPending}
+                disabled={deployDisabled}
                 onClick={() => setConfirmOpen(true)}
               >
-                Deploy now
+                {deployApp.isPending ? "Deploying…" : deployLabel}
               </Button>
             </div>
           </Card>
@@ -422,8 +565,7 @@ export function InstanceDeployPage() {
               <li className="flex gap-2">
                 <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
                 <span>
-                  The deploy script is the single source of truth — it decides
-                  what gets pulled, built, and restarted. Edit{" "}
+                  The preview above is read-only: it fetches the remote and compares. The deploy script is the single source of truth for what actually gets pulled, built, and restarted. Edit{" "}
                   <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code>{" "}
                   on the server if you need different behavior.
                 </span>
@@ -450,7 +592,7 @@ export function InstanceDeployPage() {
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleDeploy}
         title="Deploy application?"
-        description="This runs /root/deploy.sh on the server, which typically restarts your app. The process is fast but your service will reload — a few seconds of downtime is normal."
+        description={confirmDescription}
         confirmLabel="Yes, deploy"
         tone="default"
         requireCheckbox
@@ -458,6 +600,33 @@ export function InstanceDeployPage() {
         isLoading={deployApp.isPending}
       />
     </motion.div>
+  )
+}
+
+function StepHeader({
+  step,
+  icon: Icon,
+  title,
+  description,
+}: {
+  step: number
+  icon: LucideIcon
+  title: string
+  description: React.ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+        <Icon className="h-5 w-5" aria-hidden />
+        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[0.6875rem] font-semibold text-primary-fg ring-2 ring-surface">
+          {step}
+        </span>
+      </div>
+      <div className="min-w-0">
+        <CardTitle>{title}</CardTitle>
+        <p className="mt-1 text-sm text-fg-muted">{description}</p>
+      </div>
+    </div>
   )
 }
 

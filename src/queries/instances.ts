@@ -346,6 +346,8 @@ export function useDeployApp() {
       // The audit row lands in /instances/{id}/actions; refresh it so the
       // activity feed + recent-deploys list pick up the new entry immediately.
       qc.invalidateQueries({ queryKey: qk.instanceActions(id) })
+      // The deploy moved the server, so any pre-deploy preview is stale now.
+      qc.invalidateQueries({ queryKey: ["instances", id, "releases", "pre-deploy"] })
     },
   })
 }

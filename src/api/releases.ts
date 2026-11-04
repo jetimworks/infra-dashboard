@@ -4,6 +4,7 @@ import type {
   ReleaseDetail,
   ReleaseDiff,
   ReleasePage,
+  PreDeployReport,
   ReleaseSummary,
 } from "./types"
 
@@ -53,6 +54,22 @@ export const releasesApi = {
     const res = await apiGet<{ data: ReleaseDiff }>(
       `/instances/${instanceId}/releases/diff`,
       { to, from }
+    )
+    return res.data
+  },
+
+  /**
+   * "What would deploying this branch bring?" — a read-only preview. The
+   * backend runs `git fetch` on the host and changes nothing else. `branch`
+   * is optional; left out, the backend uses the instance's selected branch.
+   */
+  preDeploy: async (
+    instanceId: string,
+    branch?: string
+  ): Promise<PreDeployReport> => {
+    const res = await apiGet<{ data: PreDeployReport }>(
+      `/instances/${instanceId}/releases/pre-deploy`,
+      { branch: branch || undefined }
     )
     return res.data
   },

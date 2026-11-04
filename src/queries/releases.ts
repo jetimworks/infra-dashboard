@@ -122,6 +122,31 @@ export function useReleaseDiff(
 }
 
 /**
+ * The pre-deploy preview: what deploying this branch would bring.
+ *
+ * `staleTime: 0` and `refetchOnMount` so every panel open re-fetches — the
+ * remote moves, and a cached "up to date" is exactly the wrong answer to show
+ * before a deploy. No retry: a failure is information the operator should see
+ * immediately, not something to hide behind a spinner.
+ */
+export function usePreDeploy(
+  instanceId: string | undefined,
+  branch: string | undefined,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: instanceId
+      ? qk.instancePreDeploy(instanceId, branch)
+      : ["instances", instanceId, "releases", "pre-deploy", "noop"],
+    queryFn: () => releasesApi.preDeploy(instanceId as string, branch),
+    enabled: Boolean(instanceId) && enabled,
+    staleTime: 0,
+    refetchOnMount: "always",
+    retry: false,
+  })
+}
+
+/**
  * Starts a release.
  *
  * No toast on success or failure: the page renders the acceptance and any
