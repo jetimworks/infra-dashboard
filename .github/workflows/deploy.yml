@@ -35,10 +35,11 @@ jobs:
           VITE_API_URL: ${{ vars.CLOUDFLARE_PAGES_API_URL }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy
           projectName: infra-dashboard
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
