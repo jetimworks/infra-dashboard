@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import {
+  CheckCircle2,
   ChevronRight,
   ChevronUp,
   Circle,
@@ -10,9 +11,11 @@ import {
   GitBranch,
   Link2,
   RefreshCw,
+  RotateCw,
   Save,
   Server,
   Upload,
+  XCircle,
 } from "lucide-react"
 import { motion, useReducedMotion } from "framer-motion"
 import { Card, CardHeader, CardTitle } from "../components/ui/Card"
@@ -28,6 +31,7 @@ import { AppDirectoryCard } from "../components/system/AppDirectoryCard"
 import { BranchControl } from "../components/system/BranchControl"
 import { ReleaseOutputBlock } from "../components/releases/ReleaseOutputBlock"
 import {
+  useAppControl,
   useAppDirectory,
   useDirectoryListing,
   useFileContent,
@@ -44,8 +48,15 @@ import {
 } from "../queries/instances"
 import { normalizeError } from "../api/errors"
 import { cn, formatBytes, formatRelative } from "../lib/utils"
+import { resolveServiceName } from "../lib/service-name"
 import { pageVariants, reducedVariants } from "../lib/motion"
-import type { FileEntry, GitStatus, Instance, InstanceType } from "../api/types"
+import type {
+  AppControlResponse,
+  FileEntry,
+  GitStatus,
+  Instance,
+  InstanceType,
+} from "../api/types"
 
 /**
  * The host's filesystem and the repository the release pipeline deploys from.
@@ -92,6 +103,11 @@ export function InstanceFilesPage() {
   const [loadedContent, setLoadedContent] = useState("")
   const [saveWarnings, setSaveWarnings] = useState<string[]>([])
   const [creatingEnv, setCreatingEnv] = useState(false)
+  const [restartOpen, setRestartOpen] = useState(false)
+  const [restartResult, setRestartResult] = useState<AppControlResponse | null>(
+    null
+  )
+  const [restartError, setRestartError] = useState<string | null>(null)
 
   // The .env shortcut: `?env=1` opens the app's environment file directly.
   const envShortcut = searchParams.get("env") === "1"
@@ -106,6 +122,7 @@ export function InstanceFilesPage() {
   const writeEnv = useWriteEnv()
   const pull = useGitPull()
   const push = useGitPush()
+  const appControl = useAppControl()
 
   // The editor's buffer is mirrored in a ref so the content query can decide
   // whether to overwrite it. A refetch must not silently discard what the
@@ -154,6 +171,33 @@ export function InstanceFilesPage() {
 
   const instance = instanceQ.data
   const isVps = instance?.type === "VPS"
+  // The unit the restart button acts on — the same one app-control resolves.
+  const serviceName = resolveServiceName(instance ?? {})
+
+  /**
+   * Restart the app.
+   *
+   * This page exists to edit the application, so the service is very likely
+   * still running the old code when the edit is saved. Restarting is the
+   * other half of that job. It calls the app-control endpoint — the same
+   * one the App control page drives — with the `restart` verb.
+   */
+  const restartApp = async () => {
+    if (!id) return
+    setRestartError(null)
+    try {
+      const res = await appControl.mutateAsync({
+        id,
+        body: { action: "restart" },
+      })
+      setRestartResult(res)
+      setRestartOpen(false)
+    } catch (err) {
+      // Verbatim: the backend's refusal names the reason.
+      setRestartError(normalizeError(err).message)
+      setRestartOpen(false)
+    }
+  }
 
   // Leaving the .env shortcut closes the env panel and opens whatever the
   // operator picked instead.
@@ -233,15 +277,54 @@ export function InstanceFilesPage() {
     >
       <Breadcrumb id={instance.id} name={instance.name} />
 
-      <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
-          Files
-        </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
-          Browse the host, edit a file's contents, and pull or push the
-          repository the release pipeline deploys from.
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+            Files
+          </h1>
+          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+            Browse the host, edit a file's contents, and pull or push the
+            repository the release pipeline deploys from.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={RotateCw}
+          onClick={() => setRestartOpen(true)}
+          isLoading={appControl.isPending}
+          disabled={appControl.isPending}
+        >
+          Restart app
+        </Button>
       </header>
+
+      {restartResult ? (
+        <div className="flex items-start gap-3 rounded-md bg-success-soft p-4 text-success-fg ring-1 ring-inset ring-success/25">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">
+              {restartResult.status === "UNKNOWN"
+                ? "The restart didn't complete"
+                : `${serviceName} restarted`}
+            </p>
+            <p className="mt-1 text-sm">{restartResult.message}</p>
+          </div>
+        </div>
+      ) : null}
+
+      {restartError ? (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-md bg-danger-soft p-4 text-danger-fg ring-1 ring-inset ring-danger/25"
+        >
+          <XCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">The restart didn't run</p>
+            <p className="mt-1 break-words text-sm text-fg">{restartError}</p>
+          </div>
+        </div>
+      ) : null}
 
       <AppDirectoryCard
         directory={appDirQ.data}
@@ -340,6 +423,19 @@ export function InstanceFilesPage() {
         instance={instance}
         pull={pull}
         push={push}
+      />
+
+      <ConfirmDialog
+        open={restartOpen}
+        onClose={() => setRestartOpen(false)}
+        onConfirm={restartApp}
+        title={`Restart ${serviceName}?`}
+        description={`This stops then starts the ${serviceName} service on the server. There will be a few seconds of downtime while the service reloads — use it once your edits are saved.`}
+        confirmLabel="Yes, restart"
+        tone="danger"
+        requireCheckbox
+        checkboxLabel="I understand the service will reload"
+        isLoading={appControl.isPending}
       />
     </motion.div>
   )
