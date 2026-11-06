@@ -112,6 +112,22 @@ function releaseDuration(detail: ReleaseDetail | null): number | null {
 }
 
 /**
+ * The repository path, without the host.
+ *
+ * An instance's repository is stored however the operator typed it: a bare
+ * "owner/repo", a full clone URL, or one with the ".git" suffix. The link
+ * needs the path alone — the host is added back by the caller — so the
+ * scheme, the host and the suffix are stripped here.
+ */
+function repoPath(repo: string): string {
+  return repo
+    .trim()
+    .replace(/^(?:https?:\/\/)?(?:www\.)?github\.com\//i, "")
+    .replace(/\.git$/i, "")
+    .replace(/^\/+|\/+$/g, "")
+}
+
+/**
  * The GitHub compare link for the commit being deployed.
  *
  * The range mirrors the comparison the preview shows: the commit being
@@ -133,16 +149,16 @@ function buildCompareUrl({
   from: string
   branch: string | null
 }): string | null {
-  const trimmedRepo = repo?.trim() ?? ""
+  const path = repo ? repoPath(repo) : ""
   const trimmedSha = sha.trim()
-  if (!trimmedRepo || !isValidCommitSha(trimmedSha)) return null
+  if (!path || !isValidCommitSha(trimmedSha)) return null
 
   const trimmedFrom = from.trim()
   // A half-typed commit is not a commit. The form says so; the link waits.
   if (trimmedFrom && !isValidCommitSha(trimmedFrom)) return null
 
   const target = trimmedFrom || branch?.trim() || "main"
-  return `https://github.com/${trimmedRepo}/compare/${trimmedSha}...${target}`
+  return `https://github.com/${path}/compare/${trimmedSha}...${target}`
 }
 
 export function InstanceReleasesPage() {
