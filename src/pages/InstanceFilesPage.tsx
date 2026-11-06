@@ -63,9 +63,10 @@ import type {
  *
  * Two rules shape this page:
  *
- *   1. The platform reports what is on the host and lets an operator change a
- *      file's CONTENT. It does not delete, rename or move anything — there is
- *      no delete button anywhere on this page, and there will not be one.
+ *   1. The platform reports what is on the host and lets an operator change
+ *      the CONTENT of one file: the app's .env. Everything else is read-only.
+ *      It does not delete, rename or move anything — there is no delete button
+ *      anywhere on this page, and there will not be one.
  *   2. The backend's own words are the diagnosis. A rejected path, a diverged
  *      branch, a missing deploy key — each of those messages says more than a
  *      paraphrase would, so they are rendered verbatim.
@@ -283,8 +284,8 @@ export function InstanceFilesPage() {
             Files
           </h1>
           <p className="mt-1 text-[0.9375rem] text-fg-muted">
-            Browse the host, edit a file's contents, and pull or push the
-            repository the release pipeline deploys from.
+            Browse the host, edit the app&apos;s environment file, and pull or
+            push the repository the release pipeline deploys from.
           </p>
         </div>
         <Button
@@ -740,11 +741,15 @@ function FileViewer({
   // A binary file's content is withheld on purpose. Opening it would let a
   // GET → PUT round trip write an empty file over a binary one.
   const binary = Boolean(loaded?.binary)
+  // Only the environment file is editable. Every other file is read-only:
+  // its contents are shown, and there is no way to write them back.
+  const editable = showEnv || isEnvFile(loaded?.path)
   // There is nothing to save while the .env does not exist yet — the Create
   // button is the only way forward from that state. A binary file is never
   // savable either: its content is withheld, so a save would write an empty
   // file over it.
-  const canSave = envMissing || binary ? false : showEnv ? true : Boolean(file)
+  const canSave =
+    editable && !binary && !envMissing && (showEnv || Boolean(file))
   const title = showEnv
     ? env?.path ?? ".env"
     : file?.path?.split("/").pop() ?? "No file selected"
@@ -775,6 +780,9 @@ function FileViewer({
           ) : null}
           {dirty ? (
             <StatusPill status="warning" size="sm" label="Unsaved changes" />
+          ) : null}
+          {loaded && !editable ? (
+            <StatusPill status="neutral" size="sm" label="Read-only" />
           ) : null}
         </div>
 
@@ -835,7 +843,7 @@ function FileViewer({
           <EmptyState
             icon={FileText}
             title="Pick a file from the list"
-            description="Every row shows the size, the permission bits and when the file was last modified. A file's contents open here, and can be edited and saved."
+            description="Every row shows the size, the permission bits and when the file was last modified. A file's contents open here — only .env files can be edited."
             className="py-12"
           />
         ) : error ? (
@@ -856,23 +864,41 @@ function FileViewer({
             className="py-12"
           />
         ) : loaded ? (
-          <Textarea
-            value={buffer}
-            onChange={(e) => onBufferChange(e.target.value)}
-            rows={24}
-            className="font-mono text-[0.8125rem]"
-            spellCheck={false}
-          />
+          editable ? (
+            <Textarea
+              value={buffer}
+              onChange={(e) => onBufferChange(e.target.value)}
+              rows={24}
+              className="font-mono text-[0.8125rem]"
+              spellCheck={false}
+            />
+          ) : (
+            <pre className="max-h-[38rem] min-h-24 overflow-auto rounded-md border border-border/60 bg-surface-sunken p-3.5 font-mono text-[0.8125rem] leading-relaxed text-fg whitespace-pre-wrap break-words">
+              {loaded.content}
+            </pre>
+          )
         ) : null}
       </div>
 
       <p className="border-t border-border/40 px-4 py-2.5 text-[11px] text-fg-subtle">
-        This page can change a file's contents. It cannot delete, rename or
-        move anything — removing something from the host is a deliberate act
-        done by hand.
+        Only <code className="font-mono">.env</code> files can be edited here.
+        Everything else is read-only, and nothing can be deleted, renamed or
+        moved — removing something from the host is a deliberate act done by
+        hand.
       </p>
     </Card>
   )
+}
+
+/**
+ * True when the path is an environment file.
+ *
+ * The environment file is the one file this page lets an operator change —
+ * it holds the configuration the app reads at boot, so a restart picks it up.
+ * Everything else on the host is read-only here.
+ */
+function isEnvFile(path: string | undefined): boolean {
+  return Boolean(path) && path!.endsWith(".env")
 }
 
 /**
