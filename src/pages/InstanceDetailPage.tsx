@@ -58,6 +58,7 @@ import { normalizeError } from "../api/errors"
 import { formatBytes, formatRelative, cn } from "../lib/utils"
 import { useTabParam } from "../lib/use-tab-param"
 import { DEFAULT_SERVICE_NAME, resolveServiceName } from "../lib/service-name"
+import { githubBranchUrl, githubRepoUrl } from "../lib/github"
 import {
   dbErrorGuidance,
   DEFAULT_DB_PORT,
@@ -289,6 +290,10 @@ export function InstanceDetailPage() {
   const instance = instanceQ.data
   const Icon = typeIcon[instance.type]
   const supportsBackups = instance.type === "RDS" || instance.type === "REDIS"
+  // The repository may be stored as a full clone URL, so the host is added
+  // back by the helper only after the stored value is normalised.
+  const repoUrl = githubRepoUrl(instance.github_repo)
+  const branchUrl = githubBranchUrl(instance.github_repo, instance.github_branch)
 
   const tabItems: { value: TabValue; label: string; icon: LucideIcon }[] = [
     { value: "overview", label: "Overview", icon: Activity },
@@ -339,11 +344,11 @@ export function InstanceDetailPage() {
                     <span className="min-w-0 flex-1 truncate font-mono">{instance.host}</span>
                   </>
                 ) : null}
-                {instance.type === "VPS" && instance.github_repo ? (
+                {instance.type === "VPS" && repoUrl ? (
                   <>
                     <span aria-hidden>·</span>
                     <a
-                      href={`https://github.com/${instance.github_repo}`}
+                      href={repoUrl}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="inline-flex min-w-0 items-center gap-1 truncate hover:text-fg hover:underline"
@@ -353,11 +358,11 @@ export function InstanceDetailPage() {
                     </a>
                   </>
                 ) : null}
-                {instance.type === "VPS" && instance.github_repo && instance.github_branch ? (
+                {instance.type === "VPS" && branchUrl ? (
                   <>
                     <span aria-hidden>·</span>
                     <a
-                      href={`https://github.com/${instance.github_repo}/tree/${instance.github_branch}`}
+                      href={branchUrl}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="inline-flex items-center gap-1 hover:text-fg hover:underline"
@@ -930,6 +935,10 @@ function SettingsTab({
   const [createOpen, setCreateOpen] = useState(false)
   const appDirectoryQ = useAppDirectory(instance.id)
   const setAppDir = useSetAppDirectory()
+  // The repository may be stored as a full clone URL, so the host is added
+  // back by the helper only after the stored value is normalised.
+  const repoUrl = githubRepoUrl(instance.github_repo)
+  const branchUrl = githubBranchUrl(instance.github_repo, instance.github_branch)
   const configRecord = instance.config as Record<string, unknown>
   const remoteDb = readRemoteDbConfig(instance.config)
   const sizeBytes =
@@ -1139,12 +1148,12 @@ function SettingsTab({
           {instance.username ? (
             <DetailRow label="Username" value={instance.username} mono />
           ) : null}
-          {instance.type === "VPS" && instance.github_repo ? (
+          {instance.type === "VPS" && repoUrl ? (
             <DetailRow
               label="GitHub repo"
               value={
                 <a
-                  href={`https://github.com/${instance.github_repo}`}
+                  href={repoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
                   className="hover:underline"
@@ -1159,14 +1168,18 @@ function SettingsTab({
             <DetailRow
               label="Branch"
               value={
-                <a
-                  href={`https://github.com/${instance.github_repo ?? ""}/tree/${instance.github_branch}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="hover:underline"
-                >
-                  {instance.github_branch}
-                </a>
+                branchUrl ? (
+                  <a
+                    href={branchUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="hover:underline"
+                  >
+                    {instance.github_branch}
+                  </a>
+                ) : (
+                  instance.github_branch
+                )
               }
               mono
             />

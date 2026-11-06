@@ -48,6 +48,7 @@ import {
 } from "../queries/releases"
 import { normalizeError } from "../api/errors"
 import { cn, formatDuration, formatRelative } from "../lib/utils"
+import { repoPath } from "../lib/github"
 import { isValidCommitSha, RELEASE_STAGE_LABELS } from "../lib/ops-constants"
 import { pageVariants, reducedVariants } from "../lib/motion"
 import type { ReleaseDetail, ReleaseSummary } from "../api/types"
@@ -109,22 +110,6 @@ function releaseDuration(detail: ReleaseDetail | null): number | null {
   const completed = Date.parse(detail.completed_at)
   if (Number.isNaN(started) || Number.isNaN(completed)) return null
   return Math.max(0, Math.round((completed - started) / 1000))
-}
-
-/**
- * The repository path, without the host.
- *
- * An instance's repository is stored however the operator typed it: a bare
- * "owner/repo", a full clone URL, or one with the ".git" suffix. The link
- * needs the path alone — the host is added back by the caller — so the
- * scheme, the host and the suffix are stripped here.
- */
-function repoPath(repo: string): string {
-  return repo
-    .trim()
-    .replace(/^(?:https?:\/\/)?(?:www\.)?github\.com\//i, "")
-    .replace(/\.git$/i, "")
-    .replace(/^\/+|\/+$/g, "")
 }
 
 /**
