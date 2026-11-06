@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router-dom"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { motion, useReducedMotion } from "framer-motion"
 import {
   ChevronRight,
+  ExternalLink,
   GitCommitHorizontal,
   GitCompare,
   History,
@@ -110,6 +111,40 @@ function releaseDuration(detail: ReleaseDetail | null): number | null {
   return Math.max(0, Math.round((completed - started) / 1000))
 }
 
+/**
+ * The GitHub compare link for the commit being deployed.
+ *
+ * The range mirrors the comparison the preview shows: the commit being
+ * deployed is the first half, and the other half is the commit it is
+ * compared against — the typed one when the operator gave one, otherwise
+ * the instance's branch, and "main" when the instance has no branch either.
+ *
+ * Nothing is returned until there is a commit to point at, or when the
+ * instance has no repository — a link to nowhere is worse than no link.
+ */
+function buildCompareUrl({
+  repo,
+  sha,
+  from,
+  branch,
+}: {
+  repo: string | null
+  sha: string
+  from: string
+  branch: string | null
+}): string | null {
+  const trimmedRepo = repo?.trim() ?? ""
+  const trimmedSha = sha.trim()
+  if (!trimmedRepo || !isValidCommitSha(trimmedSha)) return null
+
+  const trimmedFrom = from.trim()
+  // A half-typed commit is not a commit. The form says so; the link waits.
+  if (trimmedFrom && !isValidCommitSha(trimmedFrom)) return null
+
+  const target = trimmedFrom || branch?.trim() || "main"
+  return `https://github.com/${trimmedRepo}/compare/${trimmedSha}...${target}`
+}
+
 export function InstanceReleasesPage() {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -205,6 +240,8 @@ export function InstanceReleasesPage() {
       {isVps ? (
         <DeployCommitCard
           instanceId={instance.id}
+          githubRepo={instance.github_repo}
+          githubBranch={instance.github_branch}
           onStarted={(actionId) => selectRelease(actionId)}
         />
       ) : null}
@@ -353,9 +390,13 @@ function ReleaseRow({
  */
 function DeployCommitCard({
   instanceId,
+  githubRepo,
+  githubBranch,
   onStarted,
 }: {
   instanceId: string
+  githubRepo: string | null
+  githubBranch: string | null
   onStarted: (actionId: string) => void
 }) {
   const [diffSha, setDiffSha] = useState<string | undefined>(undefined)
@@ -367,6 +408,7 @@ function DeployCommitCard({
   const createRelease = useCreateRelease()
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -374,6 +416,18 @@ function DeployCommitCard({
   } = useForm<ReleaseForm>({
     resolver: zodResolver(releaseSchema),
     defaultValues: { sha: "", from: "" },
+  })
+
+  // The typed values, watched so the GitHub link appears as soon as there is
+  // a commit to point at — the operator does not have to preview first.
+  const typedSha = useWatch({ control, name: "sha" })
+  const typedFrom = useWatch({ control, name: "from" })
+
+  const compareUrl = buildCompareUrl({
+    repo: githubRepo,
+    sha: typedSha,
+    from: typedFrom,
+    branch: githubBranch,
   })
 
   const preview = handleSubmit((values) => {
@@ -457,9 +511,22 @@ function DeployCommitCard({
           </Field>
         </div>
 
-        <Button type="submit" variant="secondary" leftIcon={GitCompare}>
-          Preview changes
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" variant="secondary" leftIcon={GitCompare}>
+            Preview changes
+          </Button>
+          {compareUrl ? (
+            <a
+              href={compareUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden />
+              Compare on GitHub
+            </a>
+          ) : null}
+        </div>
       </form>
 
       {diffSha ? (
