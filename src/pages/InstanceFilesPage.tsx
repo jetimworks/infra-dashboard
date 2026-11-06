@@ -891,14 +891,17 @@ function FileViewer({
 }
 
 /**
- * True when the path is an environment file.
+ * True when the path is the environment file.
  *
  * The environment file is the one file this page lets an operator change —
  * it holds the configuration the app reads at boot, so a restart picks it up.
- * Everything else on the host is read-only here.
+ * Everything else on the host is read-only here. The name has to be exactly
+ * `.env`: a file like `production.env` is a different file, and stays
+ * read-only.
  */
 function isEnvFile(path: string | undefined): boolean {
-  return Boolean(path) && path!.endsWith(".env")
+  if (!path) return false
+  return path.split("/").pop() === ".env"
 }
 
 /**
