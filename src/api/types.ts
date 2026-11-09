@@ -114,6 +114,27 @@ export interface AdminUpdateUserInput {
   onboarding_stage?: OnboardingStage
 }
 
+/**
+ * What a permanent user delete removed. The counts are rows deleted from
+ * this database — the hosts behind those instances keep running, and the
+ * deleted user's tokens stay valid until they expire.
+ */
+export interface UserDeletionSummary {
+  id: string
+  email: string
+  projects: number
+  instances: number
+  actions: number
+  deployments: number
+  action_requests: number
+  instance_metrics: number
+}
+
+export interface DeleteUserResponse {
+  message: string
+  user: UserDeletionSummary
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Projects
 // ──────────────────────────────────────────────────────────────────────────

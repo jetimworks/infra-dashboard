@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Pencil, Trash2, Shield, CheckCircle, XCircle } from "lucide-react"
-import { toast } from "sonner"
-import { useAdminUsers, useUpdateUser, useDeleteUser } from "../../queries/admin"
+import { useAdminUsers, useUpdateUser, useDeleteUser, isAlreadyDeleted } from "../../queries/admin"
 import { useProjects } from "../../queries/projects"
 import { useInstances } from "../../queries/instances"
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card"
@@ -12,11 +11,13 @@ import { ErrorState } from "../../components/ui/ErrorState"
 import { Drawer } from "../../components/ui/Drawer"
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog"
 import { formatDate, formatRelative } from "../../lib/utils"
+import { useAuth } from "../../auth/useAuth"
 import type { User, UserStatus } from "../../api/types"
 
 export function AdminUserDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
   const usersQ = useAdminUsers()
   const projectsQ = useProjects()
   const instancesQ = useInstances()
@@ -72,9 +73,12 @@ export function AdminUserDetailPage() {
           <Button variant="outline" size="sm" leftIcon={Pencil} onClick={() => setEditOpen(true)}>
             Edit user
           </Button>
-          <Button variant="outline-danger" size="sm" leftIcon={Trash2} onClick={() => setDeleteOpen(true)}>
-            Delete
-          </Button>
+          {/* The backend refuses to delete your own account. */}
+          {currentUser?.id !== user.id ? (
+            <Button variant="outline-danger" size="sm" leftIcon={Trash2} onClick={() => setDeleteOpen(true)}>
+              Delete
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -202,8 +206,12 @@ export function AdminUserDetailPage() {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={async () => {
-          await remove.mutateAsync(user.id)
-          toast.success("User deleted")
+          try {
+            await remove.mutateAsync(user.id)
+          } catch (err) {
+            // Already gone — leaving this page is still the right outcome.
+            if (!isAlreadyDeleted(err)) return
+          }
           navigate("/admin/users", { replace: true })
         }}
         title={`Delete ${user.first_name} ${user.last_name}?`}

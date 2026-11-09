@@ -79,3 +79,34 @@ export function initials(name: string | null | undefined, fallback = "?"): strin
   const first = trimmed[0]?.toUpperCase()
   return first ?? fallback
 }
+
+/**
+ * Summarise what a permanent user delete removed, as one sentence.
+ *
+ * Only non-zero counts are listed. The common case is a user with nothing
+ * attached, and "Deleted customer@example.com." reads better than a run of
+ * zeroes the admin has to interpret.
+ */
+export function formatDeletionSummary(summary: {
+  email: string
+  projects: number
+  instances: number
+  actions: number
+  deployments: number
+  action_requests: number
+  instance_metrics: number
+}): string {
+  const parts: string[] = []
+  const add = (count: number, singular: string, plural = `${singular}s`) => {
+    if (count > 0) parts.push(`${count} ${count === 1 ? singular : plural}`)
+  }
+  add(summary.projects, "project")
+  add(summary.instances, "instance")
+  add(summary.actions, "action")
+  add(summary.deployments, "deployment")
+  add(summary.action_requests, "action request")
+  add(summary.instance_metrics, "metric row", "metric rows")
+  return parts.length === 0
+    ? `Deleted ${summary.email}.`
+    : `Deleted ${summary.email} — ${parts.join(", ")}.`
+}

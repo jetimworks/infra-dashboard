@@ -2,8 +2,14 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Shield, UserPlus } from "lucide-react"
-import { useAdminUsers, useCreateUser, useUpdateUser } from "../../queries/admin"
+import { Plus, Shield, Trash2, UserPlus } from "lucide-react"
+import {
+  useAdminUsers,
+  useCreateUser,
+  useDeleteUser,
+  useUpdateUser,
+  isAlreadyDeleted,
+} from "../../queries/admin"
 import { Card } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
 import { Input, Field } from "../../components/ui/Input"
@@ -12,6 +18,7 @@ import { ErrorState } from "../../components/ui/ErrorState"
 import { EmptyState } from "../../components/ui/EmptyState"
 import { StatusPill } from "../../components/ui/StatusPill"
 import { Drawer } from "../../components/ui/Drawer"
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog"
 import { formatDate } from "../../lib/utils"
 import { normalizeError } from "../../api/errors"
 import { cosplayApi } from "../../api/cosplay"
@@ -29,15 +36,17 @@ const createSchema = z.object({
 type CreateForm = z.infer<typeof createSchema>
 
 export function AdminUsersPage() {
-  const { impersonate } = useAuth()
+  const { user: currentUser, impersonate } = useAuth()
   const usersQ = useAdminUsers()
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<User | null>(null)
+  const [deleting, setDeleting] = useState<User | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
   const create = useCreateUser()
   const update = useUpdateUser()
+  const remove = useDeleteUser()
 
   const onCosplay = async (email: string) => {
     setImpersonatingId(email)
@@ -172,6 +181,19 @@ export function AdminUsersPage() {
                         >
                           Edit
                         </Button>
+                        {/* The backend refuses to delete your own account, so
+                            the button stays hidden on the admin's own row. */}
+                        {currentUser?.id !== u.id ? (
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            leftIcon={Trash2}
+                            onClick={() => setDeleting(u)}
+                            aria-label={`Permanently delete ${u.email}`}
+                          >
+                            Delete
+                          </Button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -274,6 +296,41 @@ export function AdminUsersPage() {
           />
         ) : null}
       </Drawer>
+
+      <ConfirmDialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        title={
+          deleting
+            ? `Permanently delete ${deleting.first_name} ${deleting.last_name}?`
+            : "Permanently delete this user?"
+        }
+        description={
+          deleting
+            ? `${deleting.email} — this removes the account and everything under it: projects, instances, deployments, actions, metrics and action requests. It cannot be undone. The servers themselves keep running.`
+            : ""
+        }
+        confirmLabel="Delete permanently"
+        tone="danger"
+        requireCheckbox
+        checkboxLabel="I understand this cannot be undone"
+        isLoading={remove.isPending}
+        onConfirm={async () => {
+          if (!deleting) return
+          try {
+            await remove.mutateAsync(deleting.id)
+            setDeleting(null)
+          } catch (err) {
+            // Already erased: the row is gone, which is what was asked for.
+            if (isAlreadyDeleted(err)) {
+              setDeleting(null)
+              return
+            }
+            // Any other failure was reported by the hook. Leave the dialog
+            // open so the admin can retry.
+          }
+        }}
+      />
     </div>
   )
 }

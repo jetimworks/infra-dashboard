@@ -2,6 +2,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from "./client"
 import type {
   AdminCreateUserInput,
   AdminUpdateUserInput,
+  DeleteUserResponse,
   User,
   Instance,
   ActionListResponse,
@@ -15,7 +16,7 @@ export const adminApi = {
   updateUser: (id: string, body: AdminUpdateUserInput) =>
     apiPut<User, AdminUpdateUserInput>(`/admin/users/${id}`, body),
   deleteUser: (id: string) =>
-    apiDelete<{ message: string }>(`/admin/users/${id}`),
+    apiDelete<DeleteUserResponse>(`/admin/users/${id}`),
   listInstances: () => apiGet<Instance[]>("/instances", { view: "admin" }),
   listActions: (params?: ActionListParams) =>
     apiGet<ActionListResponse>("/actions", { ...params, view: "admin" }),
