@@ -1,8 +1,7 @@
 import { useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import {
   Activity,
-  ChevronRight,
   ClipboardList,
   Cloud,
   Plus,
@@ -79,26 +78,17 @@ export function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-        <Link to="/projects" className="hover:text-fg">
-          Projects
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="font-medium text-fg">{project.name}</span>
-      </nav>
-
       {/* Header */}
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
           <Cloud className="h-6 w-6" aria-hidden />
         </div>
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             {project.name}
           </h1>
           {project.description ? (
-            <p className="mt-1 text-[0.9375rem] text-fg-muted">
+            <p className="mt-1 text-body text-fg-muted">
               {project.description}
             </p>
           ) : null}

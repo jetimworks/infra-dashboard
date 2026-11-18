@@ -99,12 +99,12 @@ export function AdminInstanceSystemActionPage() {
       </div>
 
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-fg tracking-tight">
           System action
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Run{" "}
-          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
             systemctl &lt;action&gt; &lt;service&gt;
           </code>{" "}
           on{" "}
@@ -134,7 +134,7 @@ export function AdminInstanceSystemActionPage() {
           </CardHeader>
           <div className="space-y-4">
             <fieldset>
-              <legend className="mb-2 text-[0.8125rem] font-medium text-fg-muted">
+              <legend className="mb-2 text-caption font-medium text-fg-muted">
                 Action
               </legend>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -250,8 +250,8 @@ export function AdminInstanceSystemActionPage() {
           <li className="flex gap-2">
             <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
             <span>
-              Prefer <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">reload</code> over{" "}
-              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">restart</code>{" "}
+              Prefer <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">reload</code> over{" "}
+              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">restart</code>{" "}
               when changing config — it keeps connections alive.
             </span>
           </li>
@@ -259,7 +259,7 @@ export function AdminInstanceSystemActionPage() {
             <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
             <span>
               Need to know which services are available? SSH in and run{" "}
-              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                 systemctl list-units --type=service
               </code>
               .

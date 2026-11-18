@@ -82,10 +82,10 @@ export function AdminSecurityAuditsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-fg tracking-tight">
           Security audits
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Full security audits for every VPS and database. Open a row to see
           the raw data — what you do with it is up to you.
         </p>
@@ -455,7 +455,7 @@ function Field({
       : "text-fg"
   return (
     <div className="rounded-md border border-border/40 bg-surface p-3">
-      <p className="text-[0.6875rem] font-medium uppercase tracking-wider text-fg-muted">
+      <p className="text-micro font-medium uppercase tracking-wider text-fg-muted">
         {label}
       </p>
       <p className={`mt-1 text-sm font-medium ${toneClass}`}>{value}</p>

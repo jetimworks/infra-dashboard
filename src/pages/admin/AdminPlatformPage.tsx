@@ -29,10 +29,10 @@ export function AdminPlatformPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Platform
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           The state of the platform itself — the database, the cache, and the
           metrics the platform exports about itself.
         </p>
@@ -64,7 +64,7 @@ export function AdminPlatformPage() {
         </CardHeader>
 
         <p className="-mt-2 mb-4 text-sm text-fg-muted">
-          The Prometheus exposition served at <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/metrics</code>.
+          The Prometheus exposition served at <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/metrics</code>.
           It is shown exactly as the server wrote it — this is the text a
           scrape would receive.
         </p>
@@ -144,7 +144,7 @@ function MetricsBlock({ text }: { text: string }) {
         ) : null}
       </div>
 
-      <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+      <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
         {text || "(no metrics returned)"}
       </pre>
     </div>

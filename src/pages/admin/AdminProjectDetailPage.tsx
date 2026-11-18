@@ -154,11 +154,11 @@ export function AdminProjectDetailPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             {project.name}
           </h1>
           {project.description ? (
-            <p className="mt-1 text-[0.9375rem] text-fg-muted">
+            <p className="mt-1 text-body text-fg-muted">
               {project.description}
             </p>
           ) : null}
@@ -277,7 +277,7 @@ export function AdminProjectDetailPage() {
             <select
               id="ep-owner"
               {...register("user_id")}
-              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {(usersQ.data ?? []).map((u) => (
                 <option key={u.id} value={u.id}>

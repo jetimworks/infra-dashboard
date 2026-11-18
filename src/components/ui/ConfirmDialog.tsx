@@ -68,9 +68,9 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="w-full max-w-md rounded-xl p-0 shadow-[var(--shadow-modal)] backdrop:bg-fg/40 animate-scale-in"
+      className="w-full max-w-md rounded-lg border border-border p-0 shadow-[var(--shadow-modal)] animate-scale-in"
       style={{
-        backgroundColor: "rgb(var(--surface))",
+        backgroundColor: "var(--surface)",
         margin: "auto",
       }}
       onClick={(e) => {
@@ -86,8 +86,8 @@ export function ConfirmDialog({
             </div>
           ) : null}
           <div className="flex-1">
-            <h2 className="text-[1.25rem] font-semibold text-fg">{title}</h2>
-            <p className="mt-2 text-[0.9375rem] text-fg-muted">{description}</p>
+            <h2 className="font-display text-xl font-semibold text-fg">{title}</h2>
+            <p className="mt-2 text-body text-fg-muted">{description}</p>
           </div>
         </div>
 

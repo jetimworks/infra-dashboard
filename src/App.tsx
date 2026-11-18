@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"
-import { useEffect } from "react"
 import { AnimatePresence } from "framer-motion"
 import { Toaster } from "sonner"
 import { AuthProvider } from "./auth/AuthProvider"
 import { ThemeProvider } from "./contexts/ThemeContext"
+import { ConsolePrefsProvider } from "./contexts/ConsolePrefsContext"
 import { PublicRoute, ProtectedRoute } from "./components/layout/ProtectedRoute"
 import { AppShell } from "./components/layout/AppShell"
 import { AdminRoute, CosplayRoute } from "./components/auth/AdminRoute"
@@ -56,26 +56,21 @@ import { AdminActionRequestDetailPage } from "./pages/admin/AdminActionRequestDe
 import { AdminPlatformPage } from "./pages/admin/AdminPlatformPage"
 
 export default function App() {
-  // Always use vibrant mode - remove old color mode preferences
-  useEffect(() => {
-    document.documentElement.classList.add("vibrant")
-    localStorage.removeItem("colorMode")
-    localStorage.removeItem("colorModePopupShown")
-  }, [])
-
   return (
     <BrowserRouter>
       <AuthProvider>
         <ThemeProvider>
-          <Toaster
-            richColors
-            position="top-right"
-            closeButton
-            toastOptions={{
-              duration: 5000,
-            }}
-          />
-          <AnimatedRoutes />
+          <ConsolePrefsProvider>
+            <Toaster
+              richColors
+              position="top-right"
+              closeButton
+              toastOptions={{
+                duration: 5000,
+              }}
+            />
+            <AnimatedRoutes />
+          </ConsolePrefsProvider>
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>

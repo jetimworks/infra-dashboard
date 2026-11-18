@@ -1,7 +1,6 @@
 import { useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import {
-  ChevronRight,
   Database,
   FolderTree,
   RefreshCw,
@@ -104,7 +103,6 @@ export function InstanceSchemasPage() {
   if (instance.type !== "REMOTE_RDS") {
     return (
       <div className="space-y-6">
-        <Breadcrumb id={instance.id} name={instance.name} />
         <Card>
           <EmptyState
             icon={Database}
@@ -142,16 +140,15 @@ export function InstanceSchemasPage() {
       animate="enter"
       variants={reduceMotion ? reducedVariants : pageVariants}
     >
-      <Breadcrumb id={instance.id} name={instance.name} />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Schema
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             The schemas and relations{" "}
-            <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+            <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
               {selected || "your database"}
             </code>{" "}
             exposes. Read-only — we query the catalog, we don't change anything.
@@ -186,7 +183,7 @@ export function InstanceSchemasPage() {
                 id="schema-database"
                 value={selected}
                 onChange={(event) => setOverride(event.target.value)}
-                className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 {/*
                   The list is datallowconn AND NOT datistemplate, so the
@@ -220,7 +217,7 @@ export function InstanceSchemasPage() {
           <span className="text-fg-muted">
             This database has more than that, and the list is cut off rather
             than paged — run{" "}
-            <code className="font-mono text-[0.8125rem]">ANALYZE</code> or
+            <code className="font-mono text-caption">ANALYZE</code> or
             narrow your query if you were looking for something further down.
           </span>
         </div>
@@ -342,7 +339,7 @@ function RelationRow({ relation }: { relation: DbRelation }) {
     <li className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors duration-150 hover:bg-surface-sunken">
       <span className="flex min-w-0 items-center gap-2">
         <Table2 className="h-3.5 w-3.5 shrink-0 text-fg-subtle" aria-hidden />
-        <span className="truncate font-mono text-[0.8125rem]">{relation.name}</span>
+        <span className="truncate font-mono text-caption">{relation.name}</span>
         <Badge tone={KIND_TONE[relation.kind] ?? "neutral"}>
           {kindLabel(relation.kind)}
         </Badge>
@@ -408,21 +405,5 @@ function RowCount({ rows }: { rows: number }) {
     <span className="tabular-nums" title="Estimated by the PostgreSQL planner, not an exact count.">
       ≈{rows.toLocaleString()} rows
     </span>
-  )
-}
-
-function Breadcrumb({ id, name }: { id: string; name: string }) {
-  return (
-    <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-      <Link to="/instances" className="hover:text-fg">
-        Infrastructure
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <Link to={`/instances/${id}`} className="hover:text-fg">
-        {name}
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <span className="font-medium text-fg">Schema</span>
-    </nav>
   )
 }

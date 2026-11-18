@@ -75,7 +75,7 @@ export function InstanceCard({ instance, latestMetrics, loading }: InstanceCardP
                 <Icon className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <h3 className="text-[1.0625rem] font-semibold text-fg group-hover:text-primary transition-colors">
+                <h3 className="text-lead font-semibold text-fg group-hover:text-primary transition-colors">
                   {instance.name}
                 </h3>
                 <p className="mt-0.5 text-xs text-fg-muted">

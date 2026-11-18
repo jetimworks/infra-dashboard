@@ -36,10 +36,10 @@ export function ActionRequestsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Action Requests
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             Track and manage your requests to the team.
           </p>
         </div>

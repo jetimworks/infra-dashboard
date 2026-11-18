@@ -84,7 +84,7 @@ export function BranchControl({ instance, effectiveBranch }: BranchControlProps)
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm text-fg-muted">Branch</span>
-        <code className="min-w-0 flex-1 truncate rounded bg-surface-sunken px-2.5 py-2 font-mono text-[0.8125rem] text-fg">
+        <code className="min-w-0 flex-1 truncate rounded bg-surface-sunken px-2.5 py-2 font-mono text-caption text-fg">
           {effective}
         </code>
         {editing ? (
@@ -119,7 +119,7 @@ export function BranchControl({ instance, effectiveBranch }: BranchControlProps)
           <Input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            className="font-mono text-[0.8125rem]"
+            className="font-mono text-caption"
             spellCheck={false}
             error={validationError ?? undefined}
             placeholder="e.g. release/2026-q4"

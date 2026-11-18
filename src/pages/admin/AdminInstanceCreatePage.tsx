@@ -69,7 +69,7 @@ function ParentServerSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+      className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
     >
       <option value="">Select a server</option>
       {projectIds.map((pid) => (
@@ -409,10 +409,10 @@ export function AdminInstanceCreatePage() {
       </div>
 
       <div>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Add a new instance
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Pick a type first, then fill in the details. You can edit anything
           later.
         </p>
@@ -559,7 +559,7 @@ export function AdminInstanceCreatePage() {
                 <select
                   id="ci-project"
                   {...vpsForm.register("project_id")}
-                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Select a project</option>
                   {projects.map((p) => (
@@ -695,7 +695,7 @@ export function AdminInstanceCreatePage() {
           <div className="flex items-center justify-end gap-3">
             <Link
               to="/admin/instances"
-              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-[0.9375rem] font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
+              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-body font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
             >
               Cancel
             </Link>
@@ -849,7 +849,7 @@ export function AdminInstanceCreatePage() {
           <div className="flex items-center justify-end gap-3">
             <Link
               to="/admin/instances"
-              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-[0.9375rem] font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
+              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-body font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
             >
               Cancel
             </Link>
@@ -881,7 +881,7 @@ export function AdminInstanceCreatePage() {
                 <select
                   id="cr-project"
                   {...remoteForm.register("project_id")}
-                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Select a project</option>
                   {projects.map((p) => (
@@ -1036,7 +1036,7 @@ export function AdminInstanceCreatePage() {
                     id="cr-rr-ssl-mode"
                     defaultValue={DEFAULT_DB_SSL_MODE}
                     {...remoteForm.register("db_ssl_mode")}
-                    className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {DB_SSL_MODES.map((mode) => (
                       <option key={mode} value={mode}>
@@ -1110,7 +1110,7 @@ export function AdminInstanceCreatePage() {
           <div className="flex items-center justify-end gap-3">
             <Link
               to="/admin/instances"
-              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-[0.9375rem] font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
+              className="inline-flex h-10 items-center justify-center rounded-md px-4 text-body font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
             >
               Cancel
             </Link>

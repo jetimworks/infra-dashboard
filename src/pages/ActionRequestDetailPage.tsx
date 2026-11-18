@@ -1,12 +1,10 @@
 import { useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import {
-  ChevronRight,
   MessageSquare,
   Shield,
   User,
   Trash2,
-  ArrowLeft,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useActionRequest, useDeleteActionRequest, useAddActionRequestMessage } from "../queries/action-requests"
@@ -82,20 +80,10 @@ export function ActionRequestDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-        <Link to="/action-requests" className="hover:text-fg flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-          Action Requests
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="font-medium text-fg truncate max-w-[200px]">{ar.title}</span>
-      </nav>
-
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+          <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-fg tracking-tight">
             {ar.title}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -120,7 +108,7 @@ export function ActionRequestDetailPage() {
         <CardHeader>
           <CardTitle>Description</CardTitle>
         </CardHeader>
-        <p className="text-[0.9375rem] text-fg whitespace-pre-wrap">
+        <p className="text-body text-fg whitespace-pre-wrap">
           {ar.description}
         </p>
       </Card>

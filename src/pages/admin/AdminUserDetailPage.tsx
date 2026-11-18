@@ -63,10 +63,10 @@ export function AdminUserDetailPage() {
             {user.first_name?.[0]}{user.last_name?.[0]}
           </div>
           <div className="min-w-0">
-            <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+            <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
               {user.first_name} {user.last_name}
             </h1>
-            <p className="truncate text-[0.9375rem] text-fg-muted">{user.email}</p>
+            <p className="truncate text-body text-fg-muted">{user.email}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
@@ -310,7 +310,7 @@ function EditUserDrawer({
             id="edit-status"
             value={status}
             onChange={(e) => setStatus(e.target.value as UserStatus)}
-            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>

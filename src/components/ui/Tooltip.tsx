@@ -10,6 +10,11 @@ export interface TooltipProps {
   className?: string
 }
 
+/**
+ * A graphite inverse tooltip. The console's plain-language help copy reads
+ * best on a dark chip — it separates the explanation from the data it is
+ * explaining, the way a console's inline docs do.
+ */
 export function Tooltip({
   content,
   children,
@@ -26,14 +31,14 @@ export function Tooltip({
             side={side}
             align={align}
             sideOffset={6}
-            style={{ backgroundColor: "rgb(var(--surface))" }}
+            style={{ backgroundColor: "var(--appbar)" }}
             className={cn(
-              "z-50 max-w-xs rounded-md border border-border/60 px-4 py-3 text-sm leading-relaxed text-fg shadow-[var(--shadow-modal)] animate-fade-in font-medium",
+              "z-50 max-w-xs rounded-md border border-appbar-line px-3 py-2 text-caption leading-relaxed text-appbar-fg shadow-[var(--shadow-popover)] animate-fade-in",
               className
             )}
           >
             {content}
-            <TooltipPrimitive.Arrow style={{ fill: "rgb(var(--surface))" }} />
+            <TooltipPrimitive.Arrow style={{ fill: "var(--appbar)" }} />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

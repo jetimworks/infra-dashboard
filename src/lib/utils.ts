@@ -1,6 +1,21 @@
 import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns"
+
+/**
+ * tailwind-merge does not know about this project's custom type scale, so it
+ * classifies `text-body`, `text-caption`, `text-lead`, `text-micro` and
+ * `text-title` as colours and strips them whenever a text colour follows.
+ * Teaching it these names are font sizes is what keeps
+ * `cn("text-body", "text-fg-muted")` from silently losing the size.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: {
+      text: ["micro", "caption", "body", "lead", "title"],
+    },
+  },
+})
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

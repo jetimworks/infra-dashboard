@@ -86,14 +86,14 @@ export function AiChatMessage({
           {blocks.map((block, index) => (
             <p
               key={index}
-              className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-fg"
+              className="whitespace-pre-wrap text-body leading-relaxed text-fg"
             >
               {block}
             </p>
           ))}
         </div>
       ) : (
-        <p className="border-l-2 border-border/60 pl-4 text-[0.9375rem] text-fg-muted">
+        <p className="border-l-2 border-border/60 pl-4 text-body text-fg-muted">
           The console answered without any text.
         </p>
       )}
@@ -162,7 +162,7 @@ export function AiChatMessage({
                       <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">
                         {block.title || block.type}
                       </p>
-                      <pre className="mt-1.5 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+                      <pre className="mt-1.5 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface p-3 font-mono text-micro leading-relaxed text-fg">
                         {block.body}
                       </pre>
                     </div>

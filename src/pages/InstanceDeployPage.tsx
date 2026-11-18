@@ -310,11 +310,11 @@ export function InstanceDeployPage() {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Deploy application
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
-            Runs <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code> on this server over SSH and shows the result below. Typical runs finish in under a minute.
+          <p className="mt-1 text-body text-fg-muted">
+            Runs <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/root/deploy.sh</code> on this server over SSH and shows the result below. Typical runs finish in under a minute.
           </p>
         </div>
         {lastDeploy ? (
@@ -425,7 +425,7 @@ export function InstanceDeployPage() {
                 description={
                   <>
                     We'll SSH in as <span className="font-mono">root</span>, run{" "}
-                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code>,
+                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/root/deploy.sh</code>,
                     and report the outcome here.
                   </>
                 }
@@ -566,7 +566,7 @@ export function InstanceDeployPage() {
                 <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
                 <span>
                   The preview above is read-only: it fetches the remote and compares. The deploy script is the single source of truth for what actually gets pulled, built, and restarted. Edit{" "}
-                  <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code>{" "}
+                  <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/root/deploy.sh</code>{" "}
                   on the server if you need different behavior.
                 </span>
               </li>
@@ -618,7 +618,7 @@ function StepHeader({
     <div className="flex items-start gap-3">
       <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
         <Icon className="h-5 w-5" aria-hidden />
-        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[0.6875rem] font-semibold text-primary-fg ring-2 ring-surface">
+        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-micro font-semibold text-primary-fg ring-2 ring-surface">
           {step}
         </span>
       </div>

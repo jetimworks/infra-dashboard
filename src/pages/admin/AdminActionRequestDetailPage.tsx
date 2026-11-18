@@ -1,7 +1,5 @@
 import { Link, useParams } from "react-router-dom"
 import {
-  ArrowLeft,
-  ChevronRight,
   User,
   Server,
   FolderOpen,
@@ -88,16 +86,6 @@ export function AdminActionRequestDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-        <Link to="/admin/action-requests" className="hover:text-fg flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-          Action Requests
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="font-medium text-fg truncate max-w-[300px]">{ar.title}</span>
-      </nav>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6 min-w-0">
@@ -106,7 +94,7 @@ export function AdminActionRequestDetailPage() {
             <div className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+                  <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
                     {ar.title}
                   </h1>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -121,7 +109,7 @@ export function AdminActionRequestDetailPage() {
               {/* Description */}
               <div className="mt-6">
                 <h3 className="text-sm font-medium text-fg-muted mb-2">Description</h3>
-                <p className="text-[0.9375rem] text-fg whitespace-pre-wrap leading-relaxed">
+                <p className="text-body text-fg whitespace-pre-wrap leading-relaxed">
                   {ar.description}
                 </p>
               </div>

@@ -159,13 +159,13 @@ export function InstanceSystemPage() {
       </nav>
 
       <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           System toolkit
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Where the disk space went, whether the host has swap, and which
           systemd units it is running. Everything here is read over SSH from{" "}
-          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
             {instance.host ?? instance.name}
           </code>
           .

@@ -72,12 +72,13 @@ src/
 │   │                   # Drawer, SegmentedControl, Tabs, Tooltip, Toast, Table, …
 │   ├── data/           # MetricTile, ChartContainer, InstanceCard, BackupItem, …
 │   ├── feedback/       # AsyncActionTracker, RequireAdmin, ErrorBoundary, PageStub
-│   ├── layout/         # AppShell, Sidebar, TopNav, Breadcrumb, UserMenu, AdminTabs,
+│   ├── layout/         # ConsoleShell, ConsoleTopBar, ConsoleNav, CommandPalette,
+│   │                   # AppShell, AdminShell, Breadcrumb, UserMenu,
 │   │                   # ProjectSelector, ProtectedRoute, PublicRoute
 │   └── theme/          # ThemeToggle
 │
-├── contexts/           # ThemeContext (light/dark)
-├── hooks/              # useDebounce, useTimeAgo
+├── contexts/           # ThemeContext (light/dark), ConsolePrefsContext
+├── hooks/              # useDebounce, useTimeAgo, useConsolePrefs
 ├── lib/                # cn(), formatRelative, formatDate, formatBytes,
 │                       # query-client, query-keys factory
 ├── pages/
@@ -102,18 +103,56 @@ src/
 
 ## Design system
 
+The interface is a **console** — a Graphite app bar, a grouped nav rail, a context
+bar, and hairline-bordered content panels on a light canvas. Google Console / AWS
+Console in feel, but far simpler, and written for someone who does not work with
+servers for a living.
+
 - **Light-first.** Dark mode is a toggle, not a default.
-- **Calm blue palette.** `primary` = blue-600, accent = teal-600.
-- **Status colors.** `success` (green-600), `warning` (amber-600 — *not* red, calibrated for non-technical eyes), `danger` (red-600, reserved for data-loss / destructive ops).
-- **Typography.** Inter (variable). Generous line-height, never cramped.
-- **Shape.** `radius-md` = 10px, `radius-lg` = 14px.
+- **Console chrome.** `ConsoleShell` owns three layers: a fixed graphite app bar
+  (full viewport width), a nav rail below it, and a context bar (project selector +
+  breadcrumb) over the content column. `ConsoleNav` collapses to a 64px icon rail;
+  the state persists in `localStorage`.
+- **Calm blue palette, teal admin accent.** `primary` for links, primary actions and
+  the customer console; `accent` (teal) marks the staff console's chrome.
+- **Status colors.** `success` (green), `warning` (amber — *not* red, calibrated for
+  non-technical eyes), `danger` (red, reserved for data-loss / destructive ops).
+- **Typography.** Overpass for UI and body, Archivo for headings and uppercase
+  micro-labels, JetBrains Mono for machine identifiers only (hosts, IDs, paths).
+- **Shape.** `radius-md` = 6px, `radius-lg` = 8px. Cards use a 1px hairline border,
+  not a drop shadow. Shadows are for overlays only.
 - **Motion.** 150–250ms opacity/transform transitions. Cards lift on hover.
 - **Voice.** Second person, short, plain English. Define jargon inline.
   - _"Web server health"_ instead of _"Project list"_.
   - _"We couldn't reach the server. Check your connection."_ instead of _"Error 500."_
-- **Banned:** "leverage", "synergy", "robust", "enterprise-grade". No exclamation marks. No emojis.
+- **Banned:** "leverage", "synergy", "robust", "enterprise-grade". No exclamation marks.
+  No emojis. No gradient text. No coloured side-stripe accents.
 
-All colors and shapes are defined as HSL triplets in `src/index.css` under `@theme`, with matching `:root` variables for alpha modifiers. Components reference tokens via Tailwind utilities (`bg-primary`, `text-fg-muted`, `border-border`, `bg-success-soft`). Never inline hex.
+### Tokens
+
+`src/index.css` is the only place colours are defined. The **raw** vars live in
+`:root` and `html.dark`; the `@theme inline` block is a pure alias map, so every
+Tailwind utility compiles to `var(--token)` and re-themes itself when the raw var
+changes. One namespace, so light and dark cannot drift apart.
+
+Colours are **OKLCH** (perceptually uniform) with the neutrals tinted toward the
+brand hue. Components reference tokens via Tailwind utilities (`bg-primary`,
+`text-fg-muted`, `border-border`, `bg-success-soft`). Never inline hex.
+
+Type sizes use the named scale — `text-micro`, `text-caption`, `text-body`,
+`text-lead`, `text-2xl`. `cn()` is configured with `extendTailwindMerge` so
+tailwind-merge knows these are sizes and does not strip them when a text colour
+follows.
+
+### Explaining things to non-technical people
+
+- **Explain mode** (the lightbulb in the app bar) reveals the plain-English
+  definition that normally sits behind a hover. The wording already exists in
+  `METRIC_HELP` (`InstanceDetailPage.tsx`) and the metric catalogue
+  (`InstanceMetricsPage.tsx`).
+- **⌘K command palette** searches pages, projects and servers. It reads data the
+  app has already fetched — no extra requests.
+- Empty states teach; they never just say "nothing here".
 
 ## Async actions
 

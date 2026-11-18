@@ -133,10 +133,10 @@ export function AdminProjectsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Projects
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             Every project across every customer.
           </p>
         </div>
@@ -265,7 +265,7 @@ export function AdminProjectsPage() {
             <select
               id="np-user"
               {...createForm.register("user_id")}
-              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="">Select a customer</option>
               {users.map((u) => (

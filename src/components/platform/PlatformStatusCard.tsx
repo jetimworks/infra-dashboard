@@ -138,7 +138,7 @@ function PlatformHealthBody({ health }: { health: PlatformHealth }) {
           )}
         </span>
         <div className="min-w-0">
-          <p className="text-[0.9375rem] font-semibold text-fg">{verdict}</p>
+          <p className="text-body font-semibold text-fg">{verdict}</p>
           <p className="mt-0.5 text-sm text-fg-muted">{note}</p>
           <p className="mt-2 text-xs text-fg-subtle">
             Up for {formatDuration(health.uptime_seconds)}

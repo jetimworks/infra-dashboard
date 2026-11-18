@@ -125,56 +125,58 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Greeting */}
       <div>
-        <p className="text-[0.9375rem] text-fg-muted">
+        <p className="text-body text-fg-muted">
           {greeting()}
           {firstName ? `, ${firstName}` : ""}
         </p>
-        <h1 className="mt-1 text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="mt-1 font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Your infrastructure
         </h1>
       </div>
 
-      {/* Status hero */}
+      {/* Status hero — a flat tonal panel, not a coloured stripe. */}
       <div
         className={cn(
-          "rounded-lg p-6 shadow-[var(--shadow-card-hover)] border-l-4",
+          "rounded-lg border p-5",
           hero.tone === "success"
-            ? "bg-success-soft/40 border-l-green-400"
+            ? "border-success/30 bg-success-soft/35"
             : hero.tone === "warning"
-              ? "bg-warning-soft/40 border-l-warning"
-              : "bg-danger-soft/40 border-l-danger"
+              ? "border-warning/35 bg-warning-soft/40"
+              : "border-danger/30 bg-danger-soft/35"
         )}
       >
         <div className="flex items-start gap-4">
           <div
             className={cn(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-success-fg",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
               hero.tone === "success"
-                ? "bg-success"
+                ? "bg-success/15 text-success-fg"
                 : hero.tone === "warning"
-                  ? "bg-warning"
-                  : "bg-danger"
+                  ? "bg-warning/15 text-warning-fg"
+                  : "bg-danger/15 text-danger-fg"
             )}
           >
-            <HeroIcon className="h-6 w-6" aria-hidden />
+            <HeroIcon className="h-5 w-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-[1.25rem] font-semibold text-fg">{hero.title}</h2>
-            <p className="mt-1 text-[0.9375rem] text-fg-muted">{hero.body}</p>
+            <h2 className="font-display text-lead font-semibold text-fg">
+              {hero.title}
+            </h2>
+            <p className="mt-1 max-w-2xl text-body text-fg-muted">{hero.body}</p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <Link
                 to="/instances"
-                className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3.5 text-sm font-medium text-fg-on-accent shadow-sm transition-colors hover:bg-primary-hover"
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-transparent bg-primary px-3.5 text-sm font-medium text-fg-on-accent transition-colors hover:bg-primary-hover"
               >
                 View your {instances.length} server{instances.length === 1 ? "" : "s"}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden />
               </Link>
               <Link
                 to="/activity"
-                className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-sunken hover:text-fg"
               >
                 See recent activity
               </Link>
@@ -247,18 +249,24 @@ function StatCard({
   to: string
 }) {
   return (
-    <Link to={to} className="block">
-      <Card interactive padding="md">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
-            <Icon className="h-4 w-4" aria-hidden />
+    <Link to={to} className="group block">
+      <Card interactive padding="md" className="h-full">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-soft-fg">
+              <Icon className="h-4 w-4" aria-hidden />
+            </div>
+            <div>
+              <p className="section-label">{label}</p>
+              <p className="font-display text-2xl font-semibold leading-tight tabular-nums text-fg">
+                {value}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-fg-muted">{label}</p>
-            <p className="text-[1.5rem] font-semibold leading-tight text-fg">
-              {value}
-            </p>
-          </div>
+          <ArrowRight
+            className="h-4 w-4 shrink-0 text-fg-subtle transition-colors group-hover:text-fg"
+            aria-hidden
+          />
         </div>
       </Card>
     </Link>

@@ -205,12 +205,12 @@ export function InstanceReleasesPage() {
       </nav>
 
       <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Releases
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Deploy a commit to{" "}
-          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
             {instance.github_repo ?? instance.github_branch ?? instance.name}
           </code>
           , watch the pipeline run, and roll back when it goes wrong.
@@ -550,7 +550,7 @@ function DeployCommitCard({
               </Button>
               <p className="text-sm text-fg-muted">
                 Deploys{" "}
-                <code className="font-mono text-[0.8125rem]">
+                <code className="font-mono text-caption">
                   {diff?.resolved_sha || diffSha}
                 </code>{" "}
                 to this server.
@@ -667,13 +667,13 @@ function ReleaseDetailSection({
           </div>
           {detail ? (
             <p className="mt-1 text-sm text-fg-muted">
-              <code className="font-mono text-[0.8125rem]">
+              <code className="font-mono text-caption">
                 {detail.sha ? detail.sha.slice(0, 8) : "—"}
               </code>
               {detail.branch ? (
                 <>
                   {" on "}
-                  <span className="font-mono text-[0.8125rem]">
+                  <span className="font-mono text-caption">
                     {detail.branch}
                   </span>
                 </>

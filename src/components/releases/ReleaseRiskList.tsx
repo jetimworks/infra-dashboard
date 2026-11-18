@@ -70,7 +70,7 @@ export function ReleaseRiskList({
                 {paths.map((path) => (
                   <li
                     key={path}
-                    className="break-all rounded bg-surface px-1.5 py-0.5 font-mono text-[0.6875rem] text-fg-subtle"
+                    className="break-all rounded bg-surface px-1.5 py-0.5 font-mono text-micro text-fg-subtle"
                   >
                     {path}
                   </li>

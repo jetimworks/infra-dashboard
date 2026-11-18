@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Link, useParams, useSearchParams } from "react-router-dom"
+import { useParams, useSearchParams } from "react-router-dom"
 import {
   CheckCircle2,
   ChevronRight,
@@ -242,7 +242,6 @@ export function InstanceFilesPage() {
   if (!isVps) {
     return (
       <div className="space-y-6">
-        <Breadcrumb id={instance.id} name={instance.name} />
         <Card>
           <EmptyState
             icon={Server}
@@ -276,14 +275,13 @@ export function InstanceFilesPage() {
       animate="enter"
       variants={reduceMotion ? reducedVariants : pageVariants}
     >
-      <Breadcrumb id={instance.id} name={instance.name} />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Files
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             Browse the host, edit the app&apos;s environment file, and pull or
             push the repository the release pipeline deploys from.
           </p>
@@ -439,22 +437,6 @@ export function InstanceFilesPage() {
         isLoading={appControl.isPending}
       />
     </motion.div>
-  )
-}
-
-function Breadcrumb({ id, name }: { id: string; name: string }) {
-  return (
-    <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-      <Link to="/instances" className="hover:text-fg">
-        Infrastructure
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <Link to={`/instances/${id}`} className="hover:text-fg">
-        {name}
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <span className="font-medium text-fg">Files</span>
-    </nav>
   )
 }
 
@@ -669,7 +651,7 @@ function DirectoryEntry({
             )}
             aria-hidden
           />
-          <span className="truncate font-mono text-[0.8125rem]">{entry.name}</span>
+          <span className="truncate font-mono text-caption">{entry.name}</span>
         </span>
         <span className="flex shrink-0 items-center gap-2 text-xs text-fg-muted">
           {tooLarge ? (
@@ -835,7 +817,7 @@ function FileViewer({
               value={buffer}
               onChange={(e) => onBufferChange(e.target.value)}
               rows={24}
-              className="font-mono text-[0.8125rem]"
+              className="font-mono text-caption"
               spellCheck={false}
             />
           </div>
@@ -869,11 +851,11 @@ function FileViewer({
               value={buffer}
               onChange={(e) => onBufferChange(e.target.value)}
               rows={24}
-              className="font-mono text-[0.8125rem]"
+              className="font-mono text-caption"
               spellCheck={false}
             />
           ) : (
-            <pre className="max-h-[38rem] min-h-24 overflow-auto rounded-md border border-border/60 bg-surface-sunken p-3.5 font-mono text-[0.8125rem] leading-relaxed text-fg whitespace-pre-wrap break-words">
+            <pre className="max-h-[38rem] min-h-24 overflow-auto rounded-md border border-border/60 bg-surface-sunken p-3.5 font-mono text-caption leading-relaxed text-fg whitespace-pre-wrap break-words">
               {loaded.content}
             </pre>
           )
@@ -996,7 +978,7 @@ function GitChangeList({
   return (
     <ul
       className={cn(
-        "overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.8125rem] text-fg",
+        "overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-caption text-fg",
         className
       )}
     >
@@ -1267,7 +1249,7 @@ function GitPanel({
                 {revert.data.restored.length === 1 ? "file" : "files"} to HEAD
               </p>
               {revert.data.restored.length > 0 ? (
-                <ul className="max-h-32 overflow-auto font-mono text-[0.8125rem]">
+                <ul className="max-h-32 overflow-auto font-mono text-caption">
                   {revert.data.restored.map((path) => (
                     <li key={path} className="whitespace-pre-wrap break-all">
                       {path}
@@ -1283,7 +1265,7 @@ function GitPanel({
                     either. Remove them on the host or through the file manager
                     if that is what you want.
                   </p>
-                  <ul className="max-h-32 overflow-auto font-mono text-[0.8125rem]">
+                  <ul className="max-h-32 overflow-auto font-mono text-caption">
                     {revert.data.skipped.map((path) => (
                       <li key={path} className="whitespace-pre-wrap break-all">
                         {path}
@@ -1311,7 +1293,7 @@ function GitPanel({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
-                className="font-mono text-[0.8125rem]"
+                className="font-mono text-caption"
                 spellCheck={false}
                 hint="Required. The message is sent as-is — it is committed verbatim."
               />
@@ -1385,7 +1367,7 @@ function GitPanel({
                 {push.data.sha_before.slice(0, 8)} →{" "}
                 {push.data.sha_after.slice(0, 8)}).
               </p>
-              <ul className="max-h-48 overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.8125rem] text-fg">
+              <ul className="max-h-48 overflow-auto rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-caption text-fg">
                 {push.data.files.map((line) => (
                   <li key={line} className="whitespace-pre-wrap break-all">
                     {line}

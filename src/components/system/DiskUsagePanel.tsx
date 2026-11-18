@@ -91,10 +91,10 @@ export function DiskUsagePanel({
                   )} percent full`}
                 >
                   <div className="text-center">
-                    <span className="block text-[1.5rem] font-bold leading-none tabular-nums text-fg">
+                    <span className="block text-2xl font-bold leading-none tabular-nums text-fg">
                       {Math.round(primary.used_percent)}%
                     </span>
-                    <span className="mt-1 block text-[0.6875rem] font-medium uppercase tracking-wider text-fg-subtle">
+                    <span className="mt-1 block text-micro font-medium uppercase tracking-wider text-fg-subtle">
                       used
                     </span>
                   </div>
@@ -181,7 +181,7 @@ function FilesystemRow({ filesystem }: { filesystem: DiskUsage }) {
         tone={diskUsageTone(filesystem.used_percent)}
         label={`${filesystem.mount_point || filesystem.filesystem} is ${used} percent full`}
       />
-      <p className="mt-1 text-[0.6875rem] text-fg-subtle">
+      <p className="mt-1 text-micro text-fg-subtle">
         {filesystem.filesystem} · {formatBytes(filesystem.used_bytes)} of{" "}
         {formatBytes(filesystem.total_bytes)} used
       </p>

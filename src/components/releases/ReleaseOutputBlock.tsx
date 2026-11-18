@@ -76,7 +76,7 @@ export function ReleaseOutputBlock({
         </div>
       ) : null}
 
-      <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+      <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
         {text || emptyMessage}
       </pre>
     </div>

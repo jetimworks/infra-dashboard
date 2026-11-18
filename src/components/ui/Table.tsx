@@ -13,7 +13,7 @@ export function Table({
     // swipeable strip on mobile instead of silently clipping.
     <div
       className={cn(
-        "overflow-x-auto rounded-lg bg-surface shadow-[var(--shadow-card)]",
+        "overflow-x-auto rounded-lg border border-border-subtle bg-surface",
         className
       )}
     >
@@ -26,7 +26,7 @@ Table.displayName = "Table"
 
 export function TableHead({ children }: { children: ReactNode }) {
   return (
-    <thead className="bg-surface-sunken text-left text-xs uppercase tracking-wide text-fg-muted">
+    <thead className="border-b border-border bg-surface-sunken text-left">
       {children}
     </thead>
   )
@@ -35,7 +35,7 @@ export function TableHead({ children }: { children: ReactNode }) {
 TableHead.displayName = "TableHead"
 
 export function TableBody({ children }: { children: ReactNode }) {
-  return <tbody className="divide-y divide-border/50">{children}</tbody>
+  return <tbody className="divide-y divide-border-subtle">{children}</tbody>
 }
 
 TableBody.displayName = "TableBody"
@@ -74,7 +74,7 @@ export function TableHeader({
 }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
-      className={cn("px-4 py-3 font-medium text-fg-muted", className)}
+      className={cn("section-label px-3 py-2.5", className)}
       {...rest}
     >
       {children}
@@ -90,7 +90,7 @@ export function TableCell({
   ...rest
 }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={cn("px-4 py-3 text-fg", className)} {...rest}>
+    <td className={cn("px-3 py-2.5 text-sm text-fg", className)} {...rest}>
       {children}
     </td>
   )

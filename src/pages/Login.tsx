@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useAuth } from "../auth/useAuth"
 import { Button } from "../components/ui/Button"
+import { AuthBrandPanel } from "../components/layout/AuthBrandPanel"
 import { Input } from "../components/ui/Input"
 import { Field } from "../components/ui/Input"
 import { Cloud, Mail, Lock, ArrowRight, ShieldCheck, Sparkles, Activity } from "lucide-react"
@@ -45,23 +46,23 @@ export function LoginPage() {
     <div className="flex min-h-screen">
       {/* Left — Form */}
       <div className="relative flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
-        <div className="absolute left-0 right-0 top-0 h-1 accent-bar-top lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
+        <div className="absolute left-0 right-0 top-0 h-1 bg-primary lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
         <div className="mx-auto w-full max-w-md">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm shadow-primary/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent">
               <Cloud className="h-5 w-5" aria-hidden />
             </div>
             <div>
-              <p className="text-[1.0625rem] font-semibold text-fg">Infra</p>
+              <p className="text-lead font-semibold text-fg">Infra</p>
               <p className="text-xs text-fg-muted">by Jetimworks</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-[2rem] font-bold leading-tight text-fg tracking-tight">
+            <h1 className="font-display text-[2rem] font-semibold leading-tight text-fg tracking-tight">
               Welcome back
             </h1>
-            <p className="mt-2 text-[0.9375rem] text-fg-muted">
+            <p className="mt-2 text-body text-fg-muted">
               Sign in to see how your servers are doing.
             </p>
           </div>
@@ -140,27 +141,18 @@ export function LoginPage() {
       </div>
 
       {/* Right — Brand panel */}
-      <div className="relative hidden lg:flex lg:w-[52%] lg:flex-col lg:justify-between lg:overflow-hidden bg-gradient-to-br from-primary via-primary to-accent px-16 py-16 text-fg-on-accent">
-        <div className="absolute inset-0 opacity-10" aria-hidden>
-          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-        </div>
-        <div className="relative">
-          <p className="text-sm font-medium uppercase tracking-wider opacity-80">
-            Your infrastructure, looked after
-          </p>
-          <h2 className="mt-3 text-[2.25rem] font-bold leading-tight">
+      <AuthBrandPanel
+        eyebrow="Your infrastructure, looked after"
+        headline={
+          <>
             Sleep at night.
             <br />
-            We've got your back.
-          </h2>
-          <p className="mt-4 max-w-md text-[0.9375rem] opacity-90">
-            We monitor your servers, databases, and storage, alert you when
-            something needs attention, and explain it all in plain English.
-          </p>
-        </div>
-
-        <div className="relative grid grid-cols-3 gap-6">
+            We&apos;ve got your back.
+          </>
+        }
+        body="We monitor your servers, databases, and storage, alert you when something needs attention, and explain it all in plain English."
+      >
+        <div className="grid grid-cols-3 gap-4">
           <Feature
             icon={ShieldCheck}
             label="Security"
@@ -177,7 +169,7 @@ export function LoginPage() {
             value="Daily, automatic, restorable"
           />
         </div>
-      </div>
+      </AuthBrandPanel>
     </div>
   )
 }
@@ -192,12 +184,10 @@ function Feature({
   value: string
 }) {
   return (
-    <div className="rounded-lg bg-white/10 p-4 backdrop-blur-sm">
-      <Icon className="h-5 w-5 opacity-90" aria-hidden />
-      <p className="mt-2 text-[0.6875rem] font-medium uppercase tracking-wider opacity-80">
-        {label}
-      </p>
-      <p className="mt-1 text-sm font-medium">{value}</p>
+    <div className="rounded-lg border border-appbar-line bg-appbar-raised p-4">
+      <Icon className="h-5 w-5 text-appbar-muted" aria-hidden />
+      <p className="section-label mt-2 text-appbar-muted">{label}</p>
+      <p className="mt-1 text-caption font-medium text-appbar-fg">{value}</p>
     </div>
   )
 }

@@ -255,10 +255,10 @@ export function DeploymentsPage() {
     >
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Deployments
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             The applications running on your servers, and where each one came
             from. Redeploying a domain starts a fresh run of it.
           </p>
@@ -395,7 +395,7 @@ function DeploymentCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Globe className="h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
-            <p className="truncate font-mono text-[0.9375rem] font-medium text-fg">
+            <p className="truncate font-mono text-body font-medium text-fg">
               {current.domain}
             </p>
           </div>
@@ -434,7 +434,7 @@ function DeploymentCard({
           )}
         </Row>
         <Row label="Repository">
-          <span className="font-mono text-[0.8125rem] break-all">
+          <span className="font-mono text-caption break-all">
             {current.git_repo}
           </span>
         </Row>
@@ -611,7 +611,7 @@ function DeploymentCreateDrawer({
         >
           <select
             id="deployment-instance"
-            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
             {...register("instanceId")}
           >
             <option value="">Select a server</option>
@@ -666,7 +666,7 @@ function DeploymentCreateDrawer({
           >
             <select
               id="deployment-framework"
-              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
               {...register("framework")}
             >
               {FRAMEWORK_OPTIONS.map((option) => (
@@ -812,12 +812,12 @@ function DeploymentDetailDrawer({
               )}
             </Detail>
             <Detail label="Repository">
-              <span className="font-mono text-[0.8125rem] break-all">
+              <span className="font-mono text-caption break-all">
                 {deployment.git_repo}
               </span>
             </Detail>
             <Detail label="Application path">
-              <span className="font-mono text-[0.8125rem] break-all">
+              <span className="font-mono text-caption break-all">
                 {deployment.app_path}
               </span>
             </Detail>
@@ -828,7 +828,7 @@ function DeploymentDetailDrawer({
             <Detail label="Updated">{formatDate(deployment.updated_at)}</Detail>
             {deployment.action_id ? (
               <Detail label="Action">
-                <span className="font-mono text-[0.8125rem]">
+                <span className="font-mono text-caption">
                   {deployment.action_id}
                 </span>
               </Detail>

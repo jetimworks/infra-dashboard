@@ -62,16 +62,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              "flex h-11 w-full rounded-md border bg-surface px-3.5 text-[0.9375rem] text-fg",
+              "flex h-11 w-full rounded-md border bg-surface px-3.5 text-body text-fg",
               "placeholder:text-fg-subtle/50",
               "transition-[border-color,box-shadow] duration-200",
-              "focus:outline-none focus:ring-4",
+              "focus:outline-none focus:ring-2",
               "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
               LeftIcon && "pl-10",
               (RightIcon || endAdornment) && "pr-10",
               error
-                ? "border-danger/60 focus:border-danger focus:ring-danger/15"
-                : "border-border/60 focus:border-primary/70 focus:ring-primary/15",
+                ? "border-danger focus:border-danger focus:ring-danger/15"
+                : "border-border focus:border-primary focus:ring-primary/20",
               shouldShake && "animate-shake",
               className
             )}
@@ -180,14 +180,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           rows={rows}
           className={cn(
-            "flex w-full min-h-24 rounded-md border bg-surface px-3.5 py-2.5 text-[0.9375rem] text-fg",
+            "flex w-full min-h-24 rounded-md border bg-surface px-3.5 py-2.5 text-body text-fg",
             "placeholder:text-fg-subtle/50",
             "transition-[border-color,box-shadow] duration-200",
-            "focus:outline-none focus:ring-4",
+            "focus:outline-none focus:ring-2",
             "disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed",
             error
-              ? "border-danger/60 focus:border-danger focus:ring-danger/15"
-              : "border-border/60 focus:border-primary/70 focus:ring-primary/15",
+              ? "border-danger focus:border-danger focus:ring-danger/15"
+              : "border-border focus:border-primary focus:ring-primary/20",
             shouldShake && "animate-shake",
             className
           )}
@@ -231,7 +231,7 @@ export const Field = ({
     <div className="w-full space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="flex items-center gap-1.5 text-[0.8125rem] font-medium text-fg-muted"
+        className="flex items-center gap-1.5 text-caption font-medium text-fg-muted"
       >
         <span>{label}</span>
         {required ? <span className="text-danger">*</span> : null}

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useAuth } from "../auth/useAuth"
 import { Button } from "../components/ui/Button"
+import { AuthBrandPanel } from "../components/layout/AuthBrandPanel"
 import { Input } from "../components/ui/Input"
 import { Field } from "../components/ui/Input"
 import {
@@ -71,28 +72,18 @@ export function RegisterPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left — Brand panel */}
-      <div className="relative hidden lg:flex lg:w-[52%] lg:flex-col lg:justify-between lg:overflow-hidden bg-gradient-to-br from-primary via-primary to-accent px-16 py-16 text-fg-on-accent">
-        <div className="absolute inset-0 opacity-10" aria-hidden>
-          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-        </div>
-
-        <div className="relative">
-          <p className="text-sm font-medium uppercase tracking-wider opacity-80">
-            Welcome to Infra
-          </p>
-          <h2 className="mt-3 text-[2.25rem] font-bold leading-tight">
+      <AuthBrandPanel
+        eyebrow="Welcome to Infra"
+        headline={
+          <>
             Set up in minutes.
             <br />
             Sleep well after.
-          </h2>
-          <p className="mt-4 max-w-md text-[0.9375rem] opacity-90">
-            Create your account and we'll start watching over your servers,
-            databases, and storage right away.
-          </p>
-        </div>
-
-        <div className="relative space-y-4">
+          </>
+        }
+        body="Create your account and we'll start watching over your servers, databases, and storage right away."
+      >
+        <div className="space-y-3">
           <Promise
             icon={CheckCircle2}
             text="No credit card needed to get started"
@@ -106,27 +97,27 @@ export function RegisterPage() {
             text="Cancel anytime — no questions, no fuss"
           />
         </div>
-      </div>
+      </AuthBrandPanel>
 
       {/* Right — Form */}
       <div className="relative flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
-        <div className="absolute right-0 top-0 h-1 w-full accent-bar-top lg:bottom-0 lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
+        <div className="absolute right-0 top-0 h-1 w-full bg-primary lg:bottom-0 lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
         <div className="mx-auto w-full max-w-md">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent shadow-sm shadow-primary/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-fg-on-accent">
               <Cloud className="h-5 w-5" aria-hidden />
             </div>
             <div>
-              <p className="text-[1.0625rem] font-semibold text-fg">Infra</p>
+              <p className="text-lead font-semibold text-fg">Infra</p>
               <p className="text-xs text-fg-muted">by Jetimworks</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-[2rem] font-bold leading-tight text-fg tracking-tight">
+            <h1 className="font-display text-[2rem] font-semibold leading-tight text-fg tracking-tight">
               Create your account
             </h1>
-            <p className="mt-2 text-[0.9375rem] text-fg-muted">
+            <p className="mt-2 text-body text-fg-muted">
               A few details and you're in. We'll never share your information.
             </p>
           </div>
@@ -276,9 +267,9 @@ function Promise({
   text: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 backdrop-blur-sm">
-      <Icon className="h-5 w-5 opacity-90" aria-hidden />
-      <p className="text-sm font-medium opacity-95">{text}</p>
+    <div className="flex items-center gap-3 rounded-lg border border-appbar-line bg-appbar-raised px-4 py-3">
+      <Icon className="h-5 w-5 text-appbar-muted" aria-hidden />
+      <p className="text-caption font-medium text-appbar-fg">{text}</p>
     </div>
   )
 }

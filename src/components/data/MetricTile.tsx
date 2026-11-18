@@ -3,6 +3,7 @@ import { type LucideIcon, TrendingDown, TrendingUp } from "lucide-react"
 import { motion, type HTMLMotionProps } from "framer-motion"
 import { cn } from "../../lib/utils"
 import { Tooltip } from "../ui/Tooltip"
+import { ExplainHint } from "../ui/ExplainHint"
 import { Skeleton } from "../ui/LoadingState"
 import { listItem } from "../../lib/motion"
 
@@ -60,7 +61,7 @@ export function MetricTile({
     return (
       <div
         className={cn(
-          "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40",
+          "rounded-lg border border-border-subtle bg-surface p-4",
           className
         )}
       >
@@ -75,45 +76,40 @@ export function MetricTile({
   const TrendIcon =
     trend == null ? null : trend > 0 ? TrendingUp : TrendingDown
 
+  const labelContent = (
+    <div className="flex items-center gap-1.5 text-caption text-fg-muted">
+      {Icon ? (
+        <Icon
+          className={cn("h-4 w-4", statusAccentText[status])}
+          aria-hidden
+        />
+      ) : null}
+      <span>{label}</span>
+    </div>
+  )
+
   return (
     <motion.div
       variants={listItem}
       data-metric-status={statusDataAttr[status]}
       className={cn(
-        "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40 transition-shadow duration-200",
-        "hover:shadow-[var(--shadow-card-hover)]",
+        "rounded-lg border border-border-subtle bg-surface p-4 transition-colors duration-150 hover:border-border",
         className
       )}
       {...({} as HTMLMotionProps<"div">)}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-start justify-between gap-2">
         {help ? (
           <Tooltip content={help} side="top">
-            <div className="flex items-center gap-1.5 text-[0.8125rem] text-fg-muted cursor-help">
-              {Icon ? (
-                <Icon
-                  className={cn("h-4 w-4", statusAccentText[status])}
-                  aria-hidden
-                />
-              ) : null}
-              <span>{label}</span>
-            </div>
+            <div className="cursor-help">{labelContent}</div>
           </Tooltip>
         ) : (
-          <div className="flex items-center gap-1.5 text-[0.8125rem] text-fg-muted">
-            {Icon ? (
-              <Icon
-                className={cn("h-4 w-4", statusAccentText[status])}
-                aria-hidden
-              />
-            ) : null}
-            <span>{label}</span>
-          </div>
+          labelContent
         )}
         {status !== "ok" && status !== "unknown" ? (
           <span
             className={cn(
-              "h-2 w-2 rounded-full",
+              "mt-1 h-2 w-2 shrink-0 rounded-full",
               status === "warning" ? "bg-warning" : "bg-danger"
             )}
             aria-hidden
@@ -121,13 +117,21 @@ export function MetricTile({
         ) : null}
       </div>
       <div className="flex items-baseline gap-1.5">
-        <span className={cn("text-[1.5rem] font-semibold", statusText[status])}>
+        <span
+          className={cn(
+            "font-display text-2xl font-semibold tabular-nums",
+            statusText[status]
+          )}
+        >
           {value ?? "—"}
         </span>
         {unit ? (
           <span className="text-sm text-fg-subtle">{unit}</span>
         ) : null}
       </div>
+      {/* Explain mode surfaces the plain-English definition that normally
+          only appears on hover. The wording already exists. */}
+      {help ? <ExplainHint>{help}</ExplainHint> : null}
       {(hint || trend != null) && (
         <div className="mt-2 flex items-center gap-2 text-xs text-fg-muted">
           {TrendIcon && trend != null ? (

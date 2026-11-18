@@ -24,8 +24,8 @@ export function PageStub({
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-fg">
           <Icon className="h-6 w-6" aria-hidden />
         </div>
-        <h1 className="text-[1.5rem] font-bold text-fg">{title}</h1>
-        <p className="mt-2 text-[0.9375rem] text-fg-muted">{description}</p>
+        <h1 className="text-2xl font-bold text-fg">{title}</h1>
+        <p className="mt-2 text-body text-fg-muted">{description}</p>
         <p className="mt-6 text-xs text-fg-subtle">
           This is a placeholder while we finish the rebuild. Everything here
           will use real data from your infrastructure.

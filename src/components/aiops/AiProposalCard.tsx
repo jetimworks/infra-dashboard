@@ -99,13 +99,13 @@ export function AiProposalCard({
             {proposalLabel(proposal.type)}
           </span>
           {outcome === null ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[0.6875rem] font-medium text-accent-soft-fg">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-micro font-medium text-accent-soft-fg">
               <ShieldQuestion className="h-3 w-3" aria-hidden />
               Waiting for confirmation
             </span>
           ) : null}
           {confirmed ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
+            <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-micro font-medium text-success-fg">
               <CheckCircle2 className="h-3 w-3" aria-hidden />
               Confirmed
             </span>
@@ -116,7 +116,7 @@ export function AiProposalCard({
           <p className="mt-1.5 text-sm text-fg-muted">{proposal.summary}</p>
         ) : null}
 
-        <p className="mt-2 text-[0.9375rem] font-medium text-fg">
+        <p className="mt-2 text-body font-medium text-fg">
           {proposalEffect(proposal)}
         </p>
 
@@ -128,7 +128,7 @@ export function AiProposalCard({
                 <dd
                   className={cn(
                     "min-w-0 break-words text-sm text-fg",
-                    param.mono && "font-mono text-[0.8125rem]"
+                    param.mono && "font-mono text-caption"
                   )}
                 >
                   {param.value}
@@ -306,7 +306,7 @@ function ExecutionResult({
               : `${response.unit} ${response.action} completed`}
           </p>
           {response.output ? (
-            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
               {response.output}
             </pre>
           ) : null}
@@ -333,12 +333,12 @@ function ExecutionResult({
             Swap space created
           </p>
           <p className="mt-1 text-sm text-fg">
-            <span className="font-mono text-[0.8125rem]">{response.path}</span>
+            <span className="font-mono text-caption">{response.path}</span>
             {" · "}
             {response.size_mb} MB
           </p>
           {response.output ? (
-            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
               {response.output}
             </pre>
           ) : null}
@@ -362,7 +362,7 @@ function ExecutionResult({
         </p>
         <p className="mt-1 text-sm text-fg">
           Commit{" "}
-          <span className="font-mono text-[0.8125rem]">{response.sha}</span> is
+          <span className="font-mono text-caption">{response.sha}</span> is
           running through the pipeline.
         </p>
         <Link

@@ -30,9 +30,9 @@ export function ErrorState({
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-danger-soft text-danger-fg animate-float">
         <AlertTriangle className="h-8 w-8" aria-hidden />
       </div>
-      <h3 className="text-[1.25rem] font-semibold text-fg">{title}</h3>
+      <h3 className="text-xl font-semibold text-fg">{title}</h3>
       {message ? (
-        <p className="mt-2 max-w-md text-[0.9375rem] text-fg-muted">{message}</p>
+        <p className="mt-2 max-w-md text-body text-fg-muted">{message}</p>
       ) : null}
       {onRetry ? (
         <div className="mt-6">

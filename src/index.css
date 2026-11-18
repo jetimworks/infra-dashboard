@@ -1,13 +1,23 @@
 @import "tailwindcss";
 
-/*
-  Light-first design tokens. Every color is declared in BOTH @theme and :root so
-  Tailwind utilities (bg-primary, text-fg-muted, border-border, etc.) resolve via
-  @theme while components can also read via rgb(var(--token)) if needed.
+/* --------------------------------------------------------------------------
+   Console design system — Infra by Jetimworks
 
-  Tokens are HSL triplets (no commas) so Tailwind 4 alpha modifiers like
-  bg-primary/20 work out of the box.
-*/
+   Architecture:
+     :root / html.dark  → the raw token VALUES (one palette per theme)
+     @theme inline      → a pure alias map so Tailwind utilities resolve to
+                           var(--token) at use time
+
+   Because the utilities compile to `var(--bg)` etc. rather than to a frozen
+   value, redefining the raw var in `html.dark` re-themes the whole app. This
+   is the single source of truth — there is exactly one token namespace, so
+   the two can never drift apart (the bug that used to leave every Tailwind
+   utility light in dark mode).
+
+   Colours are OKLCH: perceptually uniform, so equal lightness steps actually
+   look equal. Neutrals are tinted toward the brand hue (≈258°) and the accent
+   is a calm teal (≈190°). No purple.
+   -------------------------------------------------------------------------- */
 
 /* Make Tailwind's dark: variant follow the .dark class on <html> (controlled by
    ThemeContext), not the OS prefers-color-scheme media query. Without this,
@@ -16,164 +26,218 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Surfaces — warm paper whites */
-  --color-bg: 248 250 252;
-  --color-surface: 254 253 251;
-  --color-surface-raised: 254 253 251;
-  --color-surface-sunken: 243 245 247;
-  --color-surface-overlay: 254 253 251;
-
-  /* Text */
-  --color-fg: 15 23 42;
-  --color-fg-muted: 71 85 105;
-  --color-fg-subtle: 100 116 139;
-  --color-fg-on-accent: 255 255 255;
-
-  /* Borders — warm, soft, low-contrast */
-  --color-border: 212 215 220;
-  --color-border-subtle: 235 237 240;
-  --color-border-strong: 190 194 202;
-
-  /* Primary — calm blue */
-  --color-primary: 37 99 235;
-  --color-primary-hover: 29 78 216;
-  --color-primary-soft: 219 234 254;
-  --color-primary-soft-fg: 30 64 175;
-
-  /* Accent — warm teal for "yours / active" */
-  --color-accent: 13 148 136;
-  --color-accent-soft: 204 251 241;
-  --color-accent-soft-fg: 15 118 110;
-
-  /* Status — calibrated for non-technical eyes */
-  --color-success: 22 163 74;
-  --color-success-soft: 220 252 231;
-  --color-success-fg: 21 128 61;
-
-  --color-warning: 217 119 6;
-  --color-warning-soft: 254 243 199;
-  --color-warning-fg: 180 83 9;
-
-  --color-danger: 220 38 38;
-  --color-danger-soft: 254 226 226;
-  --color-danger-fg: 185 28 28;
-
-  --color-info: 2 132 199;
-  --color-info-soft: 224 242 254;
-  --color-info-fg: 3 105 161;
-
-  /* Shape */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-
-  /* Elevation — soft and diffused */
-  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 1px 2px -1px rgb(15 23 42 / 0.03);
-  --shadow-card-hover: 0 4px 16px -3px rgb(15 23 42 / 0.07), 0 2px 6px -2px rgb(15 23 42 / 0.04);
-  --shadow-modal: 0 8px 30px -8px rgb(15 23 42 / 0.08), 0 4px 12px -4px rgb(15 23 42 / 0.05);
-
-  /* Typography */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-
   /* Extra-tight breakpoint for small phones (iPhone SE / 12 mini). Real
      viewport widths live below the default sm: 640px floor. */
   --breakpoint-xs: 30rem;
+
+  /* Shape — tighter than the old 10/14/20px radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Type scale — app UIs use fixed rem, never fluid */
+  --text-micro: 0.6875rem;
+  --text-caption: 0.8125rem;
+  --text-body: 0.9375rem;
+  --text-lead: 1.0625rem;
+  --text-title: 1.5rem;
+
+  /* Typography */
+  --font-sans: var(--font-app-sans);
+  --font-display: var(--font-app-display);
+  --font-mono: var(--font-app-mono);
 }
 
+/* Colours are aliased rather than declared here: `inline` makes each
+   utility resolve straight to `var(--bg)` etc. at use time, so redefining
+   the raw var in `html.dark` re-themes the whole app. */
+@theme inline {
+  /* Surfaces */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+
+  /* Text */
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-on-accent: var(--fg-on-accent);
+
+  /* Borders — hairlines, low contrast */
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  /* Primary — calm blue */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-fg: var(--primary-soft-fg);
+
+  /* Accent — teal, used by the admin console */
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-fg: var(--accent-soft-fg);
+
+  /* Status */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-fg: var(--warning-fg);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-fg: var(--danger-fg);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-fg: var(--info-fg);
+
+  /* App bar — the graphite console header */
+  --color-appbar: var(--appbar);
+  --color-appbar-raised: var(--appbar-raised);
+  --color-appbar-line: var(--appbar-line);
+  --color-appbar-fg: var(--appbar-fg);
+  --color-appbar-muted: var(--appbar-muted);
+  --color-appbar-ring: var(--appbar-ring);
+}
+
+/* --------------------------------------------------------------------------
+   Light palette (default)
+   -------------------------------------------------------------------------- */
 :root {
-  --bg: 248 250 252;
-  --surface: 254 253 251;
-  --surface-sunken: 243 245 247;
-  --fg: 15 23 42;
-  --fg-muted: 71 85 105;
-  --fg-subtle: 100 116 139;
-  --border: 212 215 220;
-  --border-subtle: 235 237 240;
-  --primary: 37 99 235;
-  --primary-hover: 29 78 216;
-  --primary-soft: 219 234 254;
-  --accent: 13 148 136;
-  --accent-soft: 204 251 241;
-  --success: 22 163 74;
-  --success-soft: 220 252 231;
-  --success-fg: 21 128 61;
-  --warning: 217 119 6;
-  --warning-soft: 254 243 199;
-  --warning-fg: 180 83 9;
-  --danger: 220 38 38;
-  --danger-soft: 254 226 226;
-  --danger-fg: 185 28 28;
-  --info: 2 132 199;
-  --info-soft: 224 242 254;
-  --info-fg: 3 105 161;
+  /* Fonts — loaded in index.html */
+  --font-app-sans: "Overpass", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-app-display: "Archivo", "Overpass", ui-sans-serif, system-ui, sans-serif;
+  --font-app-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Surfaces */
+  --bg: oklch(0.978 0.004 256);
+  --surface: oklch(1 0 0);
+  --surface-raised: oklch(1 0 0);
+  --surface-sunken: oklch(0.962 0.005 256);
+  --surface-overlay: oklch(1 0 0);
+
+  /* Text */
+  --fg: oklch(0.258 0.024 262);
+  --fg-muted: oklch(0.494 0.032 261);
+  --fg-subtle: oklch(0.632 0.026 259);
+  --fg-on-accent: oklch(0.995 0 0);
+
+  /* Borders */
+  --border: oklch(0.893 0.009 258);
+  --border-subtle: oklch(0.938 0.006 257);
+  --border-strong: oklch(0.812 0.013 258);
+
+  /* Primary */
+  --primary: oklch(0.508 0.176 262);
+  --primary-hover: oklch(0.442 0.181 263);
+  --primary-soft: oklch(0.945 0.026 255);
+  --primary-soft-fg: oklch(0.386 0.132 262);
+
+  /* Accent */
+  --accent: oklch(0.545 0.105 191);
+  --accent-soft: oklch(0.945 0.03 185);
+  --accent-soft-fg: oklch(0.372 0.073 192);
+
+  /* Status */
+  --success: oklch(0.545 0.13 155);
+  --success-soft: oklch(0.952 0.032 152);
+  --success-fg: oklch(0.392 0.104 155);
+  --warning: oklch(0.647 0.157 62);
+  --warning-soft: oklch(0.968 0.038 88);
+  --warning-fg: oklch(0.437 0.108 60);
+  --danger: oklch(0.533 0.196 27);
+  --danger-soft: oklch(0.958 0.024 22);
+  --danger-fg: oklch(0.418 0.153 27);
+  --info: oklch(0.56 0.14 234);
+  --info-soft: oklch(0.953 0.026 232);
+  --info-fg: oklch(0.408 0.108 235);
+
+  /* App bar */
+  --appbar: oklch(0.262 0.026 262);
+  --appbar-raised: oklch(0.306 0.028 262);
+  --appbar-line: oklch(0.352 0.03 262);
+  --appbar-fg: oklch(0.972 0.004 258);
+  --appbar-muted: oklch(0.735 0.02 258);
+  --appbar-ring: oklch(0.62 0.14 255);
+
+  /* Elevation — cards use borders, not shadows. These are for overlays. */
+  --shadow-card: 0 1px 2px 0 oklch(0.26 0.024 262 / 0.05);
+  --shadow-card-hover: 0 2px 6px -1px oklch(0.26 0.024 262 / 0.1);
+  --shadow-modal: 0 12px 40px -12px oklch(0.22 0.02 262 / 0.28),
+    0 2px 8px -2px oklch(0.22 0.02 262 / 0.1);
+  --shadow-popover: 0 6px 20px -6px oklch(0.22 0.02 262 / 0.22);
+
+  /* Legacy aliases — referenced by a handful of old, unrouted pages. */
+  --text-primary: var(--fg);
+  --text-secondary: var(--fg-muted);
+  --text-on-accent: var(--fg-on-accent);
+  --card-bg: var(--surface);
+  --border-color: var(--border);
+  --bg-tertiary: var(--surface-sunken);
+  --accent-hover: var(--accent);
+  --success-subtle: var(--success-soft);
 }
 
-.dark {
-  --bg: 9 13 24;
-  --surface: 17 24 38;
-  --surface-sunken: 11 16 28;
-  --fg: 241 245 249;
-  --fg-muted: 148 163 184;
-  --fg-subtle: 100 116 139;
-  --border: 32 42 60;
-  --border-subtle: 22 32 48;
-  --primary: 96 165 250;
-  --primary-hover: 59 130 246;
-  --primary-soft: 23 37 84;
-  --accent: 45 212 191;
-  --accent-soft: 19 78 74;
-  --success: 74 222 128;
-  --success-soft: 20 83 45;
-  --success-fg: 134 239 172;
-  --warning: 251 191 36;
-  --warning-soft: 113 63 18;
-  --warning-fg: 253 224 71;
-  --danger: 248 113 113;
-  --danger-soft: 127 29 29;
-  --danger-fg: 252 165 165;
-  --info: 56 189 248;
-  --info-soft: 12 74 110;
-  --info-fg: 125 211 252;
-}
+/* --------------------------------------------------------------------------
+   Dark palette. `html.dark` beats `:root` on specificity, so these win
+   regardless of source order.
+   -------------------------------------------------------------------------- */
+html.dark {
+  --bg: oklch(0.176 0.014 262);
+  --surface: oklch(0.216 0.016 262);
+  --surface-raised: oklch(0.245 0.018 262);
+  --surface-sunken: oklch(0.196 0.014 262);
+  --surface-overlay: oklch(0.235 0.017 262);
 
-/* Vibrant Color Mode */
-.vibrant .bg-success-soft {
-  background-color: #dcfce7 !important;
-  color: #166534 !important;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2) !important;
-}
+  --fg: oklch(0.945 0.005 258);
+  --fg-muted: oklch(0.735 0.022 258);
+  --fg-subtle: oklch(0.6 0.02 258);
+  --fg-on-accent: oklch(0.99 0 0);
 
-.vibrant .bg-warning-soft {
-  background-color: #fef9c3 !important;
-  color: #854d0e !important;
-  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.2) !important;
-}
+  --border: oklch(0.325 0.02 262);
+  --border-subtle: oklch(0.268 0.016 262);
+  --border-strong: oklch(0.42 0.024 262);
 
-.vibrant .bg-danger-soft {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2) !important;
-}
+  --primary: oklch(0.56 0.17 258);
+  --primary-hover: oklch(0.62 0.16 255);
+  --primary-soft: oklch(0.29 0.06 262);
+  --primary-soft-fg: oklch(0.84 0.09 252);
 
-.vibrant .bg-info-soft {
-  background-color: #e0f2fe !important;
-  color: #075985 !important;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2) !important;
-}
+  --accent: oklch(0.56 0.1 192);
+  --accent-soft: oklch(0.28 0.045 190);
+  --accent-soft-fg: oklch(0.83 0.08 182);
 
-/* Vibrant metric cards — no border-left stripes */
-.vibrant [data-metric-status="warning"] {
-  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15), 0 0 0 1px rgba(234, 179, 8, 0.2) !important;
-}
+  --success: oklch(0.7 0.15 152);
+  --success-soft: oklch(0.27 0.055 155);
+  --success-fg: oklch(0.83 0.13 150);
+  --warning: oklch(0.78 0.145 78);
+  --warning-soft: oklch(0.3 0.06 70);
+  --warning-fg: oklch(0.86 0.12 82);
+  --danger: oklch(0.66 0.18 22);
+  --danger-soft: oklch(0.285 0.07 22);
+  --danger-fg: oklch(0.79 0.14 20);
+  --info: oklch(0.7 0.12 232);
+  --info-soft: oklch(0.28 0.055 236);
+  --info-fg: oklch(0.82 0.1 230);
 
-.vibrant [data-metric-status="danger"] {
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15), 0 0 0 1px rgba(220, 38, 38, 0.2) !important;
-}
+  --appbar: oklch(0.196 0.014 262);
+  --appbar-raised: oklch(0.245 0.018 262);
+  --appbar-line: oklch(0.3 0.02 262);
+  --appbar-fg: oklch(0.96 0.004 258);
+  --appbar-muted: oklch(0.7 0.02 258);
+  --appbar-ring: oklch(0.7 0.14 255);
 
-.vibrant [data-metric-status="ok"] {
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1), 0 0 0 1px rgba(34, 197, 94, 0.15) !important;
+  --shadow-card: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+  --shadow-card-hover: 0 2px 8px -2px oklch(0 0 0 / 0.45);
+  --shadow-modal: 0 16px 48px -16px oklch(0 0 0 / 0.7),
+    0 2px 10px -2px oklch(0 0 0 / 0.5);
+  --shadow-popover: 0 8px 28px -8px oklch(0 0 0 / 0.6);
 }
 
 * {
@@ -188,12 +252,16 @@ body,
 
 body {
   margin: 0;
-  background-color: rgb(var(--bg));
-  color: rgb(var(--fg));
-  font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-app-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Console tables: numbers line up column-wise. */
+table {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Scrollbar */
@@ -203,26 +271,57 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(var(--surface-sunken));
+  background: var(--surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--border));
+  background: var(--border);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--fg-subtle));
+  background: var(--fg-subtle);
 }
 
-/* Focus ring utility */
-*:focus-visible {
-  outline: 2px solid rgb(var(--primary));
-  outline-offset: 2px;
-  border-radius: 4px;
+/* Focus ring utility.
+   Kept in the base layer so a component's own `outline-none` / ring classes
+   (which live in the utilities layer) still win — an unlayered rule here
+   would override them and double up focus indicators. */
+@layer base {
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
 }
 
-/* Animations */
+/* Section / column micro-label — the console's uppercase heading style. */
+@utility section-label {
+  font-size: var(--text-micro);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Metric tile status — a tinted hairline, not a coloured stripe.
+   -------------------------------------------------------------------------- */
+[data-metric-status="warning"] {
+  border-color: color-mix(in oklab, var(--warning) 38%, var(--border-subtle));
+}
+
+[data-metric-status="danger"] {
+  border-color: color-mix(in oklab, var(--danger) 38%, var(--border-subtle));
+}
+
+[data-metric-status="ok"] {
+  border-color: color-mix(in oklab, var(--success) 28%, var(--border-subtle));
+}
+
+/* --------------------------------------------------------------------------
+   Animations
+   -------------------------------------------------------------------------- */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -251,88 +350,9 @@ body {
   animation: scale-in 200ms ease-out;
 }
 
-/* ------------------------------------------------------------------
-   Card accent borders — semantic left border + soft glow
-   Use: <Card accent="success"> or add .card-accent-success directly
------------------------------------------------------------------- */
-.card-accent {
-  position: relative;
-}
-.card-accent::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  width: 3px;
-  border-radius: 3px;
-  transition: background-color 200ms ease-out, box-shadow 200ms ease-out;
-}
-.card-accent-info::before {
-  background-color: rgb(var(--info));
-  box-shadow: 0 0 12px -2px rgba(2, 132, 199, 0.4);
-}
-.card-accent-success::before {
-  background-color: rgb(var(--success));
-  box-shadow: 0 0 12px -2px rgba(22, 163, 74, 0.4);
-}
-.card-accent-warning::before {
-  background-color: rgb(var(--warning));
-  box-shadow: 0 0 12px -2px rgba(217, 119, 6, 0.4);
-}
-.card-accent-danger::before {
-  background-color: rgb(var(--danger));
-  box-shadow: 0 0 12px -2px rgba(220, 38, 38, 0.4);
-}
-.card-accent-primary::before {
-  background-color: rgb(var(--primary));
-  box-shadow: 0 0 12px -2px rgba(37, 99, 235, 0.4);
-}
-.card-accent-accent::before {
-  background-color: rgb(var(--accent));
-  box-shadow: 0 0 12px -2px rgba(13, 148, 136, 0.4);
-}
-
-/* ------------------------------------------------------------------
-   Nav rail — animated active state for sidebar
-   Use: a <motion.span layoutId="nav-rail" /> inside the active link
------------------------------------------------------------------- */
-.nav-rail {
-  position: absolute;
-  left: 0;
-  top: 0.375rem;
-  bottom: 0.375rem;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background-color: rgb(var(--primary));
-  box-shadow: 0 0 8px -1px rgba(37, 99, 235, 0.5);
-}
-.nav-rail-accent {
-  background-color: rgb(var(--accent));
-  box-shadow: 0 0 8px -1px rgba(13, 148, 136, 0.5);
-}
-
-/* ------------------------------------------------------------------
-   Input focus glow — used in addition to Tailwind ring
------------------------------------------------------------------- */
-.input-focus-glow:focus-visible {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-}
-
-/* ------------------------------------------------------------------
-   Auth / hero card accent bar — gradient strip on top
------------------------------------------------------------------- */
-.accent-bar-top {
-  background: linear-gradient(
-    90deg,
-    rgb(var(--primary)) 0%,
-    rgb(var(--accent)) 100%
-  );
-}
-
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Shimmer skeleton — used for loading placeholders
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -345,26 +365,17 @@ body {
 .animate-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(212, 215, 220, 0.25) 0%,
-    rgba(212, 215, 220, 0.55) 50%,
-    rgba(212, 215, 220, 0.25) 100%
+    color-mix(in oklab, var(--border) 30%, transparent) 0%,
+    color-mix(in oklab, var(--border) 65%, transparent) 50%,
+    color-mix(in oklab, var(--border) 30%, transparent) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
 }
-.dark .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(32, 42, 60, 0.4) 0%,
-    rgba(32, 42, 60, 0.8) 50%,
-    rgba(32, 42, 60, 0.4) 100%
-  );
-  background-size: 200% 100%;
-}
 
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Slide-up / slide-in animations
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 @keyframes slide-up {
   from {
     opacity: 0;
@@ -410,65 +421,64 @@ body {
   animation: slide-in-left 220ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ------------------------------------------------------------------
-   Float — gentle bobbing for empty-state icons
------------------------------------------------------------------- */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Shake — form error feedback
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .animate-shake {
   animation: shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Pulse for live indicators (e.g. "running" status)
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .animate-pulse-soft {
   animation: pulse-soft 1.8s ease-in-out infinite;
 }
 
-/* ------------------------------------------------------------------
-   Native dialog backdrop — match the new motion aesthetic
------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   Native dialog backdrop — match the console motion aesthetic
+   -------------------------------------------------------------------------- */
 dialog::backdrop {
-  background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(2px);
+  background-color: oklch(0.22 0.02 262 / 0.45);
   animation: fade-in 180ms ease-out;
 }
 
-.dark dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.6);
+html.dark dialog::backdrop {
+  background-color: oklch(0 0 0 / 0.62);
 }
 
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Reduced motion — collapse durations, kill transforms
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -478,15 +488,11 @@ dialog::backdrop {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .card-accent::before,
-  .nav-rail {
-    box-shadow: none !important;
-  }
 }
 
-/* ------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    Mobile primitives
------------------------------------------------------------------- */
+   -------------------------------------------------------------------------- */
 
 /* 44pt-class tap target floor. Apply via class="touch-target" to any
    interactive surface that should meet iOS HIG / Material guidance. */
@@ -505,7 +511,7 @@ dialog::backdrop {
 }
 
 /* Fade the leading and trailing edges of a horizontally scrollable
-   container to hint that content continues off-screen. Apply via
+   container to hint that content continues off-screen. Apply with
    class="scroll-fade-x" and pair with overflow-x-auto. */
 @utility scroll-fade-x {
   -webkit-mask-image: linear-gradient(

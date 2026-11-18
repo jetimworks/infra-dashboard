@@ -15,6 +15,7 @@ import { Input } from "../components/ui/Input"
 import { SegmentedControl } from "../components/ui/SegmentedControl"
 import { LoadingPage } from "../components/ui/LoadingState"
 import { EmptyState } from "../components/ui/EmptyState"
+import { ExplainHint } from "../components/ui/ExplainHint"
 import { ErrorState } from "../components/ui/ErrorState"
 import { InstanceCard } from "../components/data/InstanceCard"
 import {
@@ -131,13 +132,18 @@ export function InstancesListPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Your infrastructure
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Every server, database, and storage bucket in one place. Tap any
           card to see live health.
         </p>
+        <ExplainHint>
+          A “resource” is anything we run for you: a server, a database, a
+          cache, or a storage bucket. Each one has its own health, its own
+          backups, and its own settings.
+        </ExplainHint>
       </div>
 
       {all.length === 0 ? (

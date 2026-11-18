@@ -154,7 +154,7 @@ export function SwapPanel({
               </p>
               <p className="mt-1 text-sm text-fg-muted">
                 The swap file at{" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                   {status.path}
                 </code>{" "}
                 is not listed in <code className="font-mono">/etc/fstab</code>, so
@@ -291,7 +291,7 @@ export function SwapPanel({
                       ? "—"
                       : `${Math.round(memoryUsedPercent)}%`}
                   </span>
-                  <span className="mt-1 block text-[0.6875rem] font-medium uppercase tracking-wider text-fg-subtle">
+                  <span className="mt-1 block text-micro font-medium uppercase tracking-wider text-fg-subtle">
                     used
                   </span>
                 </div>
@@ -324,7 +324,7 @@ export function SwapPanel({
               <p className="mt-1 text-sm text-fg-muted">
                 Creates a swap file on the host and activates it. The file is
                 written to the path you choose and is added to{" "}
-                <code className="font-mono text-[0.8125rem]">/etc/fstab</code>{" "}
+                <code className="font-mono text-caption">/etc/fstab</code>{" "}
                 so it survives a reboot.
               </p>
             </div>
@@ -348,7 +348,7 @@ export function SwapPanel({
                   {result.size_mb} MB is now active as {formatBytes(result.total_bytes)}.
                 </p>
                 {result.output ? (
-                  <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+                  <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
                     {result.output}
                   </pre>
                 ) : null}

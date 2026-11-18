@@ -43,7 +43,7 @@ export function Breadcrumb({ items, className, compact }: BreadcrumbProps) {
         </Link>
       ) : null}
 
-      <ol className="flex min-w-0 items-center gap-1 text-sm">
+      <ol className="flex min-w-0 items-center gap-1 text-caption">
         {items.map((item, i) => {
           const isLast = i === items.length - 1
           // Below sm we collapse every segment except the last into a

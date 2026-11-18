@@ -32,7 +32,7 @@ export function ChartContainer({
     <motion.div
       variants={listItem}
       className={cn(
-        "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40 transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]",
+        "rounded-lg border border-border-subtle bg-surface p-4 transition-colors duration-150 hover:border-border",
         className
       )}
     >
@@ -40,7 +40,7 @@ export function ChartContainer({
         <div>
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-            <h3 className="text-[1.0625rem] font-semibold text-fg">{title}</h3>
+            <h3 className="text-lead font-semibold text-fg">{title}</h3>
           </div>
           {subtitle ? (
             <p className="mt-1 text-xs text-fg-muted">{subtitle}</p>

@@ -304,12 +304,12 @@ export function InstanceAppControlPage() {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             App control
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             Start, stop, restart, or check the status of the{" "}
-            <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+            <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
               {serviceName}
             </code>{" "}
             service running on this server.
@@ -354,7 +354,7 @@ export function InstanceAppControlPage() {
                   <p className="mt-1 text-sm text-fg-muted">
                     SSHes in as{" "}
                     <span className="font-mono">root</span> and runs{" "}
-                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                    <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                       systemctl {"<action>"} {serviceName}
                     </code>
                     . The full output is captured below.
@@ -497,7 +497,7 @@ export function InstanceAppControlPage() {
                 <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" aria-hidden />
                 <span>
                   This page drives the{" "}
-                  <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                  <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                     {serviceName}
                   </code>{" "}
                   service. Change which unit it targets from the

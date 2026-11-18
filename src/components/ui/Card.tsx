@@ -16,23 +16,34 @@ export interface CardProps
   variant?: CardVariant
   padding?: CardPadding
   interactive?: boolean
-  /** Semantic left border in the chosen status color. */
+  /**
+   * Tints the card in a status colour. This is a tonal surface with a
+   * matching hairline — deliberately not a coloured side stripe, which
+   * reads as decoration rather than meaning.
+   */
   accent?: CardAccent
 }
 
 const variantClasses: Record<CardVariant, string> = {
-  default:
-    "bg-surface shadow-[var(--shadow-card)] border-b border-l border-border/30",
-  raised:
-    "bg-surface-raised shadow-[var(--shadow-card-hover)] border-b border-l border-border/30",
-  outline: "bg-surface/60 border-b border-l border-border/40",
+  default: "bg-surface border border-border-subtle",
+  raised: "bg-surface-raised border border-border-subtle shadow-[var(--shadow-card)]",
+  outline: "bg-surface border border-border",
+}
+
+const accentClasses: Record<CardAccent, string> = {
+  info: "border-info/35 bg-info-soft/40",
+  success: "border-success/35 bg-success-soft/40",
+  warning: "border-warning/40 bg-warning-soft/50",
+  danger: "border-danger/35 bg-danger-soft/40",
+  primary: "border-primary/35 bg-primary-soft/40",
+  accent: "border-accent/35 bg-accent-soft/40",
 }
 
 const paddingClasses: Record<CardPadding, string> = {
   none: "",
   sm: "p-3 sm:p-4",
-  md: "p-4 sm:p-6",
-  lg: "p-6 sm:p-8",
+  md: "p-4 sm:p-5",
+  lg: "p-5 sm:p-6",
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -55,16 +66,15 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           "rounded-lg",
           variantClasses[variant],
+          accent && accentClasses[accent],
           paddingClasses[padding],
-          accent && "card-accent",
-          accent && `card-accent-${accent}`,
           interactive &&
             !prefersReducedMotion &&
-            "cursor-pointer hover:shadow-[var(--shadow-card-hover)]",
+            "cursor-pointer transition-colors hover:border-border hover:bg-surface-sunken/40",
           className
         )}
         whileHover={
-          interactive && !prefersReducedMotion ? { y: -1.5 } : undefined
+          interactive && !prefersReducedMotion ? { y: -1 } : undefined
         }
         transition={cardHoverTransition}
         {...(props as HTMLMotionProps<"div">)}
@@ -82,7 +92,7 @@ export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardHeader = ({ className, children, ...props }: CardHeaderProps) => (
   <div
-    className={cn("mb-4 flex items-start justify-between gap-4", className)}
+    className={cn("mb-3 flex items-start justify-between gap-4", className)}
     {...props}
   >
     {children}
@@ -96,7 +106,10 @@ export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 
 export const CardTitle = ({ className, children, ...props }: CardTitleProps) => (
   <h3
-    className={cn("text-[1.25rem] font-semibold text-fg", className)}
+    className={cn(
+      "font-display text-lead font-semibold leading-tight text-fg",
+      className
+    )}
     {...props}
   >
     {children}
@@ -115,7 +128,7 @@ export const CardDescription = ({
   ...props
 }: CardDescriptionProps) => (
   <p
-    className={cn("text-sm text-fg-muted mt-1", className)}
+    className={cn("text-caption leading-relaxed text-fg-muted", className)}
     {...props}
   >
     {children}
@@ -145,7 +158,7 @@ export const CardFooter = ({
 }: CardFooterProps) => (
   <div
     className={cn(
-      "mt-6 flex items-center justify-end gap-3 border-t border-border/50 pt-4",
+      "mt-4 flex items-center justify-end gap-3 border-t border-border-subtle pt-3",
       className
     )}
     {...props}

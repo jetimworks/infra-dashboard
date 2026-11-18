@@ -73,7 +73,7 @@ export function RingGauge({
           cy={CANVAS / 2}
           r={RADIUS}
           fill="none"
-          stroke="rgb(var(--surface-sunken))"
+          stroke="var(--surface-sunken)"
           strokeWidth={strokeWidth}
           vectorEffect="non-scaling-stroke"
         />

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import {
   CartesianGrid,
   Line,
@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { Activity, ChevronRight, Download } from "lucide-react"
+import { Activity, Download } from "lucide-react"
 import { useInstance } from "../queries/instances"
 import { useInstanceMetricsHistory } from "../queries/metrics"
 import { Card } from "../components/ui/Card"
@@ -149,27 +149,12 @@ export function InstanceMetricsPage() {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-        <Link to="/instances" className="hover:text-fg">
-          Infrastructure
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <Link
-          to={`/instances/${instance.id}`}
-          className="hover:text-fg"
-        >
-          {instance.name}
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="font-medium text-fg">Metrics</span>
-      </nav>
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Performance
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             {/* Only claim a track record when there is one. For a REMOTE_RDS
                 the card below says we collect none, and leading with "how this
                 database has been doing" would contradict it three lines down. */}
@@ -332,7 +317,7 @@ function MetricChart({
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--border-subtle))" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
           <XAxis
             dataKey="t"
             type="number"
@@ -349,19 +334,19 @@ function MetricChart({
                     minute: "2-digit",
                   })
             }
-            stroke="rgb(var(--fg-subtle))"
+            stroke="var(--fg-subtle)"
             fontSize={11}
           />
           <YAxis
-            stroke="rgb(var(--fg-subtle))"
+            stroke="var(--fg-subtle)"
             fontSize={11}
             width={44}
             tickFormatter={(v) => (v == null ? "" : `${v}`)}
           />
           <Tooltip
             contentStyle={{
-              background: "rgb(var(--surface))",
-              border: "1px solid rgb(var(--border))",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
               borderRadius: 6,
               fontSize: 12,
             }}
@@ -376,16 +361,16 @@ function MetricChart({
               key={i}
               x1={b.x1}
               x2={b.x2}
-              fill="rgb(var(--danger))"
+              fill="var(--danger)"
               fillOpacity={0.1}
-              stroke="rgb(var(--danger))"
+              stroke="var(--danger)"
               strokeOpacity={0.2}
             />
           ))}
           <Line
             type="monotone"
             dataKey="v"
-            stroke="rgb(var(--primary))"
+            stroke="var(--primary)"
             strokeWidth={2.5}
             dot={false}
             isAnimationActive={true}

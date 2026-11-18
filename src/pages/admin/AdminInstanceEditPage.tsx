@@ -300,7 +300,7 @@ export function AdminInstanceEditPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             {instance.name}
           </h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-fg-muted">
@@ -353,7 +353,7 @@ export function AdminInstanceEditPage() {
               <select
                 id="ie-project"
                 {...register("project_id")}
-                className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 {(projectsQ.data ?? []).map((p) => (
                   <option key={p.id} value={p.id}>
@@ -464,7 +464,7 @@ export function AdminInstanceEditPage() {
                 <select
                   id="ie-db-ssl-mode"
                   {...register("db_ssl_mode")}
-                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {DB_SSL_MODES.map((mode) => (
                     <option key={mode} value={mode}>

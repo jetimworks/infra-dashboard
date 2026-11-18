@@ -91,16 +91,16 @@ export function AdminInstancesListPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
             Instances
           </h1>
-          <p className="mt-1 text-[0.9375rem] text-fg-muted">
+          <p className="mt-1 text-body text-fg-muted">
             Every server, database, and storage bucket on the platform.
           </p>
         </div>
         <Link
           to="/admin/instances/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-[0.9375rem] font-medium text-fg-on-accent shadow-sm transition-colors hover:bg-primary-hover"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-body font-medium text-fg-on-accent shadow-sm transition-colors hover:bg-primary-hover"
         >
           <Plus className="h-4 w-4" aria-hidden />
           Add instance
@@ -172,7 +172,7 @@ export function AdminInstancesListPage() {
                           size="sm"
                         />
                         {instance.is_local ? (
-                          <span className="rounded-sm bg-surface-sunken px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-fg-muted">
+                          <span className="rounded-sm bg-surface-sunken px-1.5 py-0.5 text-micro font-medium uppercase tracking-wide text-fg-muted">
                             local
                           </span>
                         ) : null}

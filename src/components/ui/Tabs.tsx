@@ -36,7 +36,7 @@ export function Tabs<T extends string>({
       <div
         role="tablist"
         className={cn(
-          "inline-flex min-w-full items-center gap-1 border-b border-border/40 sm:flex-wrap",
+          "inline-flex min-w-full items-center gap-1 border-b border-border sm:flex-wrap",
           className
         )}
       >
@@ -50,17 +50,17 @@ export function Tabs<T extends string>({
               aria-selected={active}
               onClick={() => onChange(item.value)}
               className={cn(
-                "relative inline-flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-t-md px-4 py-2.5 text-sm font-medium transition-colors duration-150",
+                "relative inline-flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-t-md px-4 py-2.5 text-caption font-medium transition-colors duration-150",
                 "min-h-11 touch-target border-b-2 sm:min-h-0",
                 active
-                  ? "border-primary/70 text-primary"
-                  : "border-transparent text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-fg-muted hover:text-fg"
               )}
             >
               {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
               {item.label}
               {item.badge ? (
-                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-surface-sunken px-1.5 text-xs">
+                <span className="ml-1 inline-flex items-center justify-center rounded bg-surface-sunken px-1.5 text-micro">
                   {item.badge}
                 </span>
               ) : null}

@@ -31,7 +31,7 @@ export function QuestRow({ quest, className }: QuestRowProps) {
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-lg border-b border-l border-border/40 bg-surface/60 p-4",
+        "flex items-start gap-3 rounded-lg border border-border-subtle bg-surface p-4",
         className
       )}
     >

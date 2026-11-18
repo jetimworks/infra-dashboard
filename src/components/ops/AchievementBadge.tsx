@@ -49,7 +49,7 @@ export function AchievementBadge({
   return (
     <div
       className={cn(
-        "rounded-lg border-b border-l p-4",
+        "rounded-lg border border-border-subtle p-4",
         achievement.earned
           ? "border-border/30 bg-surface shadow-[var(--shadow-card)]"
           : "border-border/40 bg-surface/60",

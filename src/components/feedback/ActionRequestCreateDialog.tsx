@@ -158,7 +158,7 @@ export function ActionRequestCreateDialog({
               setInstanceError("")
             }}
             disabled={!selectedProjectId || instancesQ.isLoading}
-            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-[0.9375rem] text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed"
+            className="h-11 w-full rounded-md border border-border/60 bg-surface px-3.5 text-body text-fg focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-sunken disabled:opacity-70 disabled:cursor-not-allowed"
           >
             <option value="">
               {instancesQ.isLoading ? "Loading instances..." : "Select an instance"}

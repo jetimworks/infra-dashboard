@@ -112,7 +112,7 @@ export function AppDirectoryCard({
       ) : (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <code className="min-w-0 flex-1 truncate rounded bg-surface-sunken px-2.5 py-2 font-mono text-[0.8125rem] text-fg">
+            <code className="min-w-0 flex-1 truncate rounded bg-surface-sunken px-2.5 py-2 font-mono text-caption text-fg">
               {directory?.path ?? "—"}
             </code>
             {editing ? (
@@ -148,7 +148,7 @@ export function AppDirectoryCard({
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 rows={2}
-                className="font-mono text-[0.8125rem]"
+                className="font-mono text-caption"
                 spellCheck={false}
                 error={validationError ?? undefined}
                 hint="Absolute path, no spaces, no '..'."

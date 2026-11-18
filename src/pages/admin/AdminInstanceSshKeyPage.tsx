@@ -107,10 +107,10 @@ export function AdminInstanceSshKeyPage() {
       </div>
 
       <div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-fg tracking-tight">
           SSH key
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Manage the SSH public key used to access{" "}
           <span className="font-medium text-fg">{instance.name}</span>. We never
           store private keys — only the public one.
@@ -123,7 +123,7 @@ export function AdminInstanceSshKeyPage() {
             <CardTitle>Current public key</CardTitle>
             <p className="mt-1 text-sm text-fg-muted">
               Add this to your local{" "}
-              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                 ~/.ssh/authorized_keys
               </code>{" "}
               to grant access.
@@ -201,7 +201,7 @@ export function AdminInstanceSshKeyPage() {
             <span className="font-mono text-fg-subtle">1.</span>
             <span>
               Generate a key pair locally with{" "}
-              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                 ssh-keygen -t ed25519
               </code>
               .
@@ -211,7 +211,7 @@ export function AdminInstanceSshKeyPage() {
             <span className="font-mono text-fg-subtle">2.</span>
             <span>
               Copy the contents of{" "}
-              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+              <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                 ~/.ssh/id_ed25519.pub
               </code>{" "}
               (not the private one).
@@ -250,7 +250,7 @@ export function AdminInstanceSshKeyPage() {
           <div className="space-y-1.5">
             <label
               htmlFor="upload-ssh-key"
-              className="flex items-center gap-1.5 text-[0.8125rem] font-medium text-fg-muted"
+              className="flex items-center gap-1.5 text-caption font-medium text-fg-muted"
             >
               <span>Public key</span>
               <span className="text-danger">*</span>

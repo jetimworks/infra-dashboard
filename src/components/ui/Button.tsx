@@ -28,40 +28,36 @@ export interface ButtonProps
 
 const baseClasses =
   "inline-flex items-center justify-center gap-2 rounded-md font-medium " +
-  "transition-[background-color,color,box-shadow,border-color] duration-200 " +
+  "transition-[background-color,color,border-color] duration-150 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg " +
   "disabled:opacity-50 disabled:pointer-events-none"
 
-const variantTextColor: Record<ButtonVariant, string> = {
-  primary: "var(--fg-on-accent)",
-  secondary: "var(--fg)",
-  ghost: "var(--fg-muted)",
-  outline: "var(--fg)",
-  "outline-danger": "var(--danger-fg)",
-  danger: "var(--fg)",
-  success: "#ffffff",
-}
-
+/*
+  Console buttons sit flat: a border or a fill, never a glow. The old
+  `shadow-md hover:shadow-primary/20` treatment made every button on the
+  page look like a floating chip.
+*/
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary hover:bg-primary-hover shadow-sm hover:shadow-md hover:shadow-primary/20",
+    "bg-primary text-fg-on-accent border border-transparent hover:bg-primary-hover",
   secondary:
-    "bg-surface-sunken/80 hover:bg-surface-sunken border border-border/40",
-  ghost: "bg-transparent hover:bg-surface-sunken",
+    "bg-surface text-fg border border-border hover:bg-surface-sunken",
+  ghost:
+    "bg-transparent text-fg-muted border border-transparent hover:bg-surface-sunken hover:text-fg",
   outline:
-    "bg-surface/80 border border-border/60 hover:bg-surface-sunken hover:border-border",
+    "bg-surface text-fg border border-border hover:bg-surface-sunken",
   "outline-danger":
-    "border border-danger bg-danger/10 hover:bg-danger/20",
+    "bg-surface text-danger-fg border border-danger/40 hover:bg-danger/10",
   danger:
-    "bg-danger border border-danger hover:bg-danger/90 shadow-sm hover:shadow-md hover:shadow-danger/20",
+    "bg-danger text-fg-on-accent border border-transparent hover:bg-danger/90",
   success:
-    "bg-success border border-success hover:bg-success/90 shadow-sm hover:shadow-md hover:shadow-success/20",
+    "bg-success text-fg-on-accent border border-transparent hover:bg-success/90",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-9 min-w-9 px-3.5 text-sm touch-target",
-  md: "h-10 px-4 text-[0.9375rem]",
-  lg: "h-12 px-5 text-[1.0625rem]",
+  sm: "h-9 min-w-9 px-3 text-caption",
+  md: "h-10 px-3.5 text-sm",
+  lg: "h-11 px-4 text-body",
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -93,11 +89,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           fullWidth && "w-full",
           className
         )}
-        style={{ color: variantTextColor[variant], ...props.style }}
         disabled={disabled || isLoading}
         whileTap={
           !prefersReducedMotion && !disabled && !isLoading
-            ? { scale: 0.97 }
+            ? { scale: 0.98 }
             : undefined
         }
         transition={pressTransition}
@@ -108,7 +103,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : LeftIcon ? (
           <LeftIcon className="h-4 w-4" aria-hidden />
         ) : null}
-        <span style={{ color: variantTextColor[variant] }}>{children as ReactNode}</span>
+        {children as ReactNode}
         {!isLoading && RightIcon ? (
           <RightIcon className="h-4 w-4" aria-hidden />
         ) : null}

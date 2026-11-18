@@ -90,14 +90,14 @@ export function AsyncActionTracker({
   return (
     <div
       className={cn(
-        "rounded-lg bg-surface p-5 shadow-[var(--shadow-card)] border-b border-l border-border/40",
+        "rounded-lg border border-border-subtle bg-surface p-4",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[0.8125rem] text-fg-muted">Working on it</p>
-          <h3 className="mt-0.5 truncate text-[1.0625rem] font-semibold text-fg">
+          <p className="text-caption text-fg-muted">Working on it</p>
+          <h3 className="mt-0.5 truncate text-lead font-semibold text-fg">
             {label}
           </h3>
         </div>

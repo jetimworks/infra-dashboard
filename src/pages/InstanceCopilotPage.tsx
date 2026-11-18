@@ -224,10 +224,10 @@ function CopilotThread() {
       </nav>
 
       <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Copilot
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Ask about {instance.name} — where the disk space went, which units
           are running, what the last release did. It reads the host and the
           release history, and proposes changes for you to confirm. It never
@@ -309,7 +309,7 @@ function CopilotThread() {
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-fg">You asked</p>
-                    <p className="mt-1 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-fg">
+                    <p className="mt-1 whitespace-pre-wrap text-body leading-relaxed text-fg">
                       {turn.question}
                     </p>
                   </div>
@@ -381,7 +381,7 @@ function CopilotThread() {
           >
             <label
               htmlFor="copilot-question"
-              className="text-[0.8125rem] font-medium text-fg-muted"
+              className="text-caption font-medium text-fg-muted"
             >
               Ask about this instance
             </label>

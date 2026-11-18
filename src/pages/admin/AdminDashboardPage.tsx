@@ -77,10 +77,10 @@ export function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Admin overview
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           The pulse of the platform.
         </p>
       </div>
@@ -220,7 +220,7 @@ function StatTile({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs text-fg-muted">{label}</p>
-            <p className="text-[1.5rem] font-semibold leading-tight text-fg">
+            <p className="text-2xl font-semibold leading-tight text-fg">
               {value}
             </p>
             {hint ? (

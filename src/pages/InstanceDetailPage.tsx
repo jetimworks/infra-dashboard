@@ -5,7 +5,6 @@ import {
   Award,
   Bot,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   Code2,
   Database,
@@ -317,14 +316,8 @@ export function InstanceDetailPage() {
   return (
     <>
       <div className="space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-          <Link to="/instances" className="hover:text-fg">
-            Infrastructure
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-          <span className="font-medium text-fg">{instance.name}</span>
-        </nav>
+        {/* The console shell renders the breadcrumb for every page, so this
+            one is deliberately absent. */}
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -333,7 +326,7 @@ export function InstanceDetailPage() {
               <Icon className="h-6 w-6" aria-hidden />
             </div>
             <div className="min-w-0">
-              <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+              <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
                 {instance.name}
               </h1>
               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-fg-muted">
@@ -578,7 +571,7 @@ function OverviewTab({
                         />
                       )}
                     </div>
-                    <p className="mt-2 text-[0.9375rem] text-fg-muted">
+                    <p className="mt-2 text-body text-fg-muted">
                       {uninspected
                         ? "Nothing was inspected. This resource is managed outside the platform, so there isn't a check for us to run."
                         : displayStatus === "safe"
@@ -711,7 +704,7 @@ function SecurityTab({
                 size="md"
               />
             )}
-            <p className="mt-3 text-[0.9375rem] text-fg-muted">
+            <p className="mt-3 text-body text-fg-muted">
               {isUninspected(security)
                 ? "Nothing was inspected. There's no security check for a resource we manage from outside the platform."
                 : `${security.findings.length} finding${security.findings.length === 1 ? "" : "s"} for this ${typeLabel[instanceType].toLowerCase()}.`}
@@ -965,7 +958,7 @@ function SettingsTab({
             <div>
               <CardTitle>Deploy</CardTitle>
               <p className="mt-1 text-sm text-fg-muted">
-                Run <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/root/deploy.sh</code> on this server and see the output inline.
+                Run <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/root/deploy.sh</code> on this server and see the output inline.
               </p>
             </div>
             <Button
@@ -988,7 +981,7 @@ function SettingsTab({
               <p className="mt-1 text-sm text-fg-muted">
                 Start, stop, restart, or check the status of the
                 {" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                   {resolveServiceName(instance)}
                 </code>
                 {" "}
@@ -1015,9 +1008,9 @@ function SettingsTab({
               <p className="mt-1 text-sm text-fg-muted">
                 Browse the files in
                 {" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">/var/log/nginx/</code>
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/var/log/nginx/</code>
                 {" "}
-                and tail the most recent lines. Rotated <code className="font-mono text-[0.8125rem]">.gz</code> files are listed but can't be read in v1.
+                and tail the most recent lines. Rotated <code className="font-mono text-caption">.gz</code> files are listed but can't be read in v1.
               </p>
             </div>
             <Button
@@ -1039,9 +1032,9 @@ function SettingsTab({
               <CardTitle>Environment file</CardTitle>
               <p className="mt-1 text-sm text-fg-muted">
                 Read and edit the app's{" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">.env</code>{" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">.env</code>{" "}
                 at{" "}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
                   {appDirectoryQ.data ? `${appDirectoryQ.data.path}/.env` : "…"}
                 </code>
                 .

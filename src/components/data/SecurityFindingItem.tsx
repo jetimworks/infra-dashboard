@@ -52,8 +52,14 @@ export function SecurityFindingItem({ finding, actionButton }: SecurityFindingIt
     <motion.div
       variants={listItem}
       className={cn(
-        "card-accent card-accent-" + statusAccent[finding.status],
-        "rounded-lg bg-surface p-4 shadow-[var(--shadow-card)] border-b border-l border-border/40 transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]"
+        // Tone comes from the finding's severity, as a tinted hairline
+        // rather than a coloured side stripe.
+        {
+          success: "border-success/35 bg-success-soft/25",
+          warning: "border-warning/40 bg-warning-soft/30",
+          danger: "border-danger/35 bg-danger-soft/25",
+        }[statusAccent[finding.status]],
+        "rounded-lg border bg-surface p-4 transition-colors duration-150 hover:border-border"
       )}
     >
       <div className="flex items-start gap-3">
@@ -67,10 +73,10 @@ export function SecurityFindingItem({ finding, actionButton }: SecurityFindingIt
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-2">
-            <h4 className="text-[1rem] font-semibold text-fg">{finding.title}</h4>
+            <h4 className="text-base font-semibold text-fg">{finding.title}</h4>
             <span
               className={cn(
-                "rounded-sm px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide",
+                "rounded-sm px-1.5 py-0.5 text-micro font-medium uppercase tracking-wide",
                 statusClass[finding.status]
               )}
             >

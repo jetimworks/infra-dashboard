@@ -67,10 +67,10 @@ export function ChangePasswordPage() {
         <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-fg">
           <KeyRound className="h-6 w-6" aria-hidden />
         </div>
-        <h1 className="text-[1.75rem] font-bold leading-tight text-fg tracking-tight">
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-fg tracking-tight">
           {isOnboarding ? "Set a new password" : "Change your password"}
         </h1>
-        <p className="mt-2 text-[0.9375rem] text-fg-muted">
+        <p className="mt-2 text-body text-fg-muted">
           {isOnboarding
             ? "Welcome aboard. Pick a password you'll actually remember."
             : "Pick something strong. A long sentence works great."}

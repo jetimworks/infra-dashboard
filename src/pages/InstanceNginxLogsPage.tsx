@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import {
   Archive,
-  ChevronRight,
   Copy,
   Check,
   FileText,
@@ -146,7 +145,6 @@ export function InstanceNginxLogsPage() {
   if (instance.type !== "VPS") {
     return (
       <div className="space-y-6">
-        <Breadcrumb id={instance.id} name={instance.name} />
         <Card>
           <EmptyState
             icon={Server}
@@ -170,15 +168,14 @@ export function InstanceNginxLogsPage() {
       animate="enter"
       variants={reduceMotion ? reducedVariants : pageVariants}
     >
-      <Breadcrumb id={instance.id} name={instance.name} />
 
       <header>
-        <h1 className="text-[1.5rem] font-bold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
+        <h1 className="font-display text-2xl font-semibold leading-tight text-fg tracking-tight xs:text-[1.625rem] sm:text-[1.75rem]">
           Nginx logs
         </h1>
-        <p className="mt-1 text-[0.9375rem] text-fg-muted">
+        <p className="mt-1 text-body text-fg-muted">
           Browse the files in{" "}
-          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-[0.8125rem]">
+          <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">
             /var/log/nginx/
           </code>{" "}
           and tail the most recent lines. The active log (
@@ -225,22 +222,6 @@ export function InstanceNginxLogsPage() {
         />
       </div>
     </motion.div>
-  )
-}
-
-function Breadcrumb({ id, name }: { id: string; name: string }) {
-  return (
-    <nav className="flex items-center gap-1.5 text-sm text-fg-muted">
-      <Link to="/instances" className="hover:text-fg">
-        Infrastructure
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <Link to={`/instances/${id}`} className="hover:text-fg">
-        {name}
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      <span className="font-medium text-fg">Nginx logs</span>
-    </nav>
   )
 }
 
@@ -361,7 +342,7 @@ function FileListItem({
               aria-hidden
             />
           ) : null}
-          <span className="truncate font-mono text-[0.8125rem]">{file.name}</span>
+          <span className="truncate font-mono text-caption">{file.name}</span>
           {live ? (
             <span
               className="inline-flex items-center gap-1 rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-success-fg"

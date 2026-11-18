@@ -198,12 +198,12 @@ export function ServiceControlList({
                           </span>
                         ) : null}
                         {isHostWide ? (
-                          <span className="rounded-full bg-info-soft px-2 py-0.5 text-[0.6875rem] font-medium text-info-fg">
+                          <span className="rounded-full bg-info-soft px-2 py-0.5 text-micro font-medium text-info-fg">
                             Host-wide
                           </span>
                         ) : null}
                         {isAppUnit ? (
-                          <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[0.6875rem] font-medium text-primary-soft-fg">
+                          <span className="rounded-full bg-primary-soft px-2 py-0.5 text-micro font-medium text-primary-soft-fg">
                             This app
                           </span>
                         ) : null}
@@ -215,7 +215,7 @@ export function ServiceControlList({
                         </p>
                       ) : null}
 
-                      <p className="mt-1 font-mono text-[0.6875rem] text-fg-subtle">
+                      <p className="mt-1 font-mono text-micro text-fg-subtle">
                         {unit.load_state} · {unit.active_state} (
                         {unit.sub_state})
                       </p>
@@ -427,13 +427,13 @@ function ServiceResult({ result }: { result: ServiceControlResponse }) {
             : `${result.unit} ${result.action} completed`}
         </p>
         {result.output ? (
-          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-[0.6875rem] leading-relaxed text-fg">
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border/40 bg-surface-sunken p-3 font-mono text-micro leading-relaxed text-fg">
             {result.output}
           </pre>
         ) : null}
         <WarningBlock warnings={result.warnings ?? []} className="mt-3" />
         {result.action_id ? (
-          <p className="mt-2 font-mono text-[0.6875rem] opacity-70">
+          <p className="mt-2 font-mono text-micro opacity-70">
             Action {result.action_id.slice(0, 8)}
           </p>
         ) : null}

@@ -10,6 +10,7 @@ import { userApi } from "../api/user"
 import { setAccessToken } from "../api/client"
 import { normalizeError } from "../api/errors"
 import { Button } from "../components/ui/Button"
+import { AuthBrandPanel } from "../components/layout/AuthBrandPanel"
 import { Input } from "../components/ui/Input"
 import { Field } from "../components/ui/Input"
 
@@ -60,30 +61,30 @@ export function CosplayPage() {
     <div className="flex min-h-screen">
       {/* Left — Form */}
       <div className="relative flex w-full flex-col justify-center bg-bg px-6 py-10 lg:w-[48%] lg:px-16 xl:px-24">
-        <div className="absolute left-0 right-0 top-0 h-1 accent-bar-top lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
+        <div className="absolute left-0 right-0 top-0 h-1 bg-primary lg:left-0 lg:right-auto lg:h-full lg:w-1" aria-hidden />
         <div className="mx-auto w-full max-w-md">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-fg-on-accent shadow-sm shadow-accent/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-fg-on-accent">
               <Cloud className="h-5 w-5" aria-hidden />
             </div>
             <div>
-              <p className="text-[1.0625rem] font-semibold text-fg">Infra</p>
+              <p className="text-lead font-semibold text-fg">Infra</p>
               <p className="text-xs text-fg-muted">by Jetimworks</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-[2rem] font-bold leading-tight text-fg tracking-tight">
+            <h1 className="font-display text-[2rem] font-semibold leading-tight text-fg tracking-tight">
               Impersonate User
             </h1>
-            <p className="mt-2 text-[0.9375rem] text-fg-muted">
+            <p className="mt-2 text-body text-fg-muted">
               Enter an email address to sign in as that user.
             </p>
           </div>
 
           {/* Warning banner */}
           <div
-            className="mb-6 card-accent card-accent-warning flex items-start gap-3 rounded-md border border-warning-soft bg-warning-soft/60 p-4"
+            className="mb-6 flex items-start gap-3 rounded-lg border border-warning/35 bg-warning-soft/50 p-4"
             role="alert"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-fg" aria-hidden />
@@ -148,26 +149,17 @@ export function CosplayPage() {
       </div>
 
       {/* Right — Brand panel */}
-      <div className="relative hidden lg:flex lg:w-[52%] lg:flex-col lg:justify-between lg:overflow-hidden bg-gradient-to-br from-primary via-primary to-accent px-16 py-16 text-fg-on-accent">
-        <div className="absolute inset-0 opacity-10" aria-hidden>
-          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white blur-3xl" />
-        </div>
-        <div className="relative">
-          <p className="text-sm font-medium uppercase tracking-wider opacity-80">
-            Admin tools
-          </p>
-          <h2 className="mt-3 text-[2.25rem] font-bold leading-tight">
+      <AuthBrandPanel
+        eyebrow="Admin tools"
+        headline={
+          <>
             Sign in as any user.
             <br />
             No password needed.
-          </h2>
-          <p className="mt-4 max-w-md text-[0.9375rem] opacity-90">
-            Use the cosplay tool to test accounts, reproduce issues, or verify
-            permissions — all without interrupting the user's session.
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        body="Use the cosplay tool to test accounts, reproduce issues, or verify permissions — all without interrupting the user's session."
+      />
     </div>
   )
 }
