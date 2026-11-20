@@ -25,6 +25,7 @@ import { InstanceBackupsPage } from "./pages/InstanceBackupsPage"
 import { InstanceDeployPage } from "./pages/InstanceDeployPage"
 import { InstanceAppControlPage } from "./pages/InstanceAppControlPage"
 import { InstanceNginxLogsPage } from "./pages/InstanceNginxLogsPage"
+import { InstanceNginxPage } from "./pages/InstanceNginxPage"
 import { InstanceFilesPage } from "./pages/InstanceFilesPage"
 import { InstanceSchemasPage } from "./pages/InstanceSchemasPage"
 import { InstanceSystemPage } from "./pages/InstanceSystemPage"
@@ -127,6 +128,10 @@ function AnimatedRoutes() {
             <Route
               path="/instances/:id/nginx-logs"
               element={<PageWrapper><InstanceNginxLogsPage /></PageWrapper>}
+            />
+            <Route
+              path="/instances/:id/nginx"
+              element={<PageWrapper><InstanceNginxPage /></PageWrapper>}
             />
             <Route
               path="/instances/:id/files"

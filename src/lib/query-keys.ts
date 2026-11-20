@@ -47,6 +47,13 @@ export const qk = {
   instanceNginxLogs: (id: string) => ["instances", id, "nginx-logs"] as const,
   instanceNginxLog: (id: string, filename: string, lines: number) =>
     ["instances", id, "nginx-logs", "content", { filename, lines }] as const,
+  // Site configuration lives beside the logs but under its own root, so a
+  // log refresh never invalidates the site list and vice versa.
+  instanceNginxRoot: (id: string) => ["instances", id, "nginx"] as const,
+  instanceNginxSites: (id: string) =>
+    [...qk.instanceNginxRoot(id), "sites"] as const,
+  instanceNginxSite: (id: string, name: string) =>
+    [...qk.instanceNginxRoot(id), "sites", name] as const,
   // `database` is part of the key, not decoration: ?database= changes the
   // response entirely, so without it two database choices on the schema
   // browser would collide in the cache and the second would render the first.

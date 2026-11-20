@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Code2,
   Database,
+  FileCog,
   Folder,
   GitBranch,
   HardDrive,
@@ -1020,6 +1021,31 @@ function SettingsTab({
               onClick={() => navigate(`/instances/${instance.id}/nginx-logs`)}
             >
               Open log viewer
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {instance.type === "VPS" ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Web server sites</CardTitle>
+              <p className="mt-1 text-sm text-fg-muted">
+                Edit the files in
+                {" "}
+                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-caption">/etc/nginx/sites-available</code>
+                {" "}
+                and enable them. Saving tests the configuration; reloading nginx applies it.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={FileCog}
+              onClick={() => navigate(`/instances/${instance.id}/nginx`)}
+            >
+              Open site config
             </Button>
           </CardHeader>
         </Card>

@@ -333,6 +333,72 @@ export interface NginxLogContentResponse {
   content: string
 }
 
+// ── Nginx sites (GET/PUT /instances/{id}/nginx/sites…) ─────────────────
+//
+// Every route is owner-scoped and VPS-only. A site name is a FILENAME in
+// /etc/nginx/sites-available and is never accepted as a path. The list
+// includes every file's content, so refetching one site is the cheaper
+// choice when only one file changed.
+export interface NginxSite {
+  name: string
+  path: string
+  size_bytes: number
+  modified_at: string
+  /** "" when the content was withheld (binary, invalid UTF-8 or > 1 MiB). */
+  content: string
+  enabled: boolean
+  /** The sites-enabled link target as stored, or null when disabled. */
+  enabled_target: string | null
+  warnings: string[]
+}
+
+export interface NginxSitesResponse {
+  directory: string
+  enabled_directory: string
+  sites: NginxSite[]
+  warnings: string[]
+}
+
+export interface NginxSiteWriteRequest {
+  content: string
+}
+
+export interface NginxSiteWriteResponse {
+  action_id: string
+  name: string
+  path: string
+  size_bytes: number
+  modified_at: string
+  enabled: boolean
+  /** Result of the `nginx -t` the backend ran immediately after the save. */
+  valid: boolean
+  test_output: string
+  warnings: string[]
+}
+
+export interface NginxSiteToggleResponse {
+  action_id: string
+  name: string
+  enabled: boolean
+  /** False when nothing moved — a success, not an error. */
+  changed: boolean
+  symlink_target: string
+  warnings: string[]
+}
+
+export interface NginxTestResponse {
+  valid: boolean
+  output: string
+  warnings: string[]
+}
+
+export interface NginxReloadResponse {
+  action_id: string
+  reloaded: boolean
+  output: string
+  warnings: string[]
+}
+
 export interface SshKeyUploadInput {
   ssh_key: string
 }

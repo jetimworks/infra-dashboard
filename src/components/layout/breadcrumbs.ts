@@ -21,6 +21,7 @@ const userRouteLabels: Record<string, string> = {
   deploy: "Deploy",
   "app-control": "App control",
   "nginx-logs": "Web server logs",
+  nginx: "Web server sites",
   files: "Files",
   schemas: "Database tables",
   system: "System",
